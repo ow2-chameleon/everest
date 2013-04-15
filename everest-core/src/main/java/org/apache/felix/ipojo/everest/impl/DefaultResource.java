@@ -69,7 +69,7 @@ public class DefaultResource implements Resource {
         private List<Relation> relations;
         private List<Resource> resources;
 
-        Builder() { }
+        public Builder() { }
 
         Builder(String path) {
             fromPath(path);
