@@ -123,6 +123,11 @@ public class DefaultResource implements Resource {
      * @throws ResourceNotFoundException
      */
     public Resource process(Request request) throws IllegalActionOnResourceException, ResourceNotFoundException {
+        //Trace
+        System.out.println("Processing request " + request.action() + " " + request.path() + " by " +
+                getCanonicalPath());
+        //End Trace
+
         // 1) Substract our path from the request path.
 
         // 2) The request is targeting us...
