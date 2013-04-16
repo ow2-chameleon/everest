@@ -1,5 +1,6 @@
 package org.apache.felix.ipojo.everest.filters;
 
+import org.apache.felix.ipojo.everest.services.Path;
 import org.apache.felix.ipojo.everest.services.Resource;
 import org.apache.felix.ipojo.everest.services.ResourceFilter;
 
@@ -58,10 +59,36 @@ public class Filters {
         };
     }
 
+    public static ResourceFilter hasCanonicalPath(final Path path) {
+        return new ResourceFilter() {
+            public boolean accept(Resource resource) {
+                return resource.getCanonicalPath().equals(path);
+            }
+        };
+    }
+
+    public static ResourceFilter hasCanonicalPath(final String path) {
+        return hasCanonicalPath(Path.from(path));
+    }
+
+    public static ResourceFilter hasPath(final Path path) {
+        return new ResourceFilter() {
+            public boolean accept(Resource resource) {
+                return resource.getPath().equals(path)
+                        || resource.getCanonicalPath().equals(path);
+            }
+        };
+    }
+
+    public static ResourceFilter hasPath(final String path) {
+        return hasPath(Path.from(path));
+    }
+
     public static ResourceFilter isSubResourceOf(final Resource root) {
         return new ResourceFilter() {
             public boolean accept(Resource resource) {
-                return resource.getPath().startsWith(root.getPath())
+                // TODO Change this....
+                return resource.getPath().toString().startsWith(root.getPath().toString())
                         && !resource.getPath().equals(root.getPath());
             }
         };

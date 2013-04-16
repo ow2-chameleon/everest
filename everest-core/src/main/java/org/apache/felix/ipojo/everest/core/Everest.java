@@ -4,78 +4,54 @@ import org.apache.felix.ipojo.annotations.Bind;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Unbind;
-import org.apache.felix.ipojo.everest.impl.DefaultRequest;
+import org.apache.felix.ipojo.everest.impl.DefaultResource;
 import org.apache.felix.ipojo.everest.services.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Everest Core.
  */
 @Component
 @Instantiate
-public class Everest {
+public class Everest extends DefaultResource {
 
-    private List<ResourceManager> managers = new ArrayList<ResourceManager>();
+    private Map<Path, Resource> resources = new HashMap<Path, Resource>();
+
+    public Everest() {
+        super(Path.ROOT);
+    }
 
     @Bind(optional = true, aggregate = true)
-    public void bindResourceManager(ResourceManager manager) {
+    public void bindResourceManager(Resource resource) {
         synchronized (this) {
-            managers.add(manager);
+            resources.put(resource.getCanonicalPath(), resource);
         }
     }
 
     @Unbind
-    public void unbindResourceManager(ResourceManager manager) {
+    public void unbindResourceManager(Resource resource) {
         synchronized (this) {
-            managers.remove(manager);
+            resources.remove(resource.getCanonicalPath());
         }
     }
 
-    public Resource process(Request request) throws NotManagedRequestException, ResourceNotFoundException, IllegalActionOnResourceException {
-        List<ResourceManager> managerList;
-        synchronized (this) {
-            managerList = new ArrayList<ResourceManager>(managers);
-        }
-
-        // Detect the right manager by prefix.
-        String path = request.path();
-        path = normalize(path);
-
-        Request delegatedRequest = DefaultRequest.createNormalizedRequest(request, path);
-        for (ResourceManager manager : managerList) {
-            if (path.startsWith(manager.getName())) {
-                return manager.process(delegatedRequest);
-            }
-        }
-
-        throw new NotManagedRequestException(request);
-
+    public synchronized Map<Path, Resource> getEverestResources() {
+        return new TreeMap<Path, Resource>(resources);
     }
 
-    private String normalize(String path) {
-        if (path.startsWith("/")) {
-            return path.substring(1);
-        }
-
-        if (path.startsWith("everest://")) {
-            return path.substring("everest://".length());
-        }
-
-        if (path.startsWith("everest:/")) {
-            return path.substring("everest:/".length());
-        }
-
-        if (path.startsWith("everest:")) {
-            return path.substring("everest:".length());
-        }
-
-        // Unchanged path.
-        return path;
+    @Override
+    public Resource delete(Request request) throws IllegalActionOnResourceException {
+        throw new IllegalActionOnResourceException(request, this);
     }
 
-    public synchronized List<ResourceManager> getResourceManagers() {
-        return new ArrayList<ResourceManager>(managers);
+    @Override
+    public Resource put(Request request) throws IllegalActionOnResourceException {
+        throw new IllegalActionOnResourceException(request, this);
+    }
+
+    @Override
+    public Resource post(Request request) throws IllegalActionOnResourceException {
+        throw new IllegalActionOnResourceException(request, this);
     }
 }

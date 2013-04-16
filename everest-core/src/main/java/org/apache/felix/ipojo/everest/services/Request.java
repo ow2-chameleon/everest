@@ -10,7 +10,7 @@ public interface Request {
     /**
      * @return the request path.
      */
-    public String path();
+    public Path path();
 
     /**
      * @return the request action.

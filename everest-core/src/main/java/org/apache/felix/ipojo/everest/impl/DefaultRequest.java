@@ -1,6 +1,7 @@
 package org.apache.felix.ipojo.everest.impl;
 
 import org.apache.felix.ipojo.everest.services.Action;
+import org.apache.felix.ipojo.everest.services.Path;
 import org.apache.felix.ipojo.everest.services.Request;
 
 import java.util.HashMap;
@@ -12,14 +13,10 @@ import java.util.Map;
 public class DefaultRequest implements Request {
 
     private final Action action;
-    private final String path;
+    private final Path path;
     private final Map<String, Object> params;
 
-    public static DefaultRequest createNormalizedRequest(Request request, String newPath) {
-        return new DefaultRequest(request.action(), newPath, request.parameters());
-    }
-
-    public DefaultRequest(Action action, String path, Map<String, ? extends Object> params) {
+    public DefaultRequest(Action action, Path path, Map<String, ? extends Object> params) {
         this.action = action;
         this.path = path;
         this.params = new HashMap<String, Object>();
@@ -28,7 +25,7 @@ public class DefaultRequest implements Request {
         }
     }
 
-    public String path() {
+    public Path path() {
         return path;
     }
 

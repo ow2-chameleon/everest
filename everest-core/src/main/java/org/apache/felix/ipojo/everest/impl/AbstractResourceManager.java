@@ -1,15 +1,15 @@
 package org.apache.felix.ipojo.everest.impl;
 
-import org.apache.felix.ipojo.everest.filters.Filters;
 import org.apache.felix.ipojo.everest.services.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A default implementation of resource manager.
+ * A default implementation of default 'root' resource. Root resources are the resource representing a domain and
+ * tracked by the everest core.
  */
-public abstract class AbstractResourceManager implements ResourceManager {
+public abstract class AbstractResourceManager extends DefaultResource {
 
     private final String name;
     private final String description;
@@ -19,6 +19,8 @@ public abstract class AbstractResourceManager implements ResourceManager {
     }
 
     public AbstractResourceManager(String name, String description) {
+        super(Path.SEPARATOR + name);
+
         if (name == null) {
             throw new NullPointerException("Name cannot be null");
         }
@@ -39,52 +41,27 @@ public abstract class AbstractResourceManager implements ResourceManager {
         return description;
     }
 
-    public abstract Resource getRoot();
-
-    public String getRootPath() {
-        return Path.SEPARATOR + name;
+    public ResourceMetadata getMetadata() {
+        return new ImmutableResourceMetadata.Builder()
+                .set("name", getName())
+                .set("description", getDescription())
+                .build();
     }
 
-    public abstract Resource resolve(String path);
-
-    public Resource getResource(String path) {
-        return resolve(path);
-    }
-
-    public List<Resource> getResources(Resource resource, ResourceFilter filter) {
-        return getResources(Filters.and(
-                Filters.isSubResourceOf(resource),
-                filter
-        ));
-    }
-
-    public List<Resource> getResources(ResourceFilter filter) {
-        List<Resource> resources = new ArrayList<Resource>();
-
-        // Traverse the whole tree.
-        List<Resource> all = new ArrayList<Resource>();
-        traverse(getRoot(), all);
-
-        for (Resource res : all) {
-            if (filter.accept(res)) {
-                resources.add(res);
-            }
+    /**
+     * Extracts the direct children and add a {@literal GET} relation to them.
+     *
+     * @return a list of relations
+     */
+    public List<Relation> getRelations() {
+        List<Relation> relations = new ArrayList<Relation>();
+        for (Resource resource : getResources()) {
+            int size = getCanonicalPath().getElementCount();
+            String name = resource.getCanonicalPath().getElements()[size];
+            relations.add(new DefaultRelation(resource.getCanonicalPath(), Action.GET, "everest:" + name,
+                    "Get " + name));
         }
-        return resources;
-    }
-
-    protected void traverse(Resource resource, List<Resource> list) {
-        list.add(resource);
-        for (Resource res : resource.getResources()) {
-            traverse(res, list);
-        }
-    }
-
-    public Resource process(Request request) throws ResourceNotFoundException, IllegalActionOnResourceException {
-        // 1) resolve the resource
-        Resource resource = resolve(request.path());
-        // 2) delegate processing
-        return resource.process(request);
+        return relations;
     }
 
 }

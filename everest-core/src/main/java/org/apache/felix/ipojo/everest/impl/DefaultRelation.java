@@ -1,6 +1,7 @@
 package org.apache.felix.ipojo.everest.impl;
 
 import org.apache.felix.ipojo.everest.services.Action;
+import org.apache.felix.ipojo.everest.services.Path;
 import org.apache.felix.ipojo.everest.services.Relation;
 
 /**
@@ -8,23 +9,23 @@ import org.apache.felix.ipojo.everest.services.Relation;
  */
 public class DefaultRelation implements Relation {
 
-    private final String path;
+    private final Path path;
     private final Action action;
     private final String name;
     private final String description;
 
-    public DefaultRelation(String path, Action action, String name, String description) {
+    public DefaultRelation(Path path, Action action, String name, String description) {
         this.path = path;
         this.action = action;
         this.name = name;
         this.description = description;
     }
 
-    public DefaultRelation(String path, Action action, String name) {
+    public DefaultRelation(Path path, Action action, String name) {
         this(path, action, name, null);
     }
 
-    public String getPath() {
+    public Path getPath() {
         return path;
     }
 

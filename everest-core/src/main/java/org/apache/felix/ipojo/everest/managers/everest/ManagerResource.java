@@ -12,28 +12,25 @@ import java.util.List;
  * Resource representing managers.
  */
 public class ManagerResource extends DefaultResource {
-    private final ResourceManager manager;
+    private final Resource manager;
 
-    public ManagerResource(ResourceManager manager, EverestResource parent) {
-        super(parent, manager.getName());
-        this.manager = manager;
+    public ManagerResource(Resource resource, EverestRootResource parent) {
+        super(parent, resource.getMetadata().get("name", String.class));
+        manager = resource;
     }
 
     @Override
     public ResourceMetadata getMetadata() {
-        return new ImmutableResourceMetadata.Builder()
-                .set("name", manager.getName())
-                .set("description", manager.getDescription())
-                .build();
+        return ImmutableResourceMetadata.of(manager.getMetadata());
     }
 
     @Override
     public List<Relation> getRelations() {
         return new Relations.Builder()
                 .addRelation(getPath(), Action.GET, "everest:manager",
-                        "get metadata on the manager")
-                .addRelation(Paths.PATH_SEPARATOR + manager.getName(), Action.GET, "everest:domain",
-                        "get the root of the domain '" + manager.getName() + "'")
+                        "get metadata about the manager")
+                .addRelation(manager.getCanonicalPath(), Action.GET, "everest:domain",
+                        "get the root of the domain '" + manager.getMetadata().get("name", String.class) + "'")
                 .build();
     }
 

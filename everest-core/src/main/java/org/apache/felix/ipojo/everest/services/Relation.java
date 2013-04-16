@@ -6,7 +6,7 @@ package org.apache.felix.ipojo.everest.services;
  */
 public interface Relation {
 
-    String getPath();
+    Path getPath();
 
     Action getAction();
 

@@ -9,9 +9,14 @@ import java.util.List;
 public interface Resource {
 
     /**
-     * @return the absolute path identifying the resource
+     * @return the path of the resource.
      */
-    String getPath();
+    Path getPath();
+
+    /**
+     * @return the canonical path of the resource. Two resources are equals if their canonical path are equals.
+     */
+    Path getCanonicalPath();
 
     /**
      * Retrieves the sub-resources from the current resource.
@@ -29,6 +34,19 @@ public interface Resource {
      */
     List<Relation> getRelations();
 
+    /**
+     * Finds all resources managed by this manager matching the given filter.
+     * @param filter the filter.
+     * @return the set of matching resources, empty if none match.
+     */
+    List<Resource> getResources(ResourceFilter filter);
+
+    /**
+     * Gets a resource identified by its path.
+     * @param path the path
+     * @return the resource identified by the given path, {@literal null} if not found.
+     */
+    Resource getResource(String path);
 
     /**
      * Process a request targeting the current resource managed by this manager.

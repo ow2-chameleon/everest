@@ -1,5 +1,6 @@
 package org.apache.felix.ipojo.everest.impl;
 
+import org.apache.felix.ipojo.everest.filters.Filters;
 import org.apache.felix.ipojo.everest.services.*;
 
 import java.lang.reflect.Constructor;
@@ -13,20 +14,24 @@ import java.util.List;
  */
 public class DefaultResource implements Resource {
 
-    private final String path;
+    private final Path path;
     private final Resource[] resources;
     private final ResourceMetadata metadata;
     private Relation[] relations;
 
-    public DefaultResource(String path) {
+    public DefaultResource(Path path) {
         this(path, null);
+    }
+
+    public DefaultResource(String path) {
+        this(Path.from(path), null);
     }
 
     public DefaultResource(Resource parent, String name) {
         this(parent.getPath() + Paths.PATH_SEPARATOR + name);
     }
 
-    public DefaultResource(String path, ResourceMetadata metadata, Resource... resources) {
+    public DefaultResource(Path path, ResourceMetadata metadata, Resource... resources) {
         this.path = path;
         this.resources = resources;
         this.metadata = metadata;
@@ -37,7 +42,11 @@ public class DefaultResource implements Resource {
         return this;
     }
 
-    public String getPath() {
+    public Path getPath() {
+        return path;
+    }
+
+    public Path getCanonicalPath() {
         return path;
     }
 
@@ -49,7 +58,12 @@ public class DefaultResource implements Resource {
     }
 
     public ResourceMetadata getMetadata() {
-        return ImmutableResourceMetadata.of(metadata);
+        if (metadata != null) {
+            return ImmutableResourceMetadata.of(metadata);
+        } else {
+            return ImmutableResourceMetadata.of(Collections.<String, Object>emptyMap());
+        }
+
     }
 
     public List<Relation> getRelations() {
@@ -64,6 +78,40 @@ public class DefaultResource implements Resource {
         return this;
     }
 
+    public List<Resource> getResources(ResourceFilter filter) {
+        List<Resource> resources = new ArrayList<Resource>();
+
+        for (Resource res : all()) {
+            if (filter.accept(res)) {
+                resources.add(res);
+            }
+        }
+        return resources;
+    }
+
+    public Resource getResource(String path) {
+        List<Resource> list = getResources(Filters.hasPath(path));
+        if (! list.isEmpty()) {
+            return list.get(0);
+        } else {
+            return null;
+        }
+    }
+
+    public void traverse(Resource resource, List<Resource> list) {
+        list.add(resource);
+        for (Resource res : resource.getResources()) {
+            traverse(res, list);
+        }
+    }
+
+    public List<Resource> all() {
+        List<Resource> all = new ArrayList<Resource>();
+        traverse(this, all);
+        return all;
+    }
+
+
     /**
      * A request was emitted on the current request.
      * This method handles the request.
@@ -75,17 +123,33 @@ public class DefaultResource implements Resource {
      * @throws ResourceNotFoundException
      */
     public Resource process(Request request) throws IllegalActionOnResourceException, ResourceNotFoundException {
-        switch (request.action()) {
-            case GET:
-                return get(request);
-            case DELETE:
-                return delete(request);
-            case PUT:
-                return put(request);
-            case POST:
-                return post(request);
+        // 1) Substract our path from the request path.
+
+        // 2) The request is targeting us...
+        if (request.path().equals(getPath())) {
+            switch (request.action()) {
+                case GET:
+                    return get(request);
+                case DELETE:
+                    return delete(request);
+                case PUT:
+                    return put(request);
+                case POST:
+                    return post(request);
+            }
+            return null;
         }
-        return null;
+
+        // 3) The request is targeting one of our child.
+        String firstSegment = ""; //TODO
+        Path path = Path.from(getPath().toString() + "/" + firstSegment);
+        for (Resource resource : getResources()) {
+            if (resource.getPath().equals(path)) {
+                return resource.process(request);
+            }
+        }
+
+        throw new ResourceNotFoundException(request);
     }
 
     /**
