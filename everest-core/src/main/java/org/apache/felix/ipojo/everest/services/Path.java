@@ -185,20 +185,21 @@ public class Path implements Iterable<String> {
 
         // A path is absolute iff it begins with a slash
         boolean isAbsolute = pathName.startsWith(SEPARATOR);
+        String tmp = pathName;
         if (isAbsolute) {
             // Remove the leading slash so it won't disturb the path analysis.
-            pathName = pathName.substring(1);
-            if (pathName.isEmpty()) {
+            tmp = pathName.substring(1);
+            if (tmp.isEmpty()) {
                 // This is the root.
                 return ROOT;
             }
         }
 
         // Cut the path into elements.
-        String[] elements = pathName.split(SEPARATOR);
+        String[] elements = tmp.split(SEPARATOR);
 
         // Check that there are no empty element (caused by double slash) and that there is no trailing slash
-        if (pathName.endsWith(SEPARATOR) || Arrays.asList(elements).contains("")) {
+        if (tmp.endsWith(SEPARATOR) || Arrays.asList(elements).contains("")) {
             throw new IllegalArgumentException("invalid pathName: " + pathName);
         }
 
