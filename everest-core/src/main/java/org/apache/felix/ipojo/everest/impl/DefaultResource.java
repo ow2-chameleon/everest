@@ -1,9 +1,8 @@
 package org.apache.felix.ipojo.everest.impl;
 
-import org.apache.felix.ipojo.everest.services.Relation;
-import org.apache.felix.ipojo.everest.services.Resource;
-import org.apache.felix.ipojo.everest.services.ResourceMetadata;
+import org.apache.felix.ipojo.everest.services.*;
 
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -17,11 +16,14 @@ public class DefaultResource implements Resource {
     private final String path;
     private final Resource[] resources;
     private final ResourceMetadata metadata;
-
     private Relation[] relations;
 
     public DefaultResource(String path) {
         this(path, null);
+    }
+
+    public DefaultResource(Resource parent, String name) {
+        this(parent.getPath() + Paths.PATH_SEPARATOR + name);
     }
 
     public DefaultResource(String path, ResourceMetadata metadata, Resource... resources) {
@@ -32,11 +34,6 @@ public class DefaultResource implements Resource {
 
     public DefaultResource setRelations(Relation... relations) {
         this.relations = relations;
-        return this;
-    }
-
-    public DefaultResource setRelations(List<Relation> relations) {
-        this.relations = relations.toArray(new Relation[relations.size()]);
         return this;
     }
 
@@ -62,16 +59,93 @@ public class DefaultResource implements Resource {
         return new ArrayList<Relation>(Arrays.asList(relations));
     }
 
+    public DefaultResource setRelations(List<Relation> relations) {
+        this.relations = relations.toArray(new Relation[relations.size()]);
+        return this;
+    }
+
+    /**
+     * A request was emitted on the current request.
+     * This method handles the request.
+     *
+     * @param request the request.
+     * @return the updated resource
+     * @throws IllegalActionOnResourceException
+     *
+     * @throws ResourceNotFoundException
+     */
+    public Resource process(Request request) throws IllegalActionOnResourceException, ResourceNotFoundException {
+        switch (request.action()) {
+            case GET:
+                return get(request);
+            case DELETE:
+                return delete(request);
+            case PUT:
+                return put(request);
+            case POST:
+                return post(request);
+        }
+        return null;
+    }
+
+    /**
+     * Default get action : return the current resource.
+     *
+     * @param request the request
+     * @return the current resource
+     */
+    public Resource get(Request request) {
+        return this;
+    }
+
+    /**
+     * Method to override to support resource deletion. By default it returns the current resource, unchanged.
+     *
+     * @param request the request
+     * @return the current resource (unchanged by default).
+     */
+    public Resource delete(Request request) throws IllegalActionOnResourceException {
+        return this;
+    }
+
+    /**
+     * Method to override to support explicit resource creation. By default it returns {@literal null}.
+     *
+     * @param request the request
+     * @return {@literal null}
+     */
+    public Resource put(Request request) throws IllegalActionOnResourceException {
+        return null;
+    }
+
+    /**
+     * Method to override to support resource update. By default it returns the current resource, unchanged.
+     *
+     * @param request the request
+     * @return the current resource (unchanged)
+     */
+    public Resource post(Request request) throws IllegalActionOnResourceException {
+        return this;
+    }
+
     public static class Builder {
 
+        private final Class<? extends DefaultResource> clazz;
         private String path;
         private ResourceMetadata metadata;
         private List<Relation> relations;
         private List<Resource> resources;
 
-        public Builder() { }
+        public Builder() {
+            this(DefaultResource.class);
+        }
+
+        public Builder(Class<? extends DefaultResource> clazz) {
+            this.clazz = clazz;
+        }
 
         Builder(String path) {
+            this(DefaultResource.class);
             fromPath(path);
         }
 
@@ -86,25 +160,45 @@ public class DefaultResource implements Resource {
         }
 
         public Builder with(Resource resource) {
-            if (this.resources == null) { this.resources = new ArrayList<Resource>(); }
+            if (this.resources == null) {
+                this.resources = new ArrayList<Resource>();
+            }
             resources.add(resource);
             return this;
         }
 
         public Builder with(Relation relation) {
-            if (this.relations == null) { this.relations = new ArrayList<Relation>(); }
+            if (this.relations == null) {
+                this.relations = new ArrayList<Relation>();
+            }
             relations.add(relation);
             return this;
         }
 
-        public Resource build() {
+        public Resource build() throws IllegalResourceException {
             Resource[] sub = null;
             if (resources != null) {
                 sub = resources.toArray(sub);
             }
-            DefaultResource res = new DefaultResource(path, metadata, sub);
+            DefaultResource res = createResource();
             res.setRelations(relations);
             return res;
+        }
+
+        private DefaultResource createResource() throws IllegalResourceException {
+            Resource[] sub = null;
+            if (resources != null) {
+                sub = resources.toArray(sub);
+            }
+
+            try {
+                //TODO BAD  BAD BAD we're not sure about this constructor !
+                Constructor<? extends DefaultResource> cst = clazz.getConstructor(String
+                        .class, ResourceMetadata.class, (new Resource[0]).getClass());
+                return cst.newInstance(path, metadata, sub);
+            } catch (Exception e) {
+                throw new IllegalResourceException("Cannot create resource", e);
+            }
         }
     }
 }

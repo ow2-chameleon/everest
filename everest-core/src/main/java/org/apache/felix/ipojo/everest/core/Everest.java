@@ -44,7 +44,7 @@ public class Everest {
         path = normalize(path);
 
         Request delegatedRequest = DefaultRequest.createNormalizedRequest(request, path);
-        for (ResourceManager manager: managerList) {
+        for (ResourceManager manager : managerList) {
             if (path.startsWith(manager.getName())) {
                 return manager.process(delegatedRequest);
             }
@@ -75,4 +75,7 @@ public class Everest {
         return path;
     }
 
+    public synchronized List<ResourceManager> getResourceManagers() {
+        return new ArrayList<ResourceManager>(managers);
+    }
 }

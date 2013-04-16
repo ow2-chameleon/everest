@@ -1,10 +1,7 @@
 package org.apache.felix.ipojo.everest.impl;
 
 import org.apache.felix.ipojo.everest.filters.Filters;
-import org.apache.felix.ipojo.everest.services.Request;
-import org.apache.felix.ipojo.everest.services.Resource;
-import org.apache.felix.ipojo.everest.services.ResourceFilter;
-import org.apache.felix.ipojo.everest.services.ResourceManager;
+import org.apache.felix.ipojo.everest.services.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,18 +39,12 @@ public abstract class AbstractResourceManager implements ResourceManager {
         return description;
     }
 
-    public abstract List<Resource> retrieveAll();
+    public abstract Resource getRoot();
 
-    public abstract Resource process(Request request);
-
+    public abstract Resource resolve(String path);
 
     public Resource getResource(String path) {
-        for (Resource res : retrieveAll()) {
-            if (res.getPath().equals(path)) {
-                return res;
-            }
-        }
-        return null;
+        return resolve(path);
     }
 
     public List<Resource> getResources(Resource resource, ResourceFilter filter) {
@@ -65,12 +56,31 @@ public abstract class AbstractResourceManager implements ResourceManager {
 
     public List<Resource> getResources(ResourceFilter filter) {
         List<Resource> resources = new ArrayList<Resource>();
-        for (Resource res : retrieveAll()) {
+
+        // Traverse the whole tree.
+        List<Resource> all = new ArrayList<Resource>();
+        traverse(getRoot(), all);
+
+        for (Resource res : all) {
             if (filter.accept(res)) {
                 resources.add(res);
             }
         }
         return resources;
+    }
+
+    protected void traverse(Resource resource, List<Resource> list) {
+        list.add(resource);
+        for (Resource res : resource.getResources()) {
+            traverse(res, list);
+        }
+    }
+
+    public Resource process(Request request) throws ResourceNotFoundException, IllegalActionOnResourceException {
+        // 1) resolve the resource
+        Resource resource = resolve(request.path());
+        // 2) delegate processing
+        return resource.process(request);
     }
 
 }

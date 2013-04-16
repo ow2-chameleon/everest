@@ -4,6 +4,7 @@ import java.util.List;
 
 /**
  * Represents abstract resources.
+ * Resources are in charge of request targeting them.
  */
 public interface Resource {
 
@@ -27,5 +28,15 @@ public interface Resource {
      * @return the list of relations related to the current resource.
      */
     List<Relation> getRelations();
+
+
+    /**
+     * Process a request targeting the current resource managed by this manager.
+     * @param request the request.
+     * @return the updated resource.
+     * @throws IllegalActionOnResourceException when the action is illegal for the target resource.
+     * @throws ResourceNotFoundException when the action is targeting a not available resource.
+     */
+    Resource process(Request request) throws IllegalActionOnResourceException, ResourceNotFoundException;
 
 }

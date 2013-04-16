@@ -40,7 +40,17 @@ public interface ResourceManager {
     List<Resource> getResources(ResourceFilter filter);
 
     /**
-     * Process a request targeting a resource managed by this manager.
+     * Asks the resource manager to resolve the given path.
+     * Resources may have different paths, this methods search for the right resource and returns the targeted
+     * resource. If the path is the normalized absolute path (with the manager's name as root),
+     * this method is equivalent to {@link #getResource(String)}.
+     * @param path the path
+     * @return the resolved resource.
+     */
+    Resource resolve(String path);
+
+    /**
+     * Process a request targeting the current resource managed by this manager.
      * @param request the request.
      * @return the updated resource.
      * @throws IllegalActionOnResourceException when the action is illegal for the target resource.
