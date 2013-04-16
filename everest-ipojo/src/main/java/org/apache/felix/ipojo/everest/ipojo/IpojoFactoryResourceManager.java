@@ -20,32 +20,26 @@ public class IpojoFactoryResourceManager implements ResourceManager {
      */
     public static final String IPOJO_FACTORY = "ipojo/factory";
 
-    @Override
     public String getName() {
         return IPOJO_FACTORY;
     }
 
-    @Override
     public String getDescription() {
         return null;
     }
 
-    @Override
     public Resource getResource(String path) {
         return null;
     }
 
-    @Override
     public List<Resource> getResources(Resource resource, ResourceFilter filter) {
         return null;
     }
 
-    @Override
     public List<Resource> getResources(ResourceFilter filter) {
         return null;
     }
 
-    @Override
     public Resource process(Request request) throws IllegalActionOnResourceException, ResourceNotFoundException {
         return null;
     }

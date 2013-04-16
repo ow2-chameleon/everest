@@ -5,7 +5,7 @@ import java.util.*;
 /**
  * An object that may be used to locate a resource.
  */
-public class Path implements  Iterable<String> {
+public class Path implements Iterable<String> {
 
     /**
      * The Everest path separator
@@ -87,7 +87,6 @@ public class Path implements  Iterable<String> {
         return m_elements.clone();
     }
 
-    @Override
     public Iterator<String> iterator() {
         return Collections.unmodifiableList(Arrays.asList(m_elements)).iterator();
     }
