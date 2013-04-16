@@ -1,5 +1,7 @@
 package org.apache.felix.ipojo.everest.impl;
 
+import org.apache.felix.ipojo.everest.services.Resource;
+
 import java.util.Arrays;
 import java.util.List;
 

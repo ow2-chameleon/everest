@@ -3,7 +3,7 @@ package org.apache.felix.ipojo.everest.services;
 import java.util.List;
 
 /**
- * Service interface defining a set of resources.
+ * Service interface defining a set of resources called domain.
  */
 public interface ResourceManager {
 
@@ -11,6 +11,19 @@ public interface ResourceManager {
      * @return the name. Resources would be accessed using {@literal /name}.
      */
     String getName();
+
+    /**
+     * Gets the root of the domain.
+     * @return the root resource.
+     */
+    Resource getRoot();
+
+    /**
+     * Gets the path of the root resource.
+     * This method must return /name and must fit the path of the resource returned by get root.
+     * @return the path of the root resource
+     */
+    String getRootPath();
 
     /**
      * @return a friendly description of the manager.
@@ -41,9 +54,9 @@ public interface ResourceManager {
 
     /**
      * Asks the resource manager to resolve the given path.
-     * Resources may have different paths, this methods search for the right resource and returns the targeted
-     * resource. If the path is the normalized absolute path (with the manager's name as root),
-     * this method is equivalent to {@link #getResource(String)}.
+     * If the path is absolute and targets an existing resource, this method is equivalent to {@link #getResource
+     * (String)}. However if the targeted resource is not existing, this method can return a new resource that is
+     * going to be created.
      * @param path the path
      * @return the resolved resource.
      */

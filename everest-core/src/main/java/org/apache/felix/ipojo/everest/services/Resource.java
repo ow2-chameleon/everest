@@ -9,7 +9,7 @@ import java.util.List;
 public interface Resource {
 
     /**
-     * @return the path identifying the resource
+     * @return the absolute path identifying the resource
      */
     String getPath();
 

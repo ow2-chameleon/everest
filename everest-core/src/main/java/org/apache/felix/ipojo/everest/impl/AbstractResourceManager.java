@@ -41,6 +41,10 @@ public abstract class AbstractResourceManager implements ResourceManager {
 
     public abstract Resource getRoot();
 
+    public String getRootPath() {
+        return Path.SEPARATOR + name;
+    }
+
     public abstract Resource resolve(String path);
 
     public Resource getResource(String path) {
