@@ -32,7 +32,27 @@ public class TestEverestResourceManager {
     public void testGetOnRoot() throws ResourceNotFoundException, IllegalActionOnResourceException {
         DefaultRequest request = new DefaultRequest(Action.GET, Path.from("/everest"), null);
         Resource resource = everest.process(request);
+        System.out.println(resource.getMetadata());
+        System.out.println(resource.getRelations());
+    }
+
+    @Test
+    public void testEverest() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        DefaultRequest request = new DefaultRequest(Action.GET, Path.from("/everest/everest"), null);
+        Resource resource = everest.process(request);
         System.out.println(resource);
+    }
+
+    @Test(expected = ResourceNotFoundException.class)
+    public void testResourceNotFound() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        DefaultRequest request = new DefaultRequest(Action.GET, Path.from("/everest/not"), null);
+        everest.process(request);
+    }
+
+    @Test(expected = IllegalActionOnResourceException.class)
+    public void testIllegalPost() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        DefaultRequest request = new DefaultRequest(Action.POST, Path.from("/everest"), null);
+        everest.process(request);
     }
 
 

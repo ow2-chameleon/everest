@@ -129,6 +129,7 @@ public class DefaultResource implements Resource {
         //End Trace
 
         // 1) Substract our path from the request path.
+        //TODO
 
         // 2) The request is targeting us...
         if (request.path().equals(getPath())) {
@@ -146,9 +147,16 @@ public class DefaultResource implements Resource {
         }
 
         // 3) The request is targeting one of our child.
-        String firstSegment = ""; //TODO
-        Path path = Path.from(getPath().toString() + "/" + firstSegment);
+        String segment = request.path().getElement(getPath().getCount());
+        Path path = null;
+        if (getPath().toString().equals("/")) {
+            path = Path.from("/" + segment);
+        } else {
+            path = Path.from(getPath().toString() + "/" + segment);
+        }
+
         for (Resource resource : getResources()) {
+            System.out.println("Lookup to handle " + path + " by resource " + resource.getPath());
             if (resource.getPath().equals(path)) {
                 return resource.process(request);
             }
