@@ -82,6 +82,12 @@ public class ImmutableResourceMetadata  extends HashMap<String, Object> implemen
 
         public Builder() {}
 
+        public Builder(ResourceMetadata metadata) {
+            if (metadata != null) {
+                accumulator.putAll(metadata);
+            }
+        }
+
         public Builder set(String k, Object v) {
             accumulator.put(k ,v);
             return this;

@@ -222,7 +222,7 @@ public class DefaultResource implements Resource {
 
     public static class Builder {
 
-        private ResourceFactory<? extends Resource> factory;
+        private final ResourceFactory<? extends Resource> factory;
         private Path path;
         private ResourceMetadata metadata;
         private List<Relation> relations;
@@ -236,9 +236,25 @@ public class DefaultResource implements Resource {
             this.factory = factory;
         }
 
-        Builder(String path) {
+        public Builder(String path) {
             this();
             fromPath(path);
+        }
+
+        public Builder(Resource resource) {
+            this();
+            this.path = resource.getPath();
+            this.metadata = resource.getMetadata();
+            this.relations = resource.getRelations();
+            this.resources = resource.getResources();
+        }
+
+        public Builder(Resource resource, ResourceFactory factory) {
+            this(factory);
+            this.path = resource.getPath();
+            this.metadata = resource.getMetadata();
+            this.relations = resource.getRelations();
+            this.resources = resource.getResources();
         }
 
         public Builder fromPath(String path) {
