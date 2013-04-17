@@ -146,15 +146,9 @@ public class DefaultResource implements Resource {
         }
 
         // 3) The request is targeting one of our child.
-        Path path;
-        if (getPath().toString().equals("/")) {
-            path = Path.from(Path.SEPARATOR + rel.getFirst());
-        } else {
-            path = getPath().add(Path.from(Path.SEPARATOR + rel.getFirst()));
-        }
+        Path path = getPath().add(Path.fromElements(rel.getFirst()));
 
         for (Resource resource : getResources()) {
-            System.out.println("Lookup to handle " + path + " by resource " + resource.getPath());
             if (resource.getPath().equals(path)) {
                 return resource.process(request);
             }
