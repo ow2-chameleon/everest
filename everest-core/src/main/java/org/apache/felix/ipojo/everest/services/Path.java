@@ -179,6 +179,41 @@ public class Path implements Iterable<String> {
         return getTail(m_count - path.m_count);
     }
 
+    public boolean isAncestorOf(Path path) {
+        if (m_count == 0) {
+            // The root path is the ancestor of every path but the root.
+            return path.m_count != 0;
+        } else if (m_count >= path.m_count) {
+            // Cannot be an ancestor with more elements
+            return false;
+        }
+        for (int i = 0; i < m_count; i++) {
+            if (!m_elements[i].equals(path.m_elements[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean isDescendantOf(Path path) {
+        if (m_count == 0) {
+            // The root path descends from nothing.
+            return false;
+        } else if (path.m_count == 0) {
+            // Every path descends from the root path (but the root path itself)
+            return true;
+        } else if (m_count <= path.m_count) {
+            // Cannot be an descendant with less elements
+            return false;
+        }
+        for (int i = 0; i < path.m_count; i++) {
+            if (!m_elements[i].equals(path.m_elements[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     /**
      * Create the string representation for the given list of elements.
      *

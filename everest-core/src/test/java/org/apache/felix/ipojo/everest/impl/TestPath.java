@@ -160,6 +160,32 @@ public class TestPath {
 
     }
 
+    @Test
+    public void testIsAncestorOf() {
+        assertThat(from("/").isAncestorOf(from("/"))).isFalse();
+        assertThat(from("/").isAncestorOf(from("/abc"))).isTrue();
+        assertThat(from("/").isAncestorOf(from("/abc/def"))).isTrue();
+        assertThat(from("/abc").isAncestorOf(from("/"))).isFalse();
+        assertThat(from("/abc").isAncestorOf(from("/abc"))).isFalse();
+        assertThat(from("/abc").isAncestorOf(from("/abc/def"))).isTrue();
+        assertThat(from("/abc").isAncestorOf(from("/abc/def/ghi"))).isTrue();
+        assertThat(from("/abc/def").isAncestorOf(from("/abc/def/ghi"))).isTrue();
+        assertThat(from("/abc/def/ghi").isAncestorOf(from("/abc/def/ghi"))).isFalse();
+    }
+
+    @Test
+    public void testIsDescendantOf() {
+        assertThat(from("/").isDescendantOf(from("/"))).isFalse();
+        assertThat(from("/abc").isDescendantOf(from("/"))).isTrue();
+        assertThat(from("/abc/def").isDescendantOf(from("/"))).isTrue();
+        assertThat(from("/").isDescendantOf(from("/abc"))).isFalse();
+        assertThat(from("/abc").isDescendantOf(from("/abc"))).isFalse();
+        assertThat(from("/abc/def").isDescendantOf(from("/abc"))).isTrue();
+        assertThat(from("/abc/def/ghi").isDescendantOf(from("/abc"))).isTrue();
+        assertThat(from("/abc/def/ghi").isDescendantOf(from("/abc/def"))).isTrue();
+        assertThat(from("/abc/def/ghi").isDescendantOf(from("/abc/def/ghi"))).isFalse();
+    }
+
     @Test(expected = NullPointerException.class)
     public void testNullPath() {
         Path root = from(null);
