@@ -1,9 +1,9 @@
 package org.apache.felix.ipojo.everest.impl;
 
+import org.apache.felix.ipojo.everest.services.Resource;
 import org.apache.felix.ipojo.everest.services.ResourceMetadata;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * We recommend resource metadata to be immutable.
@@ -98,4 +98,45 @@ public class ImmutableResourceMetadata  extends HashMap<String, Object> implemen
         }
 
     }
+
+    public static List<ResourceMetadata> list(List<Resource> resources) {
+        if (resources == null) {
+            return Collections.emptyList();
+        } else {
+            List<ResourceMetadata> list = new ArrayList<ResourceMetadata>();
+            for (Resource res : resources) {
+                list.add(res.getMetadata());
+            }
+            return list;
+        }
+    }
+
+    public static Map<String, ResourceMetadata> map(List<Resource> resources, String id) {
+        if (resources == null) {
+            return Collections.emptyMap();
+        } else {
+            Map<String, ResourceMetadata> map = new HashMap<String, ResourceMetadata>();
+            for (Resource res : resources) {
+                map.put(res.getMetadata().get(id).toString(), res.getMetadata());
+            }
+            return map;
+        }
+    }
+
+    public static interface KeyBuilder {
+        public String key(Resource resource);
+    }
+
+    public static Map<String, ResourceMetadata> map(List<Resource> resources, KeyBuilder builder) {
+        if (resources == null) {
+            return Collections.emptyMap();
+        } else {
+            Map<String, ResourceMetadata> map = new HashMap<String, ResourceMetadata>();
+            for (Resource res : resources) {
+                map.put(builder.key(res), res.getMetadata());
+            }
+            return map;
+        }
+    }
+
 }
