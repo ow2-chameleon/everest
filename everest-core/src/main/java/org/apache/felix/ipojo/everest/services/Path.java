@@ -160,6 +160,10 @@ public class Path implements Iterable<String>, Comparable<Path> {
         return new Path(elements, m_string + path.m_string);
     }
 
+    public Path addElements(String... elements) {
+        return add(fromElements(elements));
+    }
+
     public Path subtract(Path path) {
         if (path.m_count == 0) {
             return this;

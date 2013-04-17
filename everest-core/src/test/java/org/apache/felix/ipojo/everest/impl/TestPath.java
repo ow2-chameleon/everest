@@ -138,10 +138,19 @@ public class TestPath {
 
     @Test
     public void testAdd() {
-        Path a = from("/everest");
-        Path b = from("/ipojo");
-        assertThat((Object) a.add(b)).isEqualTo(from("/everest/ipojo"));
-        assertThat((Object) b.add(a)).isEqualTo(from("/ipojo/everest"));
+        assertThat((Object) from("/everest").add(from("/ipojo"))).isEqualTo(from("/everest/ipojo"));
+        assertThat((Object) from("/ipojo").add(from("/everest"))).isEqualTo(from("/ipojo/everest"));
+        assertThat((Object) from("/ipojo").add(from("/"))).isEqualTo(from("/ipojo"));
+        assertThat((Object) from("/").add(from("/ipojo"))).isEqualTo(from("/ipojo"));
+    }
+
+    @Test
+    public void testAddElements() {
+        assertThat((Object) from("/").addElements()).isEqualTo(from("/"));
+        assertThat((Object) from("/").addElements("abc")).isEqualTo(from("/abc"));
+        assertThat((Object) from("/").addElements("abc", "def")).isEqualTo(from("/abc/def"));
+        assertThat((Object) from("/abc").addElements()).isEqualTo(from("/abc"));
+        assertThat((Object) from("/abc").addElements("def")).isEqualTo(from("/abc/def"));
     }
 
     @Test
