@@ -56,7 +56,7 @@ public abstract class AbstractResourceManager extends DefaultResource {
     public List<Relation> getRelations() {
         List<Relation> relations = new ArrayList<Relation>();
         for (Resource resource : getResources()) {
-            int size = getCanonicalPath().getElementCount();
+            int size = getCanonicalPath().getCount();
             String name = resource.getCanonicalPath().getElements()[size];
             relations.add(new DefaultRelation(resource.getCanonicalPath(), Action.GET, "everest:" + name,
                     "Get " + name));
