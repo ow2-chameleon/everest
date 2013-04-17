@@ -19,7 +19,7 @@ public class Everest extends DefaultResource {
     private Map<Path, Resource> resources = new HashMap<Path, Resource>();
 
     public Everest() {
-        super(Path.ROOT);
+        super(Path.from("/"));
     }
 
     @Bind(optional = true, aggregate = true)
@@ -38,6 +38,10 @@ public class Everest extends DefaultResource {
 
     public synchronized Map<Path, Resource> getEverestResources() {
         return new TreeMap<Path, Resource>(resources);
+    }
+
+    public synchronized List<Resource> getResources() {
+        return new ArrayList<Resource>(resources.values());
     }
 
     @Override
