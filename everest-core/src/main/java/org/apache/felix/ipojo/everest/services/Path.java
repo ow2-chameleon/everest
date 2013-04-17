@@ -179,7 +179,6 @@ public class Path implements Iterable<String> {
         return getTail(m_count - path.m_count);
     }
 
-
     /**
      * Create the string representation for the given list of elements.
      *
@@ -205,16 +204,16 @@ public class Path implements Iterable<String> {
             throw new NullPointerException("null pathName");
         }
 
-        // A path is absolute iff it begins with a slash
-        boolean isAbsolute = pathName.startsWith(SEPARATOR);
-        String tmp = pathName;
-        if (isAbsolute) {
-            // Remove the leading slash so it won't disturb the path analysis.
-            tmp = pathName.substring(1);
-            if (tmp.isEmpty()) {
-                // This is the root.
-                return ROOT;
-            }
+        // Path names MUST be absolute
+        if (!pathName.startsWith(SEPARATOR)) {
+            throw new IllegalArgumentException("invalid pathName: " + pathName);
+        }
+
+        // Remove the leading slash so it won't disturb the path analysis.
+        String tmp = pathName.substring(1);
+        if (tmp.isEmpty()) {
+            // This is the root.
+            return ROOT;
         }
 
         // Cut the path into elements.

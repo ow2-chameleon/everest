@@ -175,4 +175,9 @@ public class TestPath {
         Path root = from("/a/b/c/");
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void testRelativePath() {
+        Path root = from("a/b/c");
+    }
+
 }
