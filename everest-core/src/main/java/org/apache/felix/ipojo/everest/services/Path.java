@@ -7,7 +7,7 @@ import java.util.Iterator;
 /**
  * An object that is used to locate a resource.
  */
-public class Path implements Iterable<String> {
+public class Path implements Iterable<String>, Comparable<Path> {
 
     /**
      * The root path.
@@ -276,5 +276,9 @@ public class Path implements Iterable<String> {
             return false;
         }
         return m_string.equals(((Path) that).m_string);
+    }
+
+    public int compareTo(Path that) {
+        return m_string.compareTo(that.m_string);
     }
 }

@@ -4,8 +4,7 @@ import org.apache.felix.ipojo.everest.services.Path;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.Iterator;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 import static org.apache.felix.ipojo.everest.services.Path.from;
 import static org.apache.felix.ipojo.everest.services.Path.fromElements;
@@ -227,6 +226,22 @@ public class TestPath {
     @Test(expected = IllegalArgumentException.class)
     public void testFromMissingLeadingSlashPath() {
         Path root = from("a/b/c");
+    }
+
+    @Test
+    public void testComparable() {
+        List<Path> paths = new ArrayList<Path>(5);
+        paths.add(from("/"));
+        paths.add(from("/a/b/c"));
+        paths.add(from("/abc/def/ghi"));
+        paths.add(from("/abc/xyz/ghi"));
+        paths.add(from("/abc"));
+        paths.add(from("/abc/def"));
+        paths.add(from("/abc/xyz"));
+        // Shake and sort
+        Collections.shuffle(paths);
+        Collections.sort(paths);
+        assertThat(paths).isEqualTo(Arrays.asList(new Path[] {from("/"), from("/a/b/c"), from("/abc"), from("/abc/def"), from("/abc/def/ghi"), from("/abc/xyz"), from("/abc/xyz/ghi")}));
     }
 
 }
