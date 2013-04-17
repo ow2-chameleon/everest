@@ -1,19 +1,23 @@
 package org.apache.felix.ipojo.everest.managers.everest;
 
 import org.apache.felix.ipojo.everest.core.Everest;
-import org.apache.felix.ipojo.everest.impl.AbstractResourceManager;
-import org.apache.felix.ipojo.everest.impl.Paths;
-import org.apache.felix.ipojo.everest.services.IllegalActionOnResourceException;
-import org.apache.felix.ipojo.everest.services.Path;
-import org.apache.felix.ipojo.everest.services.Request;
-import org.apache.felix.ipojo.everest.services.Resource;
+import org.apache.felix.ipojo.everest.impl.*;
+import org.apache.felix.ipojo.everest.services.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
+import static org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata.list;
 
 /**
  * Manages the everest entity.
+ * The model is the following:
+ * <pre>
+ *     /everest <- root
+ *          /domains <- domain list
+ *              /domain <- domain metadata
+ * </pre>
+ *
+ * TODO How to resource-ify extenders
  */
 public class EverestRootResource extends AbstractResourceManager {
 
@@ -27,10 +31,29 @@ public class EverestRootResource extends AbstractResourceManager {
     }
 
     public List<Resource> getResources() {
-        List<Resource> domains = new ArrayList<Resource>();
-        for (Map.Entry<Path, Resource> entry : everest.getEverestResources().entrySet()) {
-            domains.add(new ManagerResource(entry.getValue(), this));
+        List<Resource> list = new ArrayList<Resource>();
+        try {
+            list.add(getDomains());
+        } catch (IllegalResourceException e) {
+            // TODO Log.
         }
-        return domains;
+        return list;
     }
+
+    private DefaultResource getDomains() throws IllegalResourceException {
+        DefaultResource.Builder domains = new Builder()
+                .fromPath(getCanonicalPath() + "/domains");
+
+        // For each root, define a manager resource, and insert a relation
+        for (Map.Entry<Path, Resource> entry : everest.getEverestResources().entrySet()) {
+            domains.with(new ManagerResource(entry.getValue()));
+            domains.with(
+                    new DefaultRelation(entry.getValue(), Action.GET,
+                            "everest:getDomain(" + entry.getValue().getMetadata().get("name", String.class) + ")")
+            );
+        }
+
+        return domains.build();
+    }
+
 }
