@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import static org.apache.felix.ipojo.everest.services.Path.from;
+import static org.apache.felix.ipojo.everest.services.Path.fromElements;
 import static org.fest.assertions.Assertions.assertThat;
 
 /**
@@ -186,23 +187,45 @@ public class TestPath {
         assertThat(from("/abc/def/ghi").isDescendantOf(from("/abc/def/ghi"))).isFalse();
     }
 
+    @Test
+    public void testFromElements() {
+        assertThat((Object) fromElements()).isEqualTo(from("/"));
+        assertThat((Object) fromElements("abc")).isEqualTo(from("/abc"));
+        assertThat((Object) fromElements("abc", "def")).isEqualTo(from("/abc/def"));
+        assertThat((Object) fromElements("abc", "def", "ghi")).isEqualTo(from("/abc/def/ghi"));
+        try {
+            // Invalid element : contains '/'
+            fromElements("abc", "def/ghi", "jkl");
+            Assert.fail();
+        } catch (IllegalArgumentException e)  {
+            //Ok!
+        }
+        try {
+            // Invalid element : contains empty string
+            fromElements("abc", "", "def", "ghi");
+            Assert.fail();
+        } catch (IllegalArgumentException e)  {
+            //Ok!
+        }
+    }
+
     @Test(expected = NullPointerException.class)
-    public void testNullPath() {
-        Path root = from(null);
+    public void testFromNullPath() {
+        Path root = from((String) null);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testDoubleSlashPath() {
+    public void testFromDoubleSlashPath() {
         Path root = from("/a//b/c");
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testTrailingSlashPath() {
+    public void testFromTrailingSlashPath() {
         Path root = from("/a/b/c/");
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testRelativePath() {
+    public void testFromMissingLeadingSlashPath() {
         Path root = from("a/b/c");
     }
 

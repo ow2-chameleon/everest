@@ -35,15 +35,6 @@ public class Path implements Iterable<String> {
     private final String m_string;
 
     /**
-     * Create a new path from the given elements.
-     *
-     * @param elements the elements of the path
-     */
-    private Path(String[] elements) {
-        this(elements, toString(elements));
-    }
-
-    /**
      * Create a new path from the given elements and string representation.
      *
      * @param elements the elements of the path
@@ -214,26 +205,6 @@ public class Path implements Iterable<String> {
         return true;
     }
 
-    /**
-     * Create the string representation for the given list of elements.
-     *
-     * @param elements the list of elements
-     * @return the string representing the list of elements
-     */
-    private static String toString(String[] elements) {
-        if (elements.length == 0) {
-            return SEPARATOR;
-        }
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < elements.length; i++) {
-            sb.append(SEPARATOR);
-            sb.append(elements[i]);
-        }
-        return sb.toString();
-    }
-
-
-
     public static Path from(String pathName) {
         if (pathName == null) {
             throw new NullPointerException("null pathName");
@@ -260,6 +231,28 @@ public class Path implements Iterable<String> {
         }
 
         return new Path(elements, pathName);
+    }
+
+    public static Path fromElements(String... elements) {
+        if (elements == null) {
+            throw new NullPointerException("null elements");
+        } else if (elements.length == 0) {
+            // The only path with no element is the root.
+            return ROOT;
+        }
+
+        // Check that no element contains the path separator
+        // Meanwhile, build the string representation of the path
+        StringBuilder sb = new StringBuilder();
+        for (String e : elements) {
+            if (e.contains(SEPARATOR) || e.isEmpty()) {
+                throw new IllegalArgumentException("invalid path element: " + e);
+            }
+            sb.append(SEPARATOR);
+            sb.append(e);
+        }
+
+        return new Path(elements, sb.toString());
     }
 
 
