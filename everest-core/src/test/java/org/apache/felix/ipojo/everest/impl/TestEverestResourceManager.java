@@ -38,7 +38,7 @@ public class TestEverestResourceManager {
 
     @Test
     public void testEverest() throws ResourceNotFoundException, IllegalActionOnResourceException {
-        DefaultRequest request = new DefaultRequest(Action.GET, Path.from("/everest/everest"), null);
+        DefaultRequest request = new DefaultRequest(Action.GET, Path.from("/everest/domains/everest"), null);
         Resource resource = everest.process(request);
         System.out.println(resource);
     }

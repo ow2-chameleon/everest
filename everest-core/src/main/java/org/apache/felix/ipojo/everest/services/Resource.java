@@ -1,5 +1,7 @@
 package org.apache.felix.ipojo.everest.services;
 
+import org.apache.felix.ipojo.everest.impl.DefaultResource;
+
 import java.util.List;
 
 /**

@@ -11,8 +11,8 @@ import java.util.List;
 public class ManagerResource extends DefaultReadOnlyResource {
     private final Resource manager;
 
-    public ManagerResource(Resource resource, EverestRootResource parent) {
-        super(parent, resource.getMetadata().get("name", String.class));
+    public ManagerResource(Resource resource) {
+        super("/everest/domains/" + resource.getMetadata().get("name", String.class));
         manager = resource;
     }
 

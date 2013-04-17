@@ -22,7 +22,7 @@ public class TestResourceExtender {
         everest.bindExtender(new MyResourceExtender());
 
         // Extended request.
-        Request request = new DefaultRequest(Action.GET, Path.from("/everest/everest"), null);
+        Request request = new DefaultRequest(Action.GET, Path.from("/everest/domains/everest"), null);
         Resource resource = everest.process(request);
 
         assertThat(resource.getMetadata().get("extended", Boolean.class)).isEqualTo(true);
@@ -44,7 +44,7 @@ public class TestResourceExtender {
     private class MyResourceExtender implements ResourceExtender {
 
         public ResourceFilter getFilter() {
-            Resource res = everest.getResource("/everest/everest");
+            Resource res = everest.getResource("/everest/domains/everest");
             return Filters.hasPath(res.getPath());
         }
 
