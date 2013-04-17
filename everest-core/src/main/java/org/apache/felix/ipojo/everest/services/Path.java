@@ -149,6 +149,11 @@ public class Path implements Iterable<String>, Comparable<Path> {
     }
 
     public Path add(Path path) {
+        if (m_count == 0) {
+            return path;
+        } else if (path.m_count == 0) {
+            return this;
+        }
         String[] elements = new String[m_count + path.m_count];
         System.arraycopy(m_elements, 0, elements, 0, m_count);
         System.arraycopy(path.m_elements, 0, elements, m_count, path.m_count);
