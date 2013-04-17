@@ -129,7 +129,7 @@ public class Path implements Iterable<String> {
             return ROOT;
         }
         String[] elements = new String[count];
-        int endIndex = 1;
+        int endIndex = 0;
         for (int i = 0; i < count; i++) {
             elements[i] = m_elements[i];
             endIndex += elements[i].length() + 1;
@@ -155,6 +155,28 @@ public class Path implements Iterable<String> {
             beginIndex -= elements[i].length() + 1;
         }
         return new Path(elements, m_string.substring(beginIndex, m_string.length()));
+    }
+
+    public Path add(Path path) {
+        String[] elements = new String[m_count + path.m_count];
+        System.arraycopy(m_elements, 0, elements, 0, m_count);
+        System.arraycopy(path.m_elements, 0, elements, m_count, path.m_count);
+        return new Path(elements, m_string + path.m_string);
+    }
+
+    public Path subtract(Path path) {
+        if (path.m_count == 0) {
+            return this;
+        }
+        if (path.m_count > m_count) {
+            throw new IllegalArgumentException();
+        }
+        for (int i = 0; i < path.m_count; i++) {
+            if (!m_elements[i].equals(path.m_elements[i])) {
+                throw new IllegalArgumentException();
+            }
+        }
+        return getTail(m_count - path.m_count);
     }
 
 
