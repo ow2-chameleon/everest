@@ -3,7 +3,6 @@ package org.apache.felix.ipojo.everest.impl;
 import org.apache.felix.ipojo.everest.filters.Filters;
 import org.apache.felix.ipojo.everest.services.*;
 
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -204,28 +203,50 @@ public class DefaultResource implements Resource {
         return this;
     }
 
+    public static interface ResourceFactory<T extends DefaultResource> {
+
+        T create(Path path, ResourceMetadata metadata, List<Resource> resources) throws IllegalResourceException;
+
+    }
+
+    public static class DefaultResourceFactory implements ResourceFactory<DefaultResource> {
+
+        public DefaultResource create(Path path, ResourceMetadata metadata, List<Resource> resources) {
+            if (resources != null) {
+                return new DefaultResource(path, metadata, resources.toArray(new Resource[resources.size()]));
+            } else {
+                return new DefaultResource(path, metadata);
+            }
+        }
+    }
+
     public static class Builder {
 
-        private final Class<? extends DefaultResource> clazz;
-        private String path;
+        private ResourceFactory<? extends Resource> factory;
+        private Path path;
         private ResourceMetadata metadata;
         private List<Relation> relations;
         private List<Resource> resources;
 
         public Builder() {
-            this(DefaultResource.class);
+            factory = new DefaultResourceFactory();
         }
 
-        public Builder(Class<? extends DefaultResource> clazz) {
-            this.clazz = clazz;
+        public Builder(ResourceFactory<? extends Resource> factory) {
+            this.factory = factory;
         }
 
         Builder(String path) {
-            this(DefaultResource.class);
+            this();
             fromPath(path);
         }
 
         public Builder fromPath(String path) {
+            this.path = Path.from(path);
+            return this;
+        }
+
+        public Builder fromPath(Path path) {
             this.path = path;
             return this;
         }
@@ -251,30 +272,10 @@ public class DefaultResource implements Resource {
             return this;
         }
 
-        public Resource build() throws IllegalResourceException {
-            Resource[] sub = null;
-            if (resources != null) {
-                sub = resources.toArray(sub);
-            }
-            DefaultResource res = createResource();
+        public DefaultResource build() throws IllegalResourceException {
+            DefaultResource res =  factory.create(path, metadata, resources);
             res.setRelations(relations);
             return res;
-        }
-
-        private DefaultResource createResource() throws IllegalResourceException {
-            Resource[] sub = null;
-            if (resources != null) {
-                sub = resources.toArray(sub);
-            }
-
-            try {
-                //TODO BAD  BAD BAD we're not sure about this constructor !
-                Constructor<? extends DefaultResource> cst = clazz.getConstructor(String
-                        .class, ResourceMetadata.class, (new Resource[0]).getClass());
-                return cst.newInstance(path, metadata, sub);
-            } catch (Exception e) {
-                throw new IllegalResourceException("Cannot create resource", e);
-            }
         }
     }
 }
