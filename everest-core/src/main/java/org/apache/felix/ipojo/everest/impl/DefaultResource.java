@@ -284,7 +284,9 @@ public class DefaultResource implements Resource {
 
         public DefaultResource build() throws IllegalResourceException {
             DefaultResource res =  factory.create(path, metadata, resources);
-            res.setRelations(relations);
+            if (relations != null) {
+                res.setRelations(relations);
+            }
             return res;
         }
     }
