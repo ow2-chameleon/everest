@@ -20,7 +20,7 @@ public class TestEverestResourceManager {
     public void setUp() {
         this.everest = new Everest();
         this.manager = new EverestRootResource(everest);
-        everest.bindResourceManager(this.manager);
+        everest.bindRootResource(this.manager);
     }
 
     @Test
