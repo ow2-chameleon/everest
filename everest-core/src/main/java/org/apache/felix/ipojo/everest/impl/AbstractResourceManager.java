@@ -8,8 +8,9 @@ import java.util.List;
 /**
  * A default implementation of default 'root' resource. Root resources are the resource representing a domain and
  * tracked by the everest core.
+ * By default, this resource is read-only.
  */
-public abstract class AbstractResourceManager extends DefaultResource {
+public abstract class AbstractResourceManager extends DefaultReadOnlyResource {
 
     private final String name;
     private final String description;

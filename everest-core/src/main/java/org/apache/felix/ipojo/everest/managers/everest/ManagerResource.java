@@ -1,9 +1,6 @@
 package org.apache.felix.ipojo.everest.managers.everest;
 
-import org.apache.felix.ipojo.everest.impl.DefaultResource;
-import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
-import org.apache.felix.ipojo.everest.impl.Paths;
-import org.apache.felix.ipojo.everest.impl.Relations;
+import org.apache.felix.ipojo.everest.impl.*;
 import org.apache.felix.ipojo.everest.services.*;
 
 import java.util.List;
@@ -11,7 +8,7 @@ import java.util.List;
 /**
  * Resource representing managers.
  */
-public class ManagerResource extends DefaultResource {
+public class ManagerResource extends DefaultReadOnlyResource {
     private final Resource manager;
 
     public ManagerResource(Resource resource, EverestRootResource parent) {
@@ -32,20 +29,5 @@ public class ManagerResource extends DefaultResource {
                 .addRelation(manager.getCanonicalPath(), Action.GET, "everest:domain",
                         "get the root of the domain '" + manager.getMetadata().get("name", String.class) + "'")
                 .build();
-    }
-
-    @Override
-    public Resource delete(Request request) throws IllegalActionOnResourceException {
-        throw new IllegalActionOnResourceException(request, this);
-    }
-
-    @Override
-    public Resource put(Request request) throws IllegalActionOnResourceException {
-        throw new IllegalActionOnResourceException(request, this);
-    }
-
-    @Override
-    public Resource post(Request request) throws IllegalActionOnResourceException {
-        throw new IllegalActionOnResourceException(request, this);
     }
 }

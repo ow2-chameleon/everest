@@ -3,7 +3,9 @@ package org.apache.felix.ipojo.everest.managers.everest;
 import org.apache.felix.ipojo.everest.core.Everest;
 import org.apache.felix.ipojo.everest.impl.AbstractResourceManager;
 import org.apache.felix.ipojo.everest.impl.Paths;
+import org.apache.felix.ipojo.everest.services.IllegalActionOnResourceException;
 import org.apache.felix.ipojo.everest.services.Path;
+import org.apache.felix.ipojo.everest.services.Request;
 import org.apache.felix.ipojo.everest.services.Resource;
 
 import java.util.ArrayList;
@@ -31,5 +33,4 @@ public class EverestRootResource extends AbstractResourceManager {
         }
         return domains;
     }
-
 }
