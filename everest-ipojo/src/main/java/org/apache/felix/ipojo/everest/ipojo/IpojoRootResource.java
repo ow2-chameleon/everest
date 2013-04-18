@@ -7,6 +7,7 @@ import org.apache.felix.ipojo.architecture.Architecture;
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.services.*;
+import org.apache.felix.ipojo.extender.Declaration;
 import org.osgi.framework.*;
 
 import java.util.*;
@@ -44,7 +45,10 @@ public class IpojoRootResource extends DefaultReadOnlyResource {
      */
     private final IpojoInstanceRootResource m_instances;
 
-    //TODO add m_declarations
+    /**
+     * The '/declarations' sub-resource.
+     */
+    private final IpojoDeclarationRootResource m_declarations;
 
     /**
      * Construct the iPOJO root resource
@@ -68,15 +72,14 @@ public class IpojoRootResource extends DefaultReadOnlyResource {
         m_factories = new IpojoFactoryRootResource();
         m_handlers = new IpojoHandlerRootResource();
         m_instances = new IpojoInstanceRootResource();
-
-        //TODO create m_declarations
+        m_declarations = new IpojoDeclarationRootResource();
     }
 
 
     @Override
     public ResourceMetadata getMetadata() {
         // Return the used version of iPOJO
-        return new ImmutableResourceMetadata.Builder().set("version", m_ipojoVersion).build();
+        return new ImmutableResourceMetadata.Builder().set("version", m_ipojoVersion.toString()).build();
     }
 
     @Override
@@ -85,7 +88,7 @@ public class IpojoRootResource extends DefaultReadOnlyResource {
         l.add(m_factories);
         l.add(m_handlers);
         l.add(m_instances);
-        //TODO add m_declarations
+        l.add(m_declarations);
         return l;
     }
 
@@ -128,6 +131,17 @@ public class IpojoRootResource extends DefaultReadOnlyResource {
         m_instances.removeInstance(instance);
     }
 
-    //TODO callbacks for m_declarations
+    // Callback for tracking iPOJO declarations.
+    // Delegated to m_declarations
+
+    @Bind(id = "declarations", optional = true, aggregate = true)
+    private void bindInstance(Declaration instance) {
+        m_declarations.addDeclaration(instance);
+    }
+
+    @Unbind(id = "declarations")
+    private void unbindInstance(Declaration instance) {
+        m_declarations.removeDeclaration(instance);
+    }
 
 }
