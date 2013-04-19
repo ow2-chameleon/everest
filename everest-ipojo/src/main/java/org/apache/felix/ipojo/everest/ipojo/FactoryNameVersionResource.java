@@ -16,7 +16,7 @@ public class FactoryNameVersionResource extends DefaultResource {
     /**
      * The represented factory.
      */
-    private Factory m_factory;
+    private final Factory m_factory;
 
     /**
      * The base immutable metadata of this resource.
@@ -34,8 +34,6 @@ public class FactoryNameVersionResource extends DefaultResource {
      */
     public FactoryNameVersionResource(Factory factory) {
         super(canonicalPathOf(factory));
-        String name = factory.getName();
-        String version = factory.getVersion();
         m_factory = factory;
 
         // Build the immutable metadata of this factory.
@@ -79,6 +77,6 @@ public class FactoryNameVersionResource extends DefaultResource {
     public static Path canonicalPathOf(Factory f) {
         // Canonical path is '/ipojo/factory/$factoryName/$factoryVersion'
         // If m_version == null, then $factoryVersion is the literal 'null'
-        return FactoriesResource.PATH.addElements(f.getName() , String.valueOf(f.getVersion()));
+        return FactoriesResource.PATH.addElements(f.getName(), String.valueOf(f.getVersion()));
     }
 }

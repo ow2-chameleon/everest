@@ -1,7 +1,5 @@
 package org.apache.felix.ipojo.everest.ipojo;
 
-import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
-import org.apache.felix.ipojo.everest.services.ResourceMetadata;
 import org.apache.felix.ipojo.metadata.Attribute;
 import org.apache.felix.ipojo.metadata.Element;
 
@@ -15,11 +13,12 @@ public class IpojoUtil {
     /**
      * Avoid instantiation.
      */
-    private IpojoUtil(){
+    private IpojoUtil() {
     }
 
     /**
      * Convert the given iPOJO element to an everest resource metadata.
+     *
      * @param element the element to convert.
      * @return the resource metadata representing the given element.
      */
@@ -39,9 +38,6 @@ public class IpojoUtil {
         }
 
         // For each child of the element, grouped by qualified name.
-        Map<String, List<Element>> childElements = new LinkedHashMap<String, List<Element>>();
-
-
         for (Element e : element.getElements()) {
             String qName = getQualifiedName(e);
             if (map.containsKey(qName)) {
@@ -49,7 +45,7 @@ public class IpojoUtil {
                 continue;
             }
             List<Map<String, Object>> group = new ArrayList<Map<String, Object>>();
-            for(Element child : element.getElements(qName)) {
+            for (Element child : element.getElements(qName)) {
                 group.add(elementToMap(child));
             }
             map.put(qName, Collections.unmodifiableList(group));

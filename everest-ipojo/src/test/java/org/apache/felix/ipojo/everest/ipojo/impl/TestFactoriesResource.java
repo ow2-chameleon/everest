@@ -1,19 +1,16 @@
 package org.apache.felix.ipojo.everest.ipojo.impl;
 
 import org.apache.felix.ipojo.Factory;
-import org.apache.felix.ipojo.everest.core.Everest;
 import org.apache.felix.ipojo.everest.impl.DefaultRequest;
 import org.apache.felix.ipojo.everest.ipojo.FactoriesResource;
-import org.apache.felix.ipojo.everest.ipojo.IpojoResource;
-import org.apache.felix.ipojo.everest.services.*;
+import org.apache.felix.ipojo.everest.services.Action;
+import org.apache.felix.ipojo.everest.services.IllegalActionOnResourceException;
+import org.apache.felix.ipojo.everest.services.Path;
+import org.apache.felix.ipojo.everest.services.ResourceNotFoundException;
 import org.apache.felix.ipojo.metadata.Element;
 import org.junit.Before;
 import org.junit.Test;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.Version;
 
-import static org.fest.assertions.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -23,8 +20,6 @@ import static org.mockito.Mockito.when;
 public class TestFactoriesResource extends TestIpojoResource {
 
     public static final String FANCY_NAME = "org.example.FancyComponent";
-
-    protected FactoriesResource m_factories;
 
     @Before
     public void setUp()  {
@@ -49,8 +44,8 @@ public class TestFactoriesResource extends TestIpojoResource {
     }
 
     @Test
-    public void testGetFancyFactoryWithNameAndVersion() throws ResourceNotFoundException, IllegalActionOnResourceException {
-        m_everest.process(new DefaultRequest(Action.GET, Path.fromElements("ipojo", "factory", FANCY_NAME, FANCY_VERSION), null));
+    public void testFancyFactoryNameVersionIsPresent() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        m_everest.process(new DefaultRequest(Action.GET, Path.from("/ipojo/factory").addElements(FANCY_NAME, FANCY_VERSION), null));
     }
 
 

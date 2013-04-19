@@ -11,7 +11,9 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.Version;
 
 import static org.fest.assertions.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 /**
  * Test the iPOJO m_everest resource.
  */
