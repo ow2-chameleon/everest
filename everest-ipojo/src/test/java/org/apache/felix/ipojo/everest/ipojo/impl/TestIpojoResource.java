@@ -2,7 +2,7 @@ package org.apache.felix.ipojo.everest.ipojo.impl;
 
 import org.apache.felix.ipojo.everest.core.Everest;
 import org.apache.felix.ipojo.everest.impl.DefaultRequest;
-import org.apache.felix.ipojo.everest.ipojo.IpojoRootResource;
+import org.apache.felix.ipojo.everest.ipojo.IpojoResource;
 import org.apache.felix.ipojo.everest.services.*;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,7 +17,8 @@ import static org.mockito.Mockito.*;
  */
 public class TestIpojoResource {
 
-    private Everest m_everest;
+    protected Everest m_everest;
+    protected IpojoResource m_ipojo;
 
     public static final String FANCY_VERSION = "7.8.9.mock";
 
@@ -35,40 +36,19 @@ public class TestIpojoResource {
         when(context.getBundles()).thenReturn(new Bundle[]{ipojo});
 
         // Now we can create and register the "/ipojo" resource
-        m_everest.bindRootResource(new IpojoRootResource(context));
-
+        m_ipojo = new IpojoResource(context);
+        m_everest.bindRootResource(m_ipojo);
     }
 
     @Test
-    public void testGetIpojoPath() throws ResourceNotFoundException, IllegalActionOnResourceException {
+    public void testIpojoResourceIsPresent() throws ResourceNotFoundException, IllegalActionOnResourceException {
         m_everest.process(new DefaultRequest(Action.GET, Path.from("/ipojo"), null));
     }
 
     @Test
-    public void testGetIpojoFactoryPath() throws ResourceNotFoundException, IllegalActionOnResourceException {
-        m_everest.process(new DefaultRequest(Action.GET, Path.from("/ipojo/factory"), null));
-    }
-
-    @Test
-    public void testGetIpojoHandlerResource() throws ResourceNotFoundException, IllegalActionOnResourceException {
-        m_everest.process(new DefaultRequest(Action.GET, Path.from("/ipojo/handler"), null));
-    }
-
-    @Test
-    public void testGetIpojoInstanceResource() throws ResourceNotFoundException, IllegalActionOnResourceException {
-        m_everest.process(new DefaultRequest(Action.GET, Path.from("/ipojo/instance"), null));
-    }
-
-    @Test
-    public void testGetIpojoDeclarationResource() throws ResourceNotFoundException, IllegalActionOnResourceException {
-        m_everest.process(new DefaultRequest(Action.GET, Path.from("/ipojo/declaration"), null));
-    }
-
-    @Test
-    public void testGetIpojoMetadata() throws ResourceNotFoundException, IllegalActionOnResourceException {
+    public void testIpojoVersion() throws ResourceNotFoundException, IllegalActionOnResourceException {
         Resource ipojo = m_everest.process(new DefaultRequest(Action.GET, Path.from("/ipojo"), null));
         assertThat(ipojo.getMetadata().get("version")).isEqualTo(FANCY_VERSION);
     }
-
 
 }

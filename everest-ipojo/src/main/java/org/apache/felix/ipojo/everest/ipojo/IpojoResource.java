@@ -13,17 +13,14 @@ import org.osgi.framework.*;
 import java.util.*;
 
 /**
- * Resource manager for iPOJO, with path '/ipojo'.
+ * '/ipojo' resource.
  */
 @Component
 @Instantiate
 @Provides(specifications = Resource.class)
-public class IpojoRootResource extends DefaultReadOnlyResource {
+public class IpojoResource extends DefaultReadOnlyResource {
 
-    /**
-     * The path of the iPOJO factory resource manager.
-     */
-    public static final Path IPOJO_ROOT_PATH = Path.from("/ipojo");
+    public static final Path PATH = Path.from("/ipojo");
 
     /**
      * The version of iPOJO.
@@ -33,30 +30,30 @@ public class IpojoRootResource extends DefaultReadOnlyResource {
     /**
      * The '/factory' sub-resource.
      */
-    private final IpojoFactoryRootResource m_factories;
+    private final FactoriesResource m_factories;
 
     /**
      * The '/handler' sub-resource.
      */
-    private final IpojoHandlerRootResource m_handlers;
+    private final HandlersResource m_handlers;
 
     /**
      * The '/instance' sub-resource.
      */
-    private final IpojoInstanceRootResource m_instances;
+    private final InstancesResource m_instances;
 
     /**
-     * The '/declarations' sub-resource.
+     * The '/declaration' sub-resource.
      */
-    private final IpojoDeclarationRootResource m_declarations;
+    private final DeclarationsResource m_declarations;
 
     /**
      * Construct the iPOJO root resource
      *
      * @param context bundle context of the everest-ipojo bundle.
      */
-    public IpojoRootResource(BundleContext context) {
-        super(IPOJO_ROOT_PATH);
+    public IpojoResource(BundleContext context) {
+        super(PATH);
 
         // Retrieve used version of iPOJO.
         Version v = null;
@@ -69,10 +66,10 @@ public class IpojoRootResource extends DefaultReadOnlyResource {
         m_ipojoVersion = v;
 
         // Create the sub-resources
-        m_factories = new IpojoFactoryRootResource();
-        m_handlers = new IpojoHandlerRootResource();
-        m_instances = new IpojoInstanceRootResource();
-        m_declarations = new IpojoDeclarationRootResource();
+        m_factories = new FactoriesResource();
+        m_handlers = new HandlersResource();
+        m_instances = new InstancesResource();
+        m_declarations = new DeclarationsResource();
     }
 
 
@@ -96,12 +93,12 @@ public class IpojoRootResource extends DefaultReadOnlyResource {
     // Delegated to m_factories.
 
     @Bind(id = "factories", optional = true, aggregate = true)
-    private void bindFactory(Factory factory) {
+    public void bindFactory(Factory factory) {
         m_factories.addFactory(factory);
     }
 
     @Unbind(id = "factories")
-    private void unbindFactory(Factory factory) {
+    public void unbindFactory(Factory factory) {
         m_factories.removeFactory(factory);
     }
 
@@ -109,12 +106,12 @@ public class IpojoRootResource extends DefaultReadOnlyResource {
     // Delegated to m_handlers
 
     @Bind(id = "handlers", optional = true, aggregate = true)
-    private void bindHandler(HandlerFactory handler) {
+    public void bindHandler(HandlerFactory handler) {
         m_handlers.addHandler(handler);
     }
 
     @Unbind(id = "handlers")
-    private void unbindHandler(HandlerFactory handler) {
+    public void unbindHandler(HandlerFactory handler) {
         m_handlers.removeHandler(handler);
     }
 
@@ -122,12 +119,12 @@ public class IpojoRootResource extends DefaultReadOnlyResource {
     // Delegated to m_instances
 
     @Bind(id = "instances", optional = true, aggregate = true)
-    private void bindInstance(Architecture instance) {
+    public void bindInstance(Architecture instance) {
         m_instances.addInstance(instance);
     }
 
     @Unbind(id = "instances")
-    private void unbindInstance(Architecture instance) {
+    public void unbindInstance(Architecture instance) {
         m_instances.removeInstance(instance);
     }
 
@@ -135,12 +132,12 @@ public class IpojoRootResource extends DefaultReadOnlyResource {
     // Delegated to m_declarations
 
     @Bind(id = "declarations", optional = true, aggregate = true)
-    private void bindInstance(Declaration instance) {
+    public void bindDeclaration(Declaration instance) {
         m_declarations.addDeclaration(instance);
     }
 
     @Unbind(id = "declarations")
-    private void unbindInstance(Declaration instance) {
+    public void unbindDeclaration(Declaration instance) {
         m_declarations.removeDeclaration(instance);
     }
 
