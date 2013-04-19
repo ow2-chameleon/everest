@@ -12,8 +12,12 @@
     <modules>
         <module>everest-core</module>
         <module>everest-ipojo</module>
+<<<<<<< HEAD
         <module>everest-servlet</module>
         <module>everest-it</module>
+=======
+        <module>everest-osgi</module>
+>>>>>>> starting /osgi domain
     </modules>
 
     <dependencyManagement>
