@@ -1,10 +1,8 @@
 package org.apache.felix.ipojo.everest.core;
 
-import org.apache.felix.ipojo.annotations.Bind;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Unbind;
+import org.apache.felix.ipojo.annotations.*;
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
+import org.apache.felix.ipojo.everest.managers.everest.EverestRootResource;
 import org.apache.felix.ipojo.everest.services.*;
 
 import java.util.*;
@@ -14,13 +12,16 @@ import java.util.*;
  */
 @Component
 @Instantiate
-public class Everest extends DefaultReadOnlyResource {
+@Provides(specifications = EverestService.class)
+public class Everest extends DefaultReadOnlyResource implements EverestService {
 
     private Map<Path, Resource> resources = new HashMap<Path, Resource>();
     private List<ResourceExtender> extenders = new ArrayList<ResourceExtender>();
 
     public Everest() {
         super(Path.from("/"));
+        // Add the everest domain
+        resources.put(Path.from("/everest"), new EverestRootResource(this));
     }
 
     @Bind(optional = true, aggregate = true)
@@ -63,7 +64,6 @@ public class Everest extends DefaultReadOnlyResource {
         return new ArrayList<ResourceExtender>(extenders);
     }
 
-    @Override
     public Resource process(Request request) throws IllegalActionOnResourceException, ResourceNotFoundException {
         // We can't extend when the original action fails.
 
