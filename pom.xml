@@ -12,6 +12,7 @@
     <modules>
         <module>everest-core</module>
         <module>everest-ipojo</module>
+        <module>everest-servlet</module>
     </modules>
 
     <dependencyManagement>
