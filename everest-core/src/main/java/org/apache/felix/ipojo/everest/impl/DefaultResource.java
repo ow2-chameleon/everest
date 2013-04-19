@@ -214,6 +214,22 @@ public class DefaultResource implements Resource {
         }
     }
 
+    /**
+     * Two resources are equals if and only if their canonical paths are equals
+     * @param object the object
+     * @return {@literal true} if the given resource has the same canonical paths as the current resource.
+     */
+    public boolean equals(Object object) {
+        return object instanceof Resource && getCanonicalPath().equals(((Resource) object).getCanonicalPath());
+    }
+
+    /**
+     * @return the hash code of the canonical path.
+     */
+    public int hashCode() {
+        return getCanonicalPath().hashCode();
+    }
+
     public static class Builder {
 
         private final ResourceFactory<? extends Resource> factory;
