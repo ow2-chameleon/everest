@@ -2,7 +2,6 @@ package org.apache.felix.ipojo.everest.ipojo.impl;
 
 import org.apache.felix.ipojo.Factory;
 import org.apache.felix.ipojo.everest.impl.DefaultRequest;
-import org.apache.felix.ipojo.everest.ipojo.FactoriesResource;
 import org.apache.felix.ipojo.everest.services.Action;
 import org.apache.felix.ipojo.everest.services.IllegalActionOnResourceException;
 import org.apache.felix.ipojo.everest.services.Path;
@@ -22,7 +21,7 @@ public class TestFactoriesResource extends TestIpojoResource {
     public static final String FANCY_NAME = "org.example.FancyComponent";
 
     @Before
-    public void setUp()  {
+    public void setUp() {
         super.setUp();
 
         // Create a fake fancy factory and bind it.
