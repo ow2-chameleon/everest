@@ -45,7 +45,7 @@
                 <artifactId>maven-bundle-plugin</artifactId>
                 <configuration>
                     <instructions>
-                        <export-packages>org.apache.felix.ipojo.everest*</export-packages>
+                        <Export-Package>org.apache.felix.ipojo.everest*</Export-Package>
                     </instructions>
                 </configuration>
             </plugin>
