@@ -43,6 +43,18 @@ public class ToJsonTest {
     }
 
     @Test
+    public void serializationOfNull() throws IllegalResourceException, IOException {
+        StringWriter writer = new StringWriter();
+        Resource resource = new DefaultResource.Builder()
+                .fromPath("/foo")
+                .with(new ImmutableResourceMetadata.Builder().set("data", null).build())
+                .build();
+
+        servlet.toJSON(resource, writer);
+        assertThat(writer.toString()).isEqualToIgnoringCase("{\"data\":null}");
+    }
+
+    @Test
     public void serializationOfNumbers() throws IllegalResourceException, IOException {
         StringWriter writer = new StringWriter();
         Resource resource = new DefaultResource.Builder()
