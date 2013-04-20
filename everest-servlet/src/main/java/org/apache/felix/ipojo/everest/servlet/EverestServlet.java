@@ -13,9 +13,9 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Writer;
+import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -29,13 +29,12 @@ public class EverestServlet extends HttpServlet {
 
 
     public static final String EVEREST_SERVLET_PATH = "/everest";
-
     @Requires
     private EverestService everest;
 
     @Bind
     public void bindHttp(HttpService service) throws ServletException, NamespaceException {
-         service.registerServlet(EVEREST_SERVLET_PATH, this, null, null);
+        service.registerServlet(EVEREST_SERVLET_PATH, this, null, null);
     }
 
     @Unbind
@@ -84,7 +83,7 @@ public class EverestServlet extends HttpServlet {
         }
     }
 
-    private void toJSON(Resource resource, Writer writer) throws IOException {
+    protected void toJSON(Resource resource, Writer writer) throws IOException {
         JsonFactory factory = new JsonFactory();
         // configure, if necessary:
         factory.enable(JsonParser.Feature.ALLOW_COMMENTS);
@@ -106,7 +105,7 @@ public class EverestServlet extends HttpServlet {
         generator.close();
     }
 
-    private void toJSON(JsonGenerator generator, String fieldName, Object value) throws IOException {
+    protected void toJSON(JsonGenerator generator, String fieldName, Object value) throws IOException {
         if (fieldName != null) {
             generator.writeFieldName(fieldName);
         }
@@ -124,6 +123,13 @@ public class EverestServlet extends HttpServlet {
             generator.writeStartArray();
             for (Object o : ((Collection) value)) {
                 toJSON(generator, null, o);
+            }
+            generator.writeEndArray();
+        } else if (value.getClass().isArray()) {
+            generator.writeStartArray();
+            int length = Array.getLength(value);
+            for (int i = 0; i < length; i++) {
+                toJSON(generator, null, Array.get(value, i));
             }
             generator.writeEndArray();
         } else if (value instanceof Map) {
