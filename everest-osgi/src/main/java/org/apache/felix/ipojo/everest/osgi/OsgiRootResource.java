@@ -9,15 +9,14 @@ import org.apache.felix.ipojo.everest.services.ResourceMetadata;
 import org.osgi.framework.*;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.service.deploymentadmin.DeploymentAdmin;
+import org.osgi.service.log.LogService;
 import org.osgi.util.tracker.BundleTracker;
 import org.osgi.util.tracker.BundleTrackerCustomizer;
 import org.osgi.util.tracker.ServiceTracker;
 import org.osgi.util.tracker.ServiceTrackerCustomizer;
 
 import java.util.ArrayList;
-import java.util.Dictionary;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created with IntelliJ IDEA.
@@ -36,7 +35,7 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
 
     public static final String OSGI_DESCRIPTION = "This root represents osgi framework and its subresources";
 
-    Object resourceLock;
+    private Object resourceLock;
 
     private final BundleContext m_context;
 
@@ -50,9 +49,11 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
 
     private final ServiceResourceManager m_serviceResourceManager;
 
-    private Resource m_configResourceManager;
+    private ConfigAdminResourceManager m_configResourceManager;
 
-    private Resource m_deploymentResourceManager;
+    private DeploymentAdminResourceManager m_deploymentResourceManager;
+
+    private LogServiceResourceManager m_logResourceManager;
 
     public OsgiRootResource(BundleContext context) {
         super(OSGI_ROOT,OSGI_DESCRIPTION);
@@ -68,8 +69,10 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
         try {
             allServicesFilter = FrameworkUtil.createFilter("(objectClass=*)");
         } catch (InvalidSyntaxException e) {
-            e.printStackTrace();
+            // Should never happen
+            throw new RuntimeException(e.getMessage());
         }
+
         m_bundleTracker = new BundleTracker(m_context,stateMask, this);
         m_bundleTracker.open();
 
@@ -82,26 +85,36 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
         m_serviceResourceManager = new ServiceResourceManager();
     }
 
+    @Invalidate
+    public void stopped(){
+
+    }
+
     @Override
     public ResourceMetadata getMetadata() {
         return new ImmutableResourceMetadata.Builder()
-            //    .set()
-            //    .set()
-            // metadata to be defined
+                //    .set()
+                //    .set()
+                // metadata to be defined
                 .build();
     }
 
     @Override
     public List<Resource> getResources() {
         ArrayList<Resource> resources = new ArrayList<Resource>();
-        resources.add(m_bundleResourceManager);
-        resources.add(m_packageResourceManager);
-        resources.add(m_serviceResourceManager);
-        if(m_configResourceManager !=null){
-            resources.add(m_configResourceManager);
-        }
-        if(m_deploymentResourceManager !=null){
-            resources.add(m_deploymentResourceManager);
+        synchronized (resourceLock){
+            resources.add(m_bundleResourceManager);
+            resources.add(m_packageResourceManager);
+            resources.add(m_serviceResourceManager);
+            if(m_configResourceManager !=null){
+                resources.add(m_configResourceManager);
+            }
+            if(m_deploymentResourceManager !=null){
+                resources.add(m_deploymentResourceManager);
+            }
+            if(m_logResourceManager!=null){
+                resources.add(m_logResourceManager);
+            }
         }
         return resources;
     }
@@ -138,19 +151,41 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
         }
     }
 
+    // Log Service Bind / Unbind
+
+    @Bind(id="logservice")
+    public void bindLogService(LogService logService){
+        synchronized (resourceLock){
+            m_logResourceManager = new LogServiceResourceManager(logService);
+        }
+    }
+
+    @Unbind(id="logservice")
+    public void unbindLogService(LogService logService){
+        synchronized (resourceLock){
+            //TODO do something to close logresourcemanager
+        }
+    }
+
     // Bundle Tracker Methods
 
     public Object addingBundle(Bundle bundle, BundleEvent bundleEvent) {
-           m_bundleResourceManager.addBundle(bundle);
-           return bundle.getBundleId();
+        m_bundleResourceManager.addBundle(bundle);
+        return bundle.getBundleId();
     }
 
     public void modifiedBundle(Bundle bundle, BundleEvent bundleEvent, Object o) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        // TODO think of sending some event
+        if (bundleEvent.getType()==BundleEvent.RESOLVED){
+            m_packageResourceManager.addPackagesFrom(bundle);
+        }
+        if (bundleEvent.getType()==BundleEvent.UNRESOLVED){
+            m_packageResourceManager.removePackagesFrom(bundle);
+        }
     }
 
     public void removedBundle(Bundle bundle, BundleEvent bundleEvent, Object o) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        m_bundleResourceManager.removeBundle(bundle);
     }
 
     // Service Tracker Methods
@@ -162,7 +197,7 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
     }
 
     public void modifiedService(ServiceReference serviceReference, Object o) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        // TODO think of sending some event
     }
 
     public void removedService(ServiceReference serviceReference, Object o) {

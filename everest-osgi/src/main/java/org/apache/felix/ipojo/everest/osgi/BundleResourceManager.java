@@ -1,15 +1,15 @@
 package org.apache.felix.ipojo.everest.osgi;
 
-import static org.apache.felix.ipojo.everest.osgi.OsgiRootResource.OSGI_ROOT_PATH;
 import org.apache.felix.ipojo.everest.impl.DefaultResource;
 import org.apache.felix.ipojo.everest.services.Path;
 import org.apache.felix.ipojo.everest.services.Resource;
 import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.apache.felix.ipojo.everest.osgi.OsgiRootResource.OSGI_ROOT_PATH;
 
 /**
  * Created with IntelliJ IDEA.
@@ -19,12 +19,11 @@ import java.util.Map;
  */
 public class BundleResourceManager extends DefaultResource {
 
-
     public static final String BUNDLE_ROOT_NAME = "bundles";
 
     public static final Path BUNDLE_PATH = OSGI_ROOT_PATH.add(Path.from(Path.SEPARATOR + BUNDLE_ROOT_NAME));
 
-    private Map<Long,Bundle> bundles = new HashMap<Long, Bundle>();
+    private Map<Long,BundleResource> bundleResources = new HashMap<Long, BundleResource>();
 
     public BundleResourceManager(){
         super(BUNDLE_PATH);
@@ -32,14 +31,15 @@ public class BundleResourceManager extends DefaultResource {
 
 
     public void addBundle(Bundle bundle){
-        synchronized (bundles){
-            bundles.put(bundle.getBundleId(),bundle);
+        synchronized (bundleResources){
+            BundleResource newBundle = new BundleResource(bundle);
+            bundleResources.put(bundle.getBundleId(),newBundle);
         }
     }
 
     public void removeBundle(Bundle bundle){
-        synchronized (bundles){
-            bundles.remove(bundle.getBundleId());
+        synchronized (bundleResources){
+            bundleResources.remove(bundle.getBundleId());
         }
     }
 

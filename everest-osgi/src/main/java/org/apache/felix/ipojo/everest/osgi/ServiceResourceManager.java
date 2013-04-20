@@ -2,8 +2,6 @@ package org.apache.felix.ipojo.everest.osgi;
 
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
 import org.apache.felix.ipojo.everest.services.Path;
-import org.apache.felix.ipojo.everest.services.Resource;
-import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 
 import static org.apache.felix.ipojo.everest.osgi.OsgiRootResource.OSGI_ROOT_PATH;
@@ -27,10 +25,10 @@ public class ServiceResourceManager extends DefaultReadOnlyResource {
     }
 
     public void addService(ServiceReference serviceReference) {
-        //To change body of created methods use File | Settings | File Templates.
+
     }
 
     public void removeService(ServiceReference serviceReference) {
-        //To change body of created methods use File | Settings | File Templates.
+
     }
 }

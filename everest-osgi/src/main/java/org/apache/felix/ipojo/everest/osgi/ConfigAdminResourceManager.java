@@ -2,12 +2,7 @@ package org.apache.felix.ipojo.everest.osgi;
 
 import org.apache.felix.ipojo.everest.impl.DefaultResource;
 import org.apache.felix.ipojo.everest.services.Path;
-import org.apache.felix.ipojo.everest.services.Resource;
-import org.osgi.framework.Bundle;
 import org.osgi.service.cm.ConfigurationAdmin;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.apache.felix.ipojo.everest.osgi.OsgiRootResource.OSGI_ROOT_PATH;
 
@@ -24,6 +19,6 @@ public class ConfigAdminResourceManager extends DefaultResource {
     public static final Path CONFIG_PATH = OSGI_ROOT_PATH.add(Path.from(Path.SEPARATOR + CONFIG_ROOT_NAME));
 
     public ConfigAdminResourceManager(ConfigurationAdmin configAdmin) {
-         super(CONFIG_PATH);
+        super(CONFIG_PATH);
     }
 }
