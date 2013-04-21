@@ -25,13 +25,13 @@ import java.util.List;
  * Time: 9:50 AM
  */
 @Component
-@Provides   (specifications = Resource.class)
+@Provides(specifications = Resource.class)
 @Instantiate
-public class OsgiRootResource extends AbstractResourceManager implements BundleTrackerCustomizer,ServiceTrackerCustomizer {
+public class OsgiRootResource extends AbstractResourceManager implements BundleTrackerCustomizer, ServiceTrackerCustomizer {
 
     public static final String OSGI_ROOT = "osgi";
 
-    public static final Path OSGI_ROOT_PATH = Path.from(Path.SEPARATOR+OSGI_ROOT);
+    public static final Path OSGI_ROOT_PATH = Path.from(Path.SEPARATOR + OSGI_ROOT);
 
     public static final String OSGI_DESCRIPTION = "This root represents osgi framework and its subresources";
 
@@ -56,16 +56,17 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
     private LogServiceResourceManager m_logResourceManager;
 
     public OsgiRootResource(BundleContext context) {
-        super(OSGI_ROOT,OSGI_DESCRIPTION);
+        super(OSGI_ROOT, OSGI_DESCRIPTION);
 
         m_context = context;
 
-        // take some metadata from the framework
-        //TODO
+        //TODO take some metadata from the framework
+        Bundle framework = m_context.getBundle(0);
+
 
         // Initialize bundle & service trackers
         int stateMask = Bundle.ACTIVE | Bundle.INSTALLED | Bundle.RESOLVED | Bundle.STARTING | Bundle.STOPPING | Bundle.UNINSTALLED;
-        Filter allServicesFilter=null;
+        Filter allServicesFilter = null;
         try {
             StringBuilder sb = new StringBuilder();
             sb.append("(");
@@ -77,20 +78,20 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
             throw new RuntimeException(e.getMessage());
         }
 
-        m_bundleTracker = new BundleTracker(m_context,stateMask, this);
+        m_bundleTracker = new BundleTracker(m_context, stateMask, this);
         m_bundleTracker.open();
 
-        m_serviceTracker = new ServiceTracker(m_context,allServicesFilter, this);
+        m_serviceTracker = new ServiceTracker(m_context, allServicesFilter, this);
         m_serviceTracker.open(true);
 
         // Initialize subresource managers
-        m_bundleResourceManager = new BundleResourceManager();
-        m_packageResourceManager = new PackageResourceManager();
-        m_serviceResourceManager = new ServiceResourceManager();
+        m_bundleResourceManager = BundleResourceManager.getInstance();
+        m_packageResourceManager = PackageResourceManager.getInstance();
+        m_serviceResourceManager = ServiceResourceManager.getInstance();
     }
 
     @Invalidate
-    public void stopped(){
+    public void stopped() {
 
     }
 
@@ -106,17 +107,17 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
     @Override
     public List<Resource> getResources() {
         ArrayList<Resource> resources = new ArrayList<Resource>();
-        synchronized (resourceLock){
+        synchronized (resourceLock) {
             resources.add(m_bundleResourceManager);
             resources.add(m_packageResourceManager);
             resources.add(m_serviceResourceManager);
-            if(m_configResourceManager !=null){
+            if (m_configResourceManager != null) {
                 resources.add(m_configResourceManager);
             }
-            if(m_deploymentResourceManager !=null){
+            if (m_deploymentResourceManager != null) {
                 resources.add(m_deploymentResourceManager);
             }
-            if(m_logResourceManager!=null){
+            if (m_logResourceManager != null) {
                 resources.add(m_logResourceManager);
             }
         }
@@ -125,48 +126,48 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
 
     // Config Admin Bind / Unbind
 
-    @Bind(id="configadmin", optional = true, aggregate = false)
-    public void bindConfigAdmin(ConfigurationAdmin configAdmin){
-        synchronized (resourceLock){
+    @Bind(id = "configadmin", optional = true, aggregate = false)
+    public void bindConfigAdmin(ConfigurationAdmin configAdmin) {
+        synchronized (resourceLock) {
             m_configResourceManager = new ConfigAdminResourceManager(configAdmin);
         }
     }
 
-    @Unbind(id="configadmin")
-    public void unbindConfigAdmin(ConfigurationAdmin configAdmin){
-        synchronized (resourceLock){
+    @Unbind(id = "configadmin")
+    public void unbindConfigAdmin(ConfigurationAdmin configAdmin) {
+        synchronized (resourceLock) {
             //TODO do something to close configadminresourcemanager
         }
     }
 
     // Deploy Admin Bind / Unbind
 
-    @Bind(id="deploymentadmin", optional = true, aggregate = false)
-    public void bindDeploymentAdmin(DeploymentAdmin deploymentAdmin){
-        synchronized (resourceLock){
+    @Bind(id = "deploymentadmin", optional = true, aggregate = false)
+    public void bindDeploymentAdmin(DeploymentAdmin deploymentAdmin) {
+        synchronized (resourceLock) {
             m_deploymentResourceManager = new DeploymentAdminResourceManager(deploymentAdmin);
         }
     }
 
-    @Unbind(id="deploymentadmin")
-    public void unbindDeploymentAdmin(DeploymentAdmin deploymentAdmin){
-        synchronized (resourceLock){
+    @Unbind(id = "deploymentadmin")
+    public void unbindDeploymentAdmin(DeploymentAdmin deploymentAdmin) {
+        synchronized (resourceLock) {
             //TODO do something to close deploymentadminresourcemanager
         }
     }
 
     // Log Service Bind / Unbind
 
-    @Bind(id="logservice")
-    public void bindLogService(LogService logService){
-        synchronized (resourceLock){
+    @Bind(id = "logservice")
+    public void bindLogService(LogService logService) {
+        synchronized (resourceLock) {
             m_logResourceManager = new LogServiceResourceManager(logService);
         }
     }
 
-    @Unbind(id="logservice")
-    public void unbindLogService(LogService logService){
-        synchronized (resourceLock){
+    @Unbind(id = "logservice")
+    public void unbindLogService(LogService logService) {
+        synchronized (resourceLock) {
             //TODO do something to close logresourcemanager
         }
     }
@@ -180,10 +181,10 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
 
     public void modifiedBundle(Bundle bundle, BundleEvent bundleEvent, Object o) {
         // TODO think of sending some event
-        if (bundleEvent.getType()==BundleEvent.RESOLVED){
+        if (bundleEvent.getType() == BundleEvent.RESOLVED) {
             m_packageResourceManager.addPackagesFrom(bundle);
         }
-        if (bundleEvent.getType()==BundleEvent.UNRESOLVED){
+        if (bundleEvent.getType() == BundleEvent.UNRESOLVED) {
             m_packageResourceManager.removePackagesFrom(bundle);
         }
     }

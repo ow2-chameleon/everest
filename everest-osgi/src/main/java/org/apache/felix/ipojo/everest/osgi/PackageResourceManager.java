@@ -30,37 +30,41 @@ public class PackageResourceManager extends DefaultReadOnlyResource {
 
     private Map<String, PackageResource> m_packageResourceByPackageIdMap = new HashMap<String, PackageResource>();
 
-//    private Map<String,Long> m_packageResourceByBundleIdMap = new HashMap<String, Long>();
+    private static final PackageResourceManager instance = new PackageResourceManager();
 
-    public PackageResourceManager(){
+    public static PackageResourceManager getInstance() {
+        return instance;
+    }
+
+    public PackageResourceManager() {
         super(PACKAGE_PATH);
     }
 
 
-    public void addPackagesFrom(Bundle bundle){
-        synchronized (m_packageResourceByPackageIdMap){
+    public void addPackagesFrom(Bundle bundle) {
+        synchronized (m_packageResourceByPackageIdMap) {
             BundleRevision revision = bundle.adapt(BundleRevision.class);
-            if(revision!=null){
+            if (revision != null) {
                 List<BundleCapability> bundleCapabilities = revision.getDeclaredCapabilities(BundleRevision.PACKAGE_NAMESPACE);
-                for(BundleCapability bc :bundleCapabilities){
+                for (BundleCapability bc : bundleCapabilities) {
                     PackageResource packageResource = new PackageResource(bc);
-                    String uniquePackageId =  packageResource.getUniquePackageId();
-                    m_packageResourceByPackageIdMap.put(uniquePackageId,packageResource);
+                    String uniquePackageId = packageResource.getUniquePackageId();
+                    m_packageResourceByPackageIdMap.put(uniquePackageId, packageResource);
                 }
 
             }
         }
     }
 
-    public void removePackagesFrom(Bundle bundle){
-        synchronized (m_packageResourceByPackageIdMap){
+    public void removePackagesFrom(Bundle bundle) {
+        synchronized (m_packageResourceByPackageIdMap) {
             ArrayList<String> packageIds = new ArrayList<String>();
-            for(PackageResource pr : m_packageResourceByPackageIdMap.values()){
-                if(bundle.equals(pr.getBundle())){
+            for (PackageResource pr : m_packageResourceByPackageIdMap.values()) {
+                if (bundle.equals(pr.getBundle())) {
                     packageIds.add(pr.getUniquePackageId());
                 }
             }
-            for(String s :packageIds){
+            for (String s : packageIds) {
                 m_packageResourceByPackageIdMap.remove(s);
             }
         }
@@ -69,9 +73,9 @@ public class PackageResourceManager extends DefaultReadOnlyResource {
     @Override
     public ResourceMetadata getMetadata() {
         ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
-        synchronized (m_packageResourceByPackageIdMap){
-            for(Map.Entry<String,PackageResource> e : m_packageResourceByPackageIdMap.entrySet()){
-                metadataBuilder.set(e.getKey(),e.getValue().getSimpleMetadata());
+        synchronized (m_packageResourceByPackageIdMap) {
+            for (Map.Entry<String, PackageResource> e : m_packageResourceByPackageIdMap.entrySet()) {
+                metadataBuilder.set(e.getKey(), e.getValue().getSimpleMetadata());
             }
         }
         return metadataBuilder.build();
@@ -80,7 +84,7 @@ public class PackageResourceManager extends DefaultReadOnlyResource {
     @Override
     public List<Resource> getResources() {
         ArrayList<Resource> resources = new ArrayList<Resource>();
-        synchronized (m_packageResourceByPackageIdMap){
+        synchronized (m_packageResourceByPackageIdMap) {
             resources.addAll(m_packageResourceByPackageIdMap.values());
         }
         return resources;

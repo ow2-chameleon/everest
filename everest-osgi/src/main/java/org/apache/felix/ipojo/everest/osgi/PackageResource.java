@@ -2,6 +2,7 @@ package org.apache.felix.ipojo.everest.osgi;
 
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
+import org.apache.felix.ipojo.everest.impl.SymbolicLinkResource;
 import org.apache.felix.ipojo.everest.services.Path;
 import org.apache.felix.ipojo.everest.services.Resource;
 import org.apache.felix.ipojo.everest.services.ResourceMetadata;
@@ -14,10 +15,12 @@ import org.osgi.framework.wiring.BundleWiring;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
-import static org.apache.felix.ipojo.everest.osgi.PackageResource.PackageNamespace.PACKAGE_NAMESPACE;
-import static org.apache.felix.ipojo.everest.osgi.PackageResource.PackageNamespace.PACKAGE_VERSION_ATTRIBUTE;
+import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.PackageNamespace.*;
+import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.uniquePackageId;
 import static org.apache.felix.ipojo.everest.osgi.PackageResourceManager.PACKAGE_PATH;
+
 
 /**
  * Created with IntelliJ IDEA.
@@ -27,7 +30,9 @@ import static org.apache.felix.ipojo.everest.osgi.PackageResourceManager.PACKAGE
  */
 public class PackageResource extends DefaultReadOnlyResource {
 
-    public static final String PACKAGE_ID_SEPARATOR = "-";
+    public static final String PROVIDER_BUNDLE_NAME = "provider-bundle";
+
+    public static final String IMPORTER_BUNDLE_NAME = "importer-bundles";
 
     private final BundleCapability m_bundleCapability;
     private final String m_packageName;
@@ -35,17 +40,7 @@ public class PackageResource extends DefaultReadOnlyResource {
     private final Map<String, Object> m_attributes;
     private final Map<String, String> m_directives;
 
-    public static String uniquePackageId(long bundleId, String packageName, Version version){
-        StringBuilder sb = new StringBuilder();
-        sb.append(bundleId);
-        sb.append(PACKAGE_ID_SEPARATOR);
-        sb.append(packageName);
-        sb.append(PACKAGE_ID_SEPARATOR);
-        sb.append(version);
-        return sb.toString();
-    }
-
-    public PackageResource(BundleCapability bundleCapability){
+    public PackageResource(BundleCapability bundleCapability) {
         super(PACKAGE_PATH.add(Path.from(uniquePackageId(bundleCapability.getRevision().getBundle().getBundleId(),
                 (String) bundleCapability.getAttributes().get(PACKAGE_NAMESPACE),
                 (Version) bundleCapability.getAttributes().get(PACKAGE_VERSION_ATTRIBUTE)))));
@@ -56,24 +51,32 @@ public class PackageResource extends DefaultReadOnlyResource {
         m_version = (Version) m_attributes.get(PACKAGE_VERSION_ATTRIBUTE);
     }
 
-    public String getUniquePackageId(){
+    public String getUniquePackageId() {
         return uniquePackageId(m_bundleCapability.getRevision().getBundle().getBundleId(), m_packageName, m_version);
     }
 
-    public Bundle getBundle(){
+    public Bundle getBundle() {
         return m_bundleCapability.getRevision().getBundle();
     }
 
-    public ResourceMetadata getSimpleMetadata(){
+    public ResourceMetadata getSimpleMetadata() {
         ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
-
+        metadataBuilder.set(PACKAGE_NAMESPACE, m_packageName);
+        metadataBuilder.set(PACKAGE_VERSION_ATTRIBUTE, m_version);
+        metadataBuilder.set(CAPABILITY_BUNDLE_SYMBOLICNAME_ATTRIBUTE, getBundle().getSymbolicName());
+        metadataBuilder.set(CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, getBundle().getVersion());
         return metadataBuilder.build();
     }
 
     @Override
     public ResourceMetadata getMetadata() {
-        ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
-
+        ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder(getSimpleMetadata());
+        for (Entry<String, Object> att : m_attributes.entrySet()) {
+            metadataBuilder.set(att.getKey(), att.getValue());
+        }
+        for (Entry<String, String> dir : m_directives.entrySet()) {
+            metadataBuilder.set(dir.getKey(), dir.getValue());
+        }
         return metadataBuilder.build();
     }
 
@@ -81,33 +84,25 @@ public class PackageResource extends DefaultReadOnlyResource {
     public List<Resource> getResources() {
         ArrayList<Resource> resources = new ArrayList<Resource>();
         // provider bundle
-        Bundle m_bundle = m_bundleCapability.getRevision().getBundle();
-        //TODO create a link to m_bundle
+        Bundle bundle = m_bundleCapability.getRevision().getBundle();
+        // create a link to bundle
+        Resource bundleResource = BundleResourceManager.getInstance().getResource(BundleResourceManager.BUNDLE_PATH.add(Path.from(Path.SEPARATOR + bundle.getBundleId())).toString());
+        if (bundleResource != null) {
+            resources.add(new SymbolicLinkResource(getPath().add(Path.from(Path.SEPARATOR + PROVIDER_BUNDLE_NAME)), bundleResource));
+        }
 
         // importers of this package
+        ArrayList<Bundle> importers = new ArrayList<Bundle>();
         BundleWiring wiring = m_bundleCapability.getRevision().getBundle().adapt(BundleWiring.class);
         List<BundleWire> wires = wiring.getProvidedWires(PACKAGE_NAMESPACE);
-        for(BundleWire wire : wires){
-            if(wire.getCapability().equals(m_bundleCapability)){
+        for (BundleWire wire : wires) {
+            if (wire.getCapability().equals(m_bundleCapability)) {
                 Bundle requirerBundle = wire.getRequirerWiring().getBundle();
-                //TODO create link to requirerBundle
+                importers.add(requirerBundle);
             }
         }
+        // create links to importer bundles
+        resources.add(new ReadOnlyBundleSymlinksResource(getPath().add(Path.from(Path.SEPARATOR + IMPORTER_BUNDLE_NAME)), importers.toArray(new Bundle[0])));
         return resources;
-    }
-
-    public class PackageNamespace {
-
-        public static final String PACKAGE_NAMESPACE = "osgi.wiring.package";
-
-        public static final String PACKAGE_VERSION_ATTRIBUTE = "version";
-
-        public static final String CAPABILITY_BUNDLE_SYMBOLICNAME_ATTRIBUTE = "bundle-symbolic-name";
-
-        public static final String CAPABILITY_EXCLUDE_DIRECTIVE = "exclude";
-
-        public static final String CAPABILITY_INCLUDE_DIRECTIVE = "include";
-
-        public static final String RESOLUTION_DYNAMIC = "dynamic";
     }
 }

@@ -25,22 +25,28 @@ public class BundleResourceManager extends DefaultResource {
 
     public static final Path BUNDLE_PATH = OSGI_ROOT_PATH.add(Path.from(Path.SEPARATOR + BUNDLE_ROOT_NAME));
 
-    private Map<Long,BundleResource> bundleResources = new HashMap<Long, BundleResource>();
+    private Map<Long, BundleResource> bundleResources = new HashMap<Long, BundleResource>();
 
-    public BundleResourceManager(){
+    private static final BundleResourceManager instance = new BundleResourceManager();
+
+    public static BundleResourceManager getInstance() {
+        return instance;
+    }
+
+    public BundleResourceManager() {
         super(BUNDLE_PATH);
     }
 
 
-    public void addBundle(Bundle bundle){
-        synchronized (bundleResources){
+    public void addBundle(Bundle bundle) {
+        synchronized (bundleResources) {
             BundleResource newBundle = new BundleResource(bundle);
-            bundleResources.put(bundle.getBundleId(),newBundle);
+            bundleResources.put(bundle.getBundleId(), newBundle);
         }
     }
 
-    public void removeBundle(Bundle bundle){
-        synchronized (bundleResources){
+    public void removeBundle(Bundle bundle) {
+        synchronized (bundleResources) {
             bundleResources.remove(bundle.getBundleId());
         }
     }
@@ -48,8 +54,8 @@ public class BundleResourceManager extends DefaultResource {
     @Override
     public ResourceMetadata getMetadata() {
         ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
-        for(Entry<Long,BundleResource> entry :bundleResources.entrySet()){
-            metadataBuilder.set(entry.getKey().toString(),entry.getValue().getSimpleMetadata());
+        for (Entry<Long, BundleResource> entry : bundleResources.entrySet()) {
+            metadataBuilder.set(entry.getKey().toString(), entry.getValue().getSimpleMetadata());
         }
         return metadataBuilder.build();
     }
@@ -61,8 +67,16 @@ public class BundleResourceManager extends DefaultResource {
         return resources;
     }
 
+    // TODO add relations install uninstall
+
     @Override
     public Resource put(Request request) throws IllegalActionOnResourceException {
-        return super.put(request);    //To change body of overridden methods use File | Settings | File Templates.
+        // TODO install bundle
+        return super.put(request);
+    }
+
+    @Override
+    public Resource delete(Request request) throws IllegalActionOnResourceException {
+        return super.delete(request);
     }
 }

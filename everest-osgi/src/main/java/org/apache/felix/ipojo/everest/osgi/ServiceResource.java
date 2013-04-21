@@ -2,9 +2,11 @@ package org.apache.felix.ipojo.everest.osgi;
 
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
+import org.apache.felix.ipojo.everest.impl.SymbolicLinkResource;
 import org.apache.felix.ipojo.everest.services.Path;
 import org.apache.felix.ipojo.everest.services.Resource;
 import org.apache.felix.ipojo.everest.services.ResourceMetadata;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
 
@@ -21,30 +23,32 @@ import static org.apache.felix.ipojo.everest.osgi.ServiceResourceManager.SERVICE
  */
 public class ServiceResource extends DefaultReadOnlyResource {
 
-    public static final String FROM_BUNDLE_PATH = "from-bundle";
+    public static final String FROM_BUNDLE_NAME = "from-bundle";
 
-    public static final String FROM_PACKAGE_PATH = "from-package";
+    public static final String USES_BUNDLES_NAME = "using-bundles";
+
+    public static final String FROM_PACKAGE_NAME = "from-package";
 
     private ServiceReference m_serviceReference;
 
-    public ServiceResource(ServiceReference serviceReference){
-        super(SERVICES_PATH.add(Path.from((String)serviceReference.getProperty(Constants.SERVICE_ID))));
+    public ServiceResource(ServiceReference serviceReference) {
+        super(SERVICES_PATH.add(Path.from((String) serviceReference.getProperty(Constants.SERVICE_ID))));
         m_serviceReference = serviceReference;
     }
 
-    public ResourceMetadata getSimpleMetadata(){
+    public ResourceMetadata getSimpleMetadata() {
         ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
-        metadataBuilder.set(Constants.SERVICE_ID,m_serviceReference.getProperty(Constants.SERVICE_ID));
-        metadataBuilder.set(Constants.OBJECTCLASS,m_serviceReference.getProperty(Constants.OBJECTCLASS));
-        metadataBuilder.set(FROM_BUNDLE_PATH,m_serviceReference.getBundle().getBundleId());
+        metadataBuilder.set(Constants.SERVICE_ID, m_serviceReference.getProperty(Constants.SERVICE_ID));
+        metadataBuilder.set(Constants.OBJECTCLASS, m_serviceReference.getProperty(Constants.OBJECTCLASS));
+        metadataBuilder.set(FROM_BUNDLE_NAME, m_serviceReference.getBundle().getBundleId());
         return metadataBuilder.build();
     }
 
     @Override
     public ResourceMetadata getMetadata() {
         ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
-        for(String s : m_serviceReference.getPropertyKeys()){
-            metadataBuilder.set(s,m_serviceReference.getProperty(s));
+        for (String s : m_serviceReference.getPropertyKeys()) {
+            metadataBuilder.set(s, m_serviceReference.getProperty(s));
         }
         return metadataBuilder.build();
     }
@@ -52,11 +56,18 @@ public class ServiceResource extends DefaultReadOnlyResource {
     @Override
     public List<Resource> getResources() {
         ArrayList<Resource> resources = new ArrayList<Resource>();
-        //Bundle from which this service is registered
-        m_serviceReference.getBundle(); //...
-        //new DefaultReadOnlyResource.Builder();
-        //Bundles
-        m_serviceReference.getUsingBundles();
+
+        // Bundle from which this service is registered
+        Bundle bundle = m_serviceReference.getBundle();
+        // TODO Wow should reconsider this!!
+        Resource bundleResource = BundleResourceManager.getInstance().getResource(BundleResourceManager.BUNDLE_PATH.add(Path.from(Path.SEPARATOR + bundle.getBundleId())).toString());
+        if (bundleResource != null) {
+            resources.add(new SymbolicLinkResource(getPath().add(Path.from(Path.SEPARATOR + FROM_BUNDLE_NAME)), bundleResource));
+        }
+
+        // Uses Bundles
+        Bundle[] uses = m_serviceReference.getUsingBundles();
+        resources.add(new ReadOnlyBundleSymlinksResource(getPath().add(Path.from(Path.SEPARATOR + USES_BUNDLES_NAME)), uses));
 
         //Package of the bundle that is exposed for this service
         //TODO find the package exporting this service...

@@ -5,11 +5,15 @@ import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.services.*;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Constants;
+import org.osgi.framework.wiring.BundleRevision;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.apache.felix.ipojo.everest.osgi.BundleResourceManager.BUNDLE_PATH;
+import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.BundleNamespace.*;
+import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.bundleStateToString;
+
 
 /**
  * Created with IntelliJ IDEA.
@@ -19,65 +23,55 @@ import static org.apache.felix.ipojo.everest.osgi.BundleResourceManager.BUNDLE_P
  */
 public class BundleResource extends DefaultResource {
 
-    public static final String BUNDLE_STATE = "bundle-state";
-    public static final String BUNDLE_LOCATION = "bundle-location";
-
     private final Bundle m_bundle;
+
+    private final boolean isFragment;
 
     public BundleResource(Bundle bundle) {
         super(BUNDLE_PATH.add(Path.from(String.valueOf(bundle.getBundleId()))));
         m_bundle = bundle;
+        // Check if is fragment
+        BundleRevision rev = m_bundle.adapt(BundleRevision.class);
+        if (rev != null && (rev.getTypes() & BundleRevision.TYPE_FRAGMENT) != 0) {
+            isFragment = true;
+        } else {
+            isFragment = false;
+        }
     }
 
-    public ResourceMetadata getSimpleMetadata(){
+    public ResourceMetadata getSimpleMetadata() {
         ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
-        metadataBuilder.set(BUNDLE_STATE,bundleStateToString(m_bundle.getState()));
+        metadataBuilder.set(BUNDLE_STATE, bundleStateToString(m_bundle.getState()));
         metadataBuilder.set(Constants.BUNDLE_SYMBOLICNAME_ATTRIBUTE, m_bundle.getSymbolicName());
-        metadataBuilder.set(Constants.BUNDLE_VERSION_ATTRIBUTE,m_bundle.getVersion());
+        metadataBuilder.set(Constants.BUNDLE_VERSION_ATTRIBUTE, m_bundle.getVersion());
         return metadataBuilder.build();
     }
 
     @Override
     public ResourceMetadata getMetadata() {
         ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder(getSimpleMetadata());
-        metadataBuilder.set(BUNDLE_LOCATION,m_bundle.getLocation());
-        //
+        metadataBuilder.set(BUNDLE_LOCATION, m_bundle.getLocation());
+        metadataBuilder.set(BUNDLE_LAST_MODIFIED, m_bundle.getLastModified());
+        metadataBuilder.set(BUNDLE_FRAGMENT, isFragment);
+        //TODO find some properties to add here!
         return metadataBuilder.build();
     }
 
     @Override
     public List<Resource> getResources() {
         ArrayList<Resource> resources = new ArrayList<Resource>();
-        resources.add(new BundleHeadersResource(getPath(),m_bundle));
-        resources.add(new BundleWiresResource(getPath(),m_bundle));
+        resources.add(new BundleHeadersResource(getPath(), m_bundle));
+        resources.add(new BundleWiresResource(getPath(), m_bundle));
         resources.add(new BundleServicesResource(getPath(), m_bundle));
         return resources;
     }
+    //TODO add relations start stop update
 
     @Override
     public Resource post(Request request) throws IllegalActionOnResourceException {
-          return this;
+        //
+        return this;
     }
-
-    public static String bundleStateToString(int bundleState){
-        switch (bundleState){
-            case Bundle.ACTIVE:
-                return "ACTIVE";
-            case Bundle.STARTING:
-                return "STARTING";
-            case Bundle.STOPPING:
-                return "STOPPING";
-            case Bundle.RESOLVED:
-                return "RESOLVED";
-            case Bundle.INSTALLED:
-                return "INSTALLED";
-            case Bundle.UNINSTALLED:
-                return "UNINSTALLED";
-            default:
-                return "";
-        }
-    }
-
 
 
 }
