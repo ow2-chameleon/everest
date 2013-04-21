@@ -67,7 +67,11 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
         int stateMask = Bundle.ACTIVE | Bundle.INSTALLED | Bundle.RESOLVED | Bundle.STARTING | Bundle.STOPPING | Bundle.UNINSTALLED;
         Filter allServicesFilter=null;
         try {
-            allServicesFilter = FrameworkUtil.createFilter("(objectClass=*)");
+            StringBuilder sb = new StringBuilder();
+            sb.append("(");
+            sb.append(Constants.OBJECTCLASS);
+            sb.append("=*)");
+            allServicesFilter = FrameworkUtil.createFilter(sb.toString());
         } catch (InvalidSyntaxException e) {
             // Should never happen
             throw new RuntimeException(e.getMessage());

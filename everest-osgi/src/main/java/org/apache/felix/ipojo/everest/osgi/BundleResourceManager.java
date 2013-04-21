@@ -1,13 +1,15 @@
 package org.apache.felix.ipojo.everest.osgi;
 
 import org.apache.felix.ipojo.everest.impl.DefaultResource;
-import org.apache.felix.ipojo.everest.services.Path;
-import org.apache.felix.ipojo.everest.services.Resource;
+import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
+import org.apache.felix.ipojo.everest.services.*;
 import org.osgi.framework.Bundle;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import static org.apache.felix.ipojo.everest.osgi.OsgiRootResource.OSGI_ROOT_PATH;
 
@@ -44,7 +46,23 @@ public class BundleResourceManager extends DefaultResource {
     }
 
     @Override
+    public ResourceMetadata getMetadata() {
+        ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
+        for(Entry<Long,BundleResource> entry :bundleResources.entrySet()){
+            metadataBuilder.set(entry.getKey().toString(),entry.getValue().getSimpleMetadata());
+        }
+        return metadataBuilder.build();
+    }
+
+    @Override
     public List<Resource> getResources() {
-        return super.getResources();    //To change body of overridden methods use File | Settings | File Templates.
+        ArrayList<Resource> resources = new ArrayList<Resource>();
+        resources.addAll(bundleResources.values());
+        return resources;
+    }
+
+    @Override
+    public Resource put(Request request) throws IllegalActionOnResourceException {
+        return super.put(request);    //To change body of overridden methods use File | Settings | File Templates.
     }
 }
