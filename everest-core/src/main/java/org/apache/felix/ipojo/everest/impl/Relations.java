@@ -17,13 +17,13 @@ public class Relations {
 
         List<Relation> relations = new ArrayList<Relation>();
 
-        public Builder addRelation(Path path, Action action, String name, String description) {
-            relations.add(new DefaultRelation(path, action, name, description));
+        public Builder addRelation(Path href, Action action, String name, String description) {
+            relations.add(new DefaultRelation(href, action, name, description));
             return this;
         }
 
-        public Builder addRelation(Path path, Action action, String name) {
-            relations.add(new DefaultRelation(path, action, name));
+        public Builder addRelation(Path href, Action action, String name) {
+            relations.add(new DefaultRelation(href, action, name));
             return this;
         }
 
