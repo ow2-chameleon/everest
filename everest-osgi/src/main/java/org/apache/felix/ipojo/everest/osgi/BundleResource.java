@@ -1,6 +1,5 @@
 package org.apache.felix.ipojo.everest.osgi;
 
-import org.apache.felix.ipojo.everest.impl.DefaultRelation;
 import org.apache.felix.ipojo.everest.impl.DefaultResource;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.services.*;
@@ -44,9 +43,7 @@ public class BundleResource extends DefaultResource {
         }
 
         setRelations(
-                new DefaultRelation(getPath(), Action.POST, START_RELATION_NAME, ""),
-                new DefaultRelation(getPath(), Action.POST, STOP_RELATION_NAME, ""),
-                new DefaultRelation(getPath(), Action.POST, UPDATE_RELATION_NAME, "")
+                //        new DefaultRelation(getPath(), Action.UPDATE, , "")
         );
 
     }
@@ -79,13 +76,7 @@ public class BundleResource extends DefaultResource {
     }
 
     @Override
-<<<<<<< HEAD
     public Resource update(Request request) throws IllegalActionOnResourceException {
-        //
-=======
-    public Resource post(Request request) throws IllegalActionOnResourceException {
-
->>>>>>> bundle capability, requirement, wires
         return this;
     }
 
