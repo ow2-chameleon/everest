@@ -24,9 +24,9 @@ public class ManagerResource extends DefaultReadOnlyResource {
     @Override
     public List<Relation> getRelations() {
         return new Relations.Builder()
-                .addRelation(getPath(), Action.GET, "everest:manager",
+                .addRelation(getPath(), Action.READ, "everest:manager",
                         "get metadata about the manager")
-                .addRelation(manager.getCanonicalPath(), Action.GET, "everest:domain",
+                .addRelation(manager.getCanonicalPath(), Action.READ, "everest:domain",
                         "get the root of the domain '" + manager.getMetadata().get("name", String.class) + "'")
                 .build();
     }

@@ -147,11 +147,11 @@ public class EverestServlet extends HttpServlet {
         Path path = Path.from(request.getPathInfo());
         Action action;
         if ("GET".equals(request.getMethod())) {
-            action = Action.GET;
+            action = Action.READ;
         } else if ("PUT".equals(request.getMethod())) {
-            action = Action.PUT;
+            action = Action.CREATE;
         } else if ("POST".equals(request.getMethod())) {
-            action = Action.POST;
+            action = Action.UPDATE;
         } else if ("DELETE".equals(request.getMethod())) {
             action = Action.DELETE;
         } else {

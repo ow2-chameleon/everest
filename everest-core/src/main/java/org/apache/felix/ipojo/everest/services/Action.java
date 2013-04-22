@@ -5,5 +5,5 @@ package org.apache.felix.ipojo.everest.services;
  */
 public enum Action {
 
-    GET, PUT, POST, DELETE
+    CREATE, READ, UPDATE, DELETE
 }

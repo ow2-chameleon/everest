@@ -50,7 +50,7 @@ public abstract class AbstractResourceManager extends DefaultReadOnlyResource {
     }
 
     /**
-     * Extracts the direct children and add a {@literal GET} relation to them.
+     * Extracts the direct children and add a {@literal READ} relation to them.
      *
      * @return a list of relations
      */
@@ -59,7 +59,7 @@ public abstract class AbstractResourceManager extends DefaultReadOnlyResource {
         for (Resource resource : getResources()) {
             int size = getCanonicalPath().getCount();
             String name = resource.getCanonicalPath().getElements()[size];
-            relations.add(new DefaultRelation(resource.getCanonicalPath(), Action.GET, "everest:" + name,
+            relations.add(new DefaultRelation(resource.getCanonicalPath(), Action.READ, "everest:" + name,
                     "Get " + name));
         }
         return relations;

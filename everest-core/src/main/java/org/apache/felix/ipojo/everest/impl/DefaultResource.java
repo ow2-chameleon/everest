@@ -133,14 +133,14 @@ public class DefaultResource implements Resource {
         // 2) The request is targeting us...
         if (request.path().equals(getPath())) {
             switch (request.action()) {
-                case GET:
-                    return get(request);
+                case READ:
+                    return read(request);
                 case DELETE:
                     return delete(request);
-                case PUT:
-                    return put(request);
-                case POST:
-                    return post(request);
+                case CREATE:
+                    return create(request);
+                case UPDATE:
+                    return update(request);
             }
             return null;
         }
@@ -158,12 +158,12 @@ public class DefaultResource implements Resource {
     }
 
     /**
-     * Default get action : return the current resource.
+     * Default read action : return the current resource.
      *
      * @param request the request
      * @return the current resource
      */
-    public Resource get(Request request) {
+    public Resource read(Request request) {
         return this;
     }
 
@@ -183,7 +183,7 @@ public class DefaultResource implements Resource {
      * @param request the request
      * @return {@literal null}
      */
-    public Resource put(Request request) throws IllegalActionOnResourceException {
+    public Resource create(Request request) throws IllegalActionOnResourceException {
         return null;
     }
 
@@ -193,7 +193,7 @@ public class DefaultResource implements Resource {
      * @param request the request
      * @return the current resource (unchanged)
      */
-    public Resource post(Request request) throws IllegalActionOnResourceException {
+    public Resource update(Request request) throws IllegalActionOnResourceException {
         return this;
     }
 

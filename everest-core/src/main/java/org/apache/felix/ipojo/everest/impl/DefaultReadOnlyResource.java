@@ -11,7 +11,7 @@ import java.util.List;
 
 /**
  * Read only resource.
- * This resource rejects PUT, POST and DELETE actions
+ * This resource rejects CREATE, UPDATE and DELETE actions
  */
 public class DefaultReadOnlyResource extends DefaultResource {
 
@@ -37,12 +37,12 @@ public class DefaultReadOnlyResource extends DefaultResource {
     }
 
     @Override
-    public Resource put(Request request) throws IllegalActionOnResourceException {
+    public Resource create(Request request) throws IllegalActionOnResourceException {
         throw new IllegalActionOnResourceException(request, this);
     }
 
     @Override
-    public Resource post(Request request) throws IllegalActionOnResourceException {
+    public Resource update(Request request) throws IllegalActionOnResourceException {
         throw new IllegalActionOnResourceException(request, this);
     }
 }

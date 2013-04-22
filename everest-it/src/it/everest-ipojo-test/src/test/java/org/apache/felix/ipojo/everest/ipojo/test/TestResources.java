@@ -5,12 +5,11 @@ import org.apache.felix.ipojo.everest.impl.DefaultRequest;
 import org.apache.felix.ipojo.everest.services.*;
 import org.junit.Test;
 import org.ops4j.pax.exam.MavenUtils;
-import org.osgi.framework.Version;
 
 public class TestResources extends Common {
 
     public Resource get(String path) throws ResourceNotFoundException, IllegalActionOnResourceException {
-        return everest.process(new DefaultRequest(Action.GET, Path.from(path), null));
+        return everest.process(new DefaultRequest(Action.READ, Path.from(path), null));
     }
 
     /**
@@ -67,7 +66,7 @@ public class TestResources extends Common {
 //    //TODO move this to TestFactories
 //    @Test
 //    public void testFooFactoryIsPresent() throws ResourceNotFoundException, IllegalActionOnResourceException {
-//        everest.process(new DefaultRequest(Action.GET, Path.from("/ipojo/factory/Foo/1.2.3.foo"), null));
+//        everest.process(new DefaultRequest(Action.READ, Path.from("/ipojo/factory/Foo/1.2.3.foo"), null));
 //    }
 
 }

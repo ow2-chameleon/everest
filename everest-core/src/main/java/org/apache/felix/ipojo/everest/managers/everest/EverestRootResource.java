@@ -6,8 +6,6 @@ import org.apache.felix.ipojo.everest.services.*;
 
 import java.util.*;
 
-import static org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata.list;
-
 /**
  * Manages the everest entity.
  * The model is the following:
@@ -48,7 +46,7 @@ public class EverestRootResource extends AbstractResourceManager {
         for (Map.Entry<Path, Resource> entry : everest.getEverestResources().entrySet()) {
             domains.with(new ManagerResource(entry.getValue()));
             domains.with(
-                    new DefaultRelation(entry.getValue(), Action.GET,
+                    new DefaultRelation(entry.getValue(), Action.READ,
                             "everest:getDomain(" + entry.getValue().getMetadata().get("name", String.class) + ")")
             );
         }

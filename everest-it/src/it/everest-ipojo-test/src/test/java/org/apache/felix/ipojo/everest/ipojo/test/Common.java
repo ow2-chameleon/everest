@@ -57,7 +57,7 @@ public class Common {
     IPOJOHelper ipojoHelper;
 
     public Resource get(String path) throws ResourceNotFoundException, IllegalActionOnResourceException {
-        return everest.process(new DefaultRequest(Action.GET, Path.from(path), null));
+        return everest.process(new DefaultRequest(Action.READ, Path.from(path), null));
     }
 
     @Configuration

@@ -68,7 +68,7 @@ public class BundleResource extends DefaultResource {
     //TODO add relations start stop update
 
     @Override
-    public Resource post(Request request) throws IllegalActionOnResourceException {
+    public Resource update(Request request) throws IllegalActionOnResourceException {
         //
         return this;
     }

@@ -70,9 +70,9 @@ public class BundleResourceManager extends DefaultResource {
     // TODO add relations install uninstall
 
     @Override
-    public Resource put(Request request) throws IllegalActionOnResourceException {
+    public Resource create(Request request) throws IllegalActionOnResourceException {
         // TODO install bundle
-        return super.put(request);
+        return super.create(request);
     }
 
     @Override

@@ -91,14 +91,14 @@ public class TestImmutableResourceMetadata {
                 new ImmutableResourceMetadata.Builder()
                         .set("string", "hello")
                         .set("number", 1)
-                        .set("action", Action.GET)
+                        .set("action", Action.READ)
                         .set("array", new String[]{"a", "r", "r", "a", "y"})
                         .set("list", Arrays.asList("l", "i", "s", "t"))
                         .build();
 
         assertThat(irm.get("string")).isEqualTo("hello");
         assertThat(irm.get("number", Integer.class)).isEqualTo(1);
-        assertThat(irm.get("action", Action.class)).isEqualTo(Action.GET);
+        assertThat(irm.get("action", Action.class)).isEqualTo(Action.READ);
         assertThat(irm.get("array", (new String[0]).getClass())).contains("y");
         assertThat(irm.get("list", List.class)).contains("l");
 
