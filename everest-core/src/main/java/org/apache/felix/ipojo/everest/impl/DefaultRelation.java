@@ -15,22 +15,22 @@ public class DefaultRelation implements Relation {
     private final String name;
     private final String description;
 
-    public DefaultRelation(Path path, Action action, String name, String description) {
-        this.path = path;
+    public DefaultRelation(Path href, Action action, String name, String description) {
+        this.path = href;
         this.action = action;
         this.name = name;
         this.description = description;
     }
 
-    public DefaultRelation(Path path, Action action, String name) {
-        this(path, action, name, null);
+    public DefaultRelation(Path href, Action action, String name) {
+        this(href, action, name, null);
     }
 
     public DefaultRelation(Resource resource, Action action, String name) {
         this(resource.getCanonicalPath(), action, name, null);
     }
 
-    public Path getPath() {
+    public Path getHref() {
         return path;
     }
 
