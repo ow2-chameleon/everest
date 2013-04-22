@@ -121,10 +121,6 @@ public class Common {
     }
 
     public Option testedBundle() throws MalformedURLException {
-
-        System.out.println(new File("aaa").getAbsolutePath());
-
-
         File out = new File("target/tested/bundle.jar");
 
         TinyBundle tested = TinyBundles.bundle();
