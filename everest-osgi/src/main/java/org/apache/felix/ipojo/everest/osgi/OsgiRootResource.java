@@ -35,7 +35,7 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
 
     public static final String OSGI_DESCRIPTION = "This root represents osgi framework and its subresources";
 
-    private Object resourceLock;
+    private final Object resourceLock = new Object();
 
     private final BundleContext m_context;
 
@@ -49,6 +49,8 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
 
     private final ServiceResourceManager m_serviceResourceManager;
 
+    private final ResourceMetadata m_metadata;
+
     private ConfigAdminResourceManager m_configResourceManager;
 
     private DeploymentAdminResourceManager m_deploymentResourceManager;
@@ -60,9 +62,10 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
 
         m_context = context;
 
+        ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
+
         //TODO take some metadata from the framework
         Bundle framework = m_context.getBundle(0);
-
 
         // Initialize bundle & service trackers
         int stateMask = Bundle.ACTIVE | Bundle.INSTALLED | Bundle.RESOLVED | Bundle.STARTING | Bundle.STOPPING | Bundle.UNINSTALLED;
@@ -80,7 +83,6 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
 
         m_bundleTracker = new BundleTracker(m_context, stateMask, this);
         m_bundleTracker.open();
-
         m_serviceTracker = new ServiceTracker(m_context, allServicesFilter, this);
         m_serviceTracker.open(true);
 
@@ -88,20 +90,13 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
         m_bundleResourceManager = BundleResourceManager.getInstance();
         m_packageResourceManager = PackageResourceManager.getInstance();
         m_serviceResourceManager = ServiceResourceManager.getInstance();
-    }
 
-    @Invalidate
-    public void stopped() {
-
+        m_metadata = metadataBuilder.build();
     }
 
     @Override
     public ResourceMetadata getMetadata() {
-        return new ImmutableResourceMetadata.Builder()
-                //    .set()
-                //    .set()
-                // metadata to be defined
-                .build();
+        return m_metadata;
     }
 
     @Override
@@ -158,7 +153,7 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
 
     // Log Service Bind / Unbind
 
-    @Bind(id = "logservice")
+    @Bind(id = "logservice", optional = true, aggregate = false)
     public void bindLogService(LogService logService) {
         synchronized (resourceLock) {
             m_logResourceManager = new LogServiceResourceManager(logService);
