@@ -14,6 +14,18 @@ public class IllegalActionOnResourceException extends Exception {
         this.resource = resource;
     }
 
+    public IllegalActionOnResourceException(Request request, Resource resource, String message) {
+        this.getMessage();
+        this.request = request;
+        this.resource = resource;
+    }
+
+    public IllegalActionOnResourceException(Request request, String message) {
+        super(message);
+        this.resource = null;
+        this.request = request;
+    }
+
     public Request getRequest() {
         return request;
     }
