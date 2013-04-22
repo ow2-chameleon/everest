@@ -10,13 +10,13 @@ import org.apache.felix.ipojo.everest.services.Resource;
  */
 public class DefaultRelation implements Relation {
 
-    private final Path path;
+    private final Path href;
     private final Action action;
     private final String name;
     private final String description;
 
     public DefaultRelation(Path href, Action action, String name, String description) {
-        this.path = href;
+        this.href = href;
         this.action = action;
         this.name = name;
         this.description = description;
@@ -31,7 +31,7 @@ public class DefaultRelation implements Relation {
     }
 
     public Path getHref() {
-        return path;
+        return href;
     }
 
     public Action getAction() {
