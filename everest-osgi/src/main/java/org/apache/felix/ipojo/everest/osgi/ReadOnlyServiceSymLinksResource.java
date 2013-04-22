@@ -18,12 +18,12 @@ import java.util.List;
  * Date: 4/21/13
  * Time: 8:08 PM
  */
-public class ReadOnlyServiceSymlinksResource extends DefaultReadOnlyResource {
+public class ReadOnlyServiceSymLinksResource extends DefaultReadOnlyResource {
 
 
     private final ServiceReference[] m_services;
 
-    public ReadOnlyServiceSymlinksResource(Path path, ServiceReference[] services) {
+    public ReadOnlyServiceSymLinksResource(Path path, ServiceReference[] services) {
         super(path);
         m_services = services;
     }

@@ -9,7 +9,7 @@ import org.osgi.framework.Version;
 
 public class TestResources extends Common {
 
-    private Resource get(String path) throws ResourceNotFoundException, IllegalActionOnResourceException {
+    public Resource get(String path) throws ResourceNotFoundException, IllegalActionOnResourceException {
         return everest.process(new DefaultRequest(Action.GET, Path.from(path), null));
     }
 

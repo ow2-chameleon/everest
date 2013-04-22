@@ -35,10 +35,10 @@ public class BundleServicesResource extends DefaultReadOnlyResource {
         ArrayList<Resource> resources = new ArrayList<Resource>();
         // bundle registered services
         ServiceReference[] registered = m_bundle.getRegisteredServices();
-        resources.add(new ReadOnlyServiceSymlinksResource(getPath().add(Path.from(Path.SEPARATOR + BUNDLE_REGISTERED_SERVICES_NAME)), registered));
+        resources.add(new ReadOnlyServiceSymLinksResource(getPath().add(Path.from(Path.SEPARATOR + BUNDLE_REGISTERED_SERVICES_NAME)), registered));
         // bundle used services
         ServiceReference[] uses = m_bundle.getServicesInUse();
-        resources.add(new ReadOnlyServiceSymlinksResource(getPath().add(Path.from(Path.SEPARATOR + BUNDLE_USE_SERVICES_NAME)), uses));
+        resources.add(new ReadOnlyServiceSymLinksResource(getPath().add(Path.from(Path.SEPARATOR + BUNDLE_USE_SERVICES_NAME)), uses));
         return resources;
     }
 }
