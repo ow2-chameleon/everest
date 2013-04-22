@@ -9,7 +9,7 @@ import java.util.*;
  * We recommend resource metadata to be immutable.
  * Here is a basic implementation.
  */
-public class ImmutableResourceMetadata  extends HashMap<String, Object> implements ResourceMetadata {
+public class ImmutableResourceMetadata  extends LinkedHashMap<String, Object> implements ResourceMetadata {
 
     public static ImmutableResourceMetadata of(ResourceMetadata metadata) {
         return of((Map<String, Object>) metadata);
@@ -78,7 +78,7 @@ public class ImmutableResourceMetadata  extends HashMap<String, Object> implemen
 
     public static class Builder {
 
-        Map<String, Object> accumulator = new HashMap<String, Object>();
+        Map<String, Object> accumulator = new LinkedHashMap<String, Object>();
 
         public Builder() {}
 
@@ -90,6 +90,11 @@ public class ImmutableResourceMetadata  extends HashMap<String, Object> implemen
 
         public Builder set(String k, Object v) {
             accumulator.put(k ,v);
+            return this;
+        }
+
+        public Builder putAll(Map<String, Object> map) {
+            accumulator.putAll(map);
             return this;
         }
 
@@ -131,7 +136,7 @@ public class ImmutableResourceMetadata  extends HashMap<String, Object> implemen
         if (resources == null) {
             return Collections.emptyMap();
         } else {
-            Map<String, ResourceMetadata> map = new HashMap<String, ResourceMetadata>();
+            Map<String, ResourceMetadata> map = new LinkedHashMap<String, ResourceMetadata>();
             for (Resource res : resources) {
                 map.put(builder.key(res), res.getMetadata());
             }

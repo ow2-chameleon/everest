@@ -15,7 +15,7 @@ import java.util.*;
 @Provides(specifications = EverestService.class)
 public class Everest extends DefaultReadOnlyResource implements EverestService {
 
-    private Map<Path, Resource> resources = new HashMap<Path, Resource>();
+    private Map<Path, Resource> resources = new LinkedHashMap<Path, Resource>();
     private List<ResourceExtender> extenders = new ArrayList<ResourceExtender>();
 
     public Everest() {
