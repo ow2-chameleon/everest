@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.PackageNamespace.*;
-import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.uniquePackageId;
+import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.uniqueCapabilityId;
 import static org.apache.felix.ipojo.everest.osgi.PackageResourceManager.PACKAGE_PATH;
 
 
@@ -41,9 +41,7 @@ public class PackageResource extends DefaultReadOnlyResource {
     private final Map<String, String> m_directives;
 
     public PackageResource(BundleCapability bundleCapability) {
-        super(PACKAGE_PATH.add(Path.from(uniquePackageId(bundleCapability.getRevision().getBundle().getBundleId(),
-                (String) bundleCapability.getAttributes().get(PACKAGE_NAMESPACE),
-                (Version) bundleCapability.getAttributes().get(PACKAGE_VERSION_ATTRIBUTE)))));
+        super(PACKAGE_PATH.add(Path.from(uniqueCapabilityId(bundleCapability))));
         m_bundleCapability = bundleCapability;
         m_attributes = bundleCapability.getAttributes();
         m_directives = bundleCapability.getDirectives();
@@ -52,7 +50,7 @@ public class PackageResource extends DefaultReadOnlyResource {
     }
 
     public String getUniquePackageId() {
-        return uniquePackageId(m_bundleCapability.getRevision().getBundle().getBundleId(), m_packageName, m_version);
+        return uniqueCapabilityId(m_bundleCapability);
     }
 
     public Bundle getBundle() {

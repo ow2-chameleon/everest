@@ -13,6 +13,7 @@ import org.osgi.framework.ServiceReference;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.getChild;
 import static org.apache.felix.ipojo.everest.osgi.ServiceResourceManager.SERVICES_PATH;
 
 /**
@@ -60,7 +61,7 @@ public class ServiceResource extends DefaultReadOnlyResource {
         // Bundle from which this service is registered
         Bundle bundle = m_serviceReference.getBundle();
         // TODO Wow should reconsider this!!
-        Resource bundleResource = BundleResourceManager.getInstance().getResource(BundleResourceManager.BUNDLE_PATH.add(Path.from(Path.SEPARATOR + bundle.getBundleId())).toString());
+        Resource bundleResource = getChild(BundleResourceManager.getInstance(), Path.SEPARATOR + bundle.getBundleId());
         if (bundleResource != null) {
             resources.add(new SymbolicLinkResource(getPath().add(Path.from(Path.SEPARATOR + FROM_BUNDLE_NAME)), bundleResource));
         }

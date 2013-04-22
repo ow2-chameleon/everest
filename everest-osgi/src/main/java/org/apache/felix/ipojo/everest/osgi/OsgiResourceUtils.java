@@ -1,9 +1,18 @@
 package org.apache.felix.ipojo.everest.osgi;
 
+import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
+import org.apache.felix.ipojo.everest.services.Path;
+import org.apache.felix.ipojo.everest.services.Resource;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Version;
+import org.osgi.framework.wiring.BundleCapability;
+import org.osgi.framework.wiring.BundleRequirement;
+
+import java.util.Map;
 
 import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.PackageNamespace.PACKAGE_ID_SEPARATOR;
+import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.PackageNamespace.PACKAGE_VERSION_ATTRIBUTE;
+
 
 /**
  * Created with IntelliJ IDEA.
@@ -32,7 +41,10 @@ public class OsgiResourceUtils {
         }
     }
 
-    public static String uniquePackageId(long bundleId, String packageName, Version version) {
+    public static String uniqueCapabilityId(BundleCapability bundleCapability) {
+        long bundleId = bundleCapability.getRevision().getBundle().getBundleId();
+        String packageName = bundleCapability.getAttributes().get(bundleCapability.getNamespace()).toString();
+        Version version = (Version) bundleCapability.getAttributes().get(PACKAGE_VERSION_ATTRIBUTE); // crossing fingers
         StringBuilder sb = new StringBuilder();
         sb.append(bundleId);
         sb.append(PACKAGE_ID_SEPARATOR);
@@ -42,7 +54,47 @@ public class OsgiResourceUtils {
         return sb.toString();
     }
 
+    public static String uniqueRequirementId(BundleRequirement bundleRequirement) {
+        long bundleId = bundleRequirement.getRevision().getBundle().getBundleId();
+        String packageName = (String) bundleRequirement.getAttributes().get(bundleRequirement.getNamespace());
+        StringBuilder sb = new StringBuilder();
+        sb.append(bundleId);
+        sb.append(PACKAGE_ID_SEPARATOR);
+        sb.append(packageName);
+        return sb.toString();
+    }
+
+    public static ImmutableResourceMetadata.Builder metadataFrom(ImmutableResourceMetadata.Builder metadataBuilder, BundleRequirement bundleRequirement) {
+        for (Map.Entry<String, Object> att : bundleRequirement.getAttributes().entrySet()) {
+            metadataBuilder.set(att.getKey(), att.getValue());
+        }
+        for (Map.Entry<String, String> dir : bundleRequirement.getDirectives().entrySet()) {
+            metadataBuilder.set(dir.getKey(), dir.getValue());
+        }
+        return metadataBuilder;
+    }
+
+    public static ImmutableResourceMetadata.Builder metadataFrom(ImmutableResourceMetadata.Builder metadataBuilder, BundleCapability bundleCapability) {
+        for (Map.Entry<String, Object> att : bundleCapability.getAttributes().entrySet()) {
+            metadataBuilder.set(att.getKey(), att.getValue());
+        }
+        for (Map.Entry<String, String> dir : bundleCapability.getDirectives().entrySet()) {
+            metadataBuilder.set(dir.getKey(), dir.getValue());
+        }
+        return metadataBuilder;
+    }
+
+    public static Resource getChild(Resource parentResource, String childName) {
+        Resource resource = null;
+        if (parentResource != null) {
+            resource = parentResource.getResource(parentResource.getPath().add(Path.from(Path.SEPARATOR + childName)).toString());
+        }
+        return resource;
+    }
+
     public class BundleNamespace {
+
+        public static final String BUNDLE_NAMESPACE = "osgi.wiring.bundle";
 
         public static final String BUNDLE_STATE = "bundle-state";
 

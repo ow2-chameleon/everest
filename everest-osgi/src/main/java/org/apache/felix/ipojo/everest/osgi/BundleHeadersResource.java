@@ -15,6 +15,8 @@ import java.util.*;
 
 import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.PackageNamespace.REQUIREMENT_RESOLUTION_DIRECTIVE;
 import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.PackageNamespace.RESOLUTION_DYNAMIC;
+import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.metadataFrom;
+import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.uniqueRequirementId;
 
 /**
  * Created with IntelliJ IDEA.
@@ -64,9 +66,7 @@ public class BundleHeadersResource extends DefaultReadOnlyResource {
     @Override
     public List<Resource> getResources() {
         ArrayList<Resource> resources = new ArrayList<Resource>();
-        //TODO export packages, import packages, dynamic-import, require bundles, native-code
         BundleRevision rev = m_bundle.adapt(BundleRevision.class);
-
         // package export
         List<BundleCapability> capabilities = rev.getDeclaredCapabilities(BundleRevision.PACKAGE_NAMESPACE);
         resources.add(new ReadOnlyPackageSymlinksResource(getPath().add(Path.from(Path.SEPARATOR + EXPORT_PACKAGE)), capabilities.toArray(new BundleCapability[0])));
@@ -76,8 +76,9 @@ public class BundleHeadersResource extends DefaultReadOnlyResource {
         Map<String, ResourceMetadata> imports = new HashMap<String, ResourceMetadata>();
         Map<String, ResourceMetadata> dynamicImports = new HashMap<String, ResourceMetadata>();
         for (BundleRequirement req : requirements) {
-            ResourceMetadata metadata = metadataFromRequirement(req);
-            String reqId = uniqueRequirementId(req); // TODO unique requirement id
+
+            ResourceMetadata metadata = metadataFrom(new ImmutableResourceMetadata.Builder(), req).build();
+            String reqId = uniqueRequirementId(req);
             if (req.getDirectives().get(REQUIREMENT_RESOLUTION_DIRECTIVE).equals(RESOLUTION_DYNAMIC)) {
                 dynamicImports.put(reqId, metadata);
             } else {
@@ -93,27 +94,12 @@ public class BundleHeadersResource extends DefaultReadOnlyResource {
         List<BundleRequirement> bundleRequirements = rev.getDeclaredRequirements(BundleRevision.BUNDLE_NAMESPACE);
         Map<String, ResourceMetadata> bundleRequires = new HashMap<String, ResourceMetadata>();
         for (BundleRequirement req : bundleRequirements) {
-            bundleRequires.put(uniqueRequirementId(req), metadataFromRequirement(req));
+            bundleRequires.put(uniqueRequirementId(req), metadataFrom(new ImmutableResourceMetadata.Builder(), req).build());
         }
         resources.add(new ReadOnlyLeafCollectionResource(getPath().add(Path.from(Path.SEPARATOR + REQUIRE_BUNDLE)), bundleRequires));
 
+        // TODO Native-Code
+
         return resources;
-    }
-
-    private ResourceMetadata metadataFromRequirement(BundleRequirement bundleRequirement) {
-        ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
-
-        for (Map.Entry<String, Object> att : bundleRequirement.getAttributes().entrySet()) {
-            metadataBuilder.set(att.getKey(), att.getValue());
-        }
-        for (Map.Entry<String, String> dir : bundleRequirement.getDirectives().entrySet()) {
-            metadataBuilder.set(dir.getKey(), dir.getValue());
-        }
-
-        return metadataBuilder.build();
-    }
-
-    private String uniqueRequirementId(BundleRequirement bundleRequirement) {
-        return null;
     }
 }
