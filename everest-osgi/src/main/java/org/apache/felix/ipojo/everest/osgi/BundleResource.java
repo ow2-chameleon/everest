@@ -1,5 +1,6 @@
 package org.apache.felix.ipojo.everest.osgi;
 
+import org.apache.felix.ipojo.everest.impl.DefaultRelation;
 import org.apache.felix.ipojo.everest.impl.DefaultResource;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.services.*;
@@ -23,6 +24,10 @@ import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.bundleStateT
  */
 public class BundleResource extends DefaultResource {
 
+    private final static String START_RELATION_NAME = "start";
+    private final static String STOP_RELATION_NAME = "stop";
+    private final static String UPDATE_RELATION_NAME = "start";
+
     private final Bundle m_bundle;
 
     private final boolean isFragment;
@@ -37,6 +42,13 @@ public class BundleResource extends DefaultResource {
         } else {
             isFragment = false;
         }
+
+        setRelations(
+                new DefaultRelation(getPath(), Action.POST, START_RELATION_NAME, ""),
+                new DefaultRelation(getPath(), Action.POST, STOP_RELATION_NAME, ""),
+                new DefaultRelation(getPath(), Action.POST, UPDATE_RELATION_NAME, "")
+        );
+
     }
 
     public ResourceMetadata getSimpleMetadata() {
@@ -65,11 +77,15 @@ public class BundleResource extends DefaultResource {
         resources.add(new BundleServicesResource(getPath(), m_bundle));
         return resources;
     }
-    //TODO add relations start stop update
 
     @Override
+<<<<<<< HEAD
     public Resource update(Request request) throws IllegalActionOnResourceException {
         //
+=======
+    public Resource post(Request request) throws IllegalActionOnResourceException {
+
+>>>>>>> bundle capability, requirement, wires
         return this;
     }
 

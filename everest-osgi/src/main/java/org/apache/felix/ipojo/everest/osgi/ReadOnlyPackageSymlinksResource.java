@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.PackageNamespace.*;
-import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.uniquePackageId;
+import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.uniqueCapabilityId;
 
 /**
  * Created with IntelliJ IDEA.
@@ -37,10 +37,9 @@ public class ReadOnlyPackageSymlinksResource extends DefaultReadOnlyResource {
             for (BundleCapability capability : m_capabilities) {
                 ImmutableResourceMetadata.Builder packageMetadataBuilder = new ImmutableResourceMetadata.Builder();
                 // calculate unique package Id
-                long bundleId = capability.getRevision().getBundle().getBundleId();
                 String packageName = (String) capability.getAttributes().get(PACKAGE_NAMESPACE);
                 Version version = (Version) capability.getAttributes().get(PACKAGE_VERSION_ATTRIBUTE);
-                String packageId = uniquePackageId(bundleId, packageName, version);
+                String packageId = uniqueCapabilityId(capability);
                 packageMetadataBuilder.set(PACKAGE_NAMESPACE, packageName);
                 packageMetadataBuilder.set(PACKAGE_VERSION_ATTRIBUTE, version);
                 packageMetadataBuilder.set(CAPABILITY_BUNDLE_SYMBOLICNAME_ATTRIBUTE, capability.getRevision().getBundle().getSymbolicName());
@@ -57,10 +56,7 @@ public class ReadOnlyPackageSymlinksResource extends DefaultReadOnlyResource {
         if (m_capabilities != null) {
             for (BundleCapability capability : m_capabilities) {
                 // calculate unique package Id
-                long bundleId = capability.getRevision().getBundle().getBundleId();
-                String packageName = (String) capability.getAttributes().get(PACKAGE_NAMESPACE);
-                Version version = (Version) capability.getAttributes().get(PACKAGE_VERSION_ATTRIBUTE);
-                String packageId = uniquePackageId(bundleId, packageName, version);
+                String packageId = uniqueCapabilityId(capability);
                 Path usesPath = getPath().add(Path.from(Path.SEPARATOR + packageId));
                 Resource resource = PackageResourceManager.getInstance().getResource(PackageResourceManager.PACKAGE_PATH.add(Path.from(Path.SEPARATOR + packageId)).toString());
                 if (resource != null) {
