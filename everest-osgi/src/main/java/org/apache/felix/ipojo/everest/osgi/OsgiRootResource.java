@@ -62,6 +62,11 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
 
         m_context = context;
 
+        // Initialize subresource managers
+        m_bundleResourceManager = BundleResourceManager.getInstance();
+        m_packageResourceManager = PackageResourceManager.getInstance();
+        m_serviceResourceManager = ServiceResourceManager.getInstance();
+
         ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
 
         //TODO take some metadata from the framework
@@ -82,16 +87,21 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
         }
 
         m_bundleTracker = new BundleTracker(m_context, stateMask, this);
-        m_bundleTracker.open();
         m_serviceTracker = new ServiceTracker(m_context, allServicesFilter, this);
-        m_serviceTracker.open(true);
-
-        // Initialize subresource managers
-        m_bundleResourceManager = BundleResourceManager.getInstance();
-        m_packageResourceManager = PackageResourceManager.getInstance();
-        m_serviceResourceManager = ServiceResourceManager.getInstance();
 
         m_metadata = metadataBuilder.build();
+    }
+
+    @Validate
+    public void started() {
+        m_bundleTracker.open();
+        m_serviceTracker.open(true);
+    }
+
+    @Invalidate
+    public void stopped() {
+        m_bundleTracker.close();
+        m_serviceTracker.close();
     }
 
     @Override
@@ -191,7 +201,7 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
     // Service Tracker Methods
 
     public Object addingService(ServiceReference serviceReference) {
-        String serviceId = (String) serviceReference.getProperty(Constants.SERVICE_ID);
+        Object serviceId = serviceReference.getProperty(Constants.SERVICE_ID);
         m_serviceResourceManager.addService(serviceReference);
         return serviceId;
     }

@@ -33,7 +33,7 @@ public class ServiceResource extends DefaultReadOnlyResource {
     private ServiceReference m_serviceReference;
 
     public ServiceResource(ServiceReference serviceReference) {
-        super(SERVICES_PATH.add(Path.from((String) serviceReference.getProperty(Constants.SERVICE_ID))));
+        super(SERVICES_PATH.add(Path.from(Path.SEPARATOR + Long.toString((Long) serviceReference.getProperty(Constants.SERVICE_ID)))));
         m_serviceReference = serviceReference;
     }
 

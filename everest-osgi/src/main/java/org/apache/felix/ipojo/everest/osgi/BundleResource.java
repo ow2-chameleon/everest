@@ -32,7 +32,7 @@ public class BundleResource extends DefaultResource {
     private final boolean isFragment;
 
     public BundleResource(Bundle bundle) {
-        super(BUNDLE_PATH.add(Path.from(String.valueOf(bundle.getBundleId()))));
+        super(BUNDLE_PATH.add(Path.from(Path.SEPARATOR + Long.toString(bundle.getBundleId()))));
         m_bundle = bundle;
         // Check if is fragment
         BundleRevision rev = m_bundle.adapt(BundleRevision.class);
