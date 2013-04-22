@@ -1,14 +1,24 @@
 package org.apache.felix.ipojo.everest.ipojo.test;
 
-import junit.framework.Assert;
 import org.apache.felix.ipojo.everest.impl.DefaultRequest;
 import org.apache.felix.ipojo.everest.services.*;
 import org.junit.Test;
 import org.ops4j.pax.exam.MavenUtils;
 
+import static org.fest.assertions.Assertions.assertThat;
+
 public class TestResources extends Common {
 
-    public Resource get(String path) throws ResourceNotFoundException, IllegalActionOnResourceException {
+    /**
+     * Shortcut method to process a READ request on an everest resource.
+     *
+     * @param path the path of the resource to read
+     * @return the read resource
+     * @throws ResourceNotFoundException if the resource cannot be found
+     * @throws IllegalActionOnResourceException
+     *                                   if READ is not a valid operation on the targeted resource
+     */
+    public Resource read(String path) throws ResourceNotFoundException, IllegalActionOnResourceException {
         return everest.process(new DefaultRequest(Action.READ, Path.from(path), null));
     }
 
@@ -17,7 +27,7 @@ public class TestResources extends Common {
      */
     @Test
     public void testRootIsPresent() throws ResourceNotFoundException, IllegalActionOnResourceException {
-        get("/ipojo");
+        read("/ipojo");
     }
 
     /**
@@ -25,10 +35,10 @@ public class TestResources extends Common {
      */
     @Test
     public void testIpojoVersion() throws ResourceNotFoundException, IllegalActionOnResourceException {
-        Resource ipojo = get("/ipojo");
+        Resource ipojo = read("/ipojo");
         // Get the iPOJO version using Pax Exam and compare versions.
         String version = MavenUtils.getArtifactVersion("org.apache.felix", "org.apache.felix.ipojo").replace('-', '.');
-        Assert.assertEquals(version, ipojo.getMetadata().get("version"));
+        assertThat(ipojo.getMetadata().get("version")).isEqualTo(version);
     }
 
     /**
@@ -36,7 +46,7 @@ public class TestResources extends Common {
      */
     @Test
     public void testFactoryIsPresent() throws ResourceNotFoundException, IllegalActionOnResourceException {
-        get("/ipojo/factory");
+        read("/ipojo/factory");
     }
 
     /**
@@ -44,7 +54,7 @@ public class TestResources extends Common {
      */
     @Test
     public void testHandlerIsPresent() throws ResourceNotFoundException, IllegalActionOnResourceException {
-        get("/ipojo/handler");
+        read("/ipojo/handler");
     }
 
     /**
@@ -52,7 +62,7 @@ public class TestResources extends Common {
      */
     @Test
     public void testInstanceIsPresent() throws ResourceNotFoundException, IllegalActionOnResourceException {
-        get("/ipojo/instance");
+        read("/ipojo/instance");
     }
 
     /**
@@ -60,13 +70,7 @@ public class TestResources extends Common {
      */
     @Test
     public void testDeclarationIsPresent() throws ResourceNotFoundException, IllegalActionOnResourceException {
-        get("/ipojo/declaration");
+        read("/ipojo/declaration");
     }
-
-//    //TODO move this to TestFactories
-//    @Test
-//    public void testFooFactoryIsPresent() throws ResourceNotFoundException, IllegalActionOnResourceException {
-//        everest.process(new DefaultRequest(Action.READ, Path.from("/ipojo/factory/Foo/1.2.3.foo"), null));
-//    }
 
 }

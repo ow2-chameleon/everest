@@ -56,7 +56,7 @@ public class Common {
     OSGiHelper osgiHelper;
     IPOJOHelper ipojoHelper;
 
-    public Resource get(String path) throws ResourceNotFoundException, IllegalActionOnResourceException {
+    public Resource read(String path) throws ResourceNotFoundException, IllegalActionOnResourceException {
         return everest.process(new DefaultRequest(Action.READ, Path.from(path), null));
     }
 
