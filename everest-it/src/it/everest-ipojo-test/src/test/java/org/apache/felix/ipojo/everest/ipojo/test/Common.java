@@ -38,7 +38,6 @@ import java.util.Collection;
 import java.util.List;
 
 import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.fail;
 import static org.ops4j.pax.exam.CoreOptions.*;
 
 /**
@@ -57,6 +56,10 @@ public class Common {
     OSGiHelper osgiHelper;
     IPOJOHelper ipojoHelper;
 
+    public Resource get(String path) throws ResourceNotFoundException, IllegalActionOnResourceException {
+        return everest.process(new DefaultRequest(Action.GET, Path.from(path), null));
+    }
+
     @Configuration
     public Option[] config() throws MalformedURLException {
         Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
@@ -66,6 +69,7 @@ public class Common {
                 ipojoBundles(),
                 everestBundles(),
                 junitBundles(),
+                festBundles(),
                 testedBundle(),
                 systemProperty("org.ops4j.pax.logging.DefaultServiceLog.level").value("WARN")
         );
@@ -97,7 +101,7 @@ public class Common {
         return new DefaultCompositeOption(
                 mavenBundle("org.apache.felix", "org.apache.felix.ipojo").versionAsInProject(),
                 mavenBundle("org.ow2.chameleon.testing", "osgi-helpers").versionAsInProject(),
-                mavenBundle("org.apache.felix",  "org.apache.felix.configadmin").versionAsInProject()
+                mavenBundle("org.apache.felix", "org.apache.felix.configadmin").versionAsInProject()
         );
     }
 
@@ -105,6 +109,14 @@ public class Common {
         return new DefaultCompositeOption(
                 mavenBundle("org.apache.felix.ipojo", "everest-core").versionAsInProject(),
                 mavenBundle("org.apache.felix.ipojo", "everest-ipojo").versionAsInProject()
+        );
+    }
+
+    // Wrap fest-util and fest-assert into a bundle so we can test with happiness.
+    public CompositeOption festBundles() {
+        return new DefaultCompositeOption(
+                wrappedBundle(mavenBundle("org.easytesting", "fest-util").versionAsInProject()),
+                wrappedBundle(mavenBundle("org.easytesting", "fest-assert").versionAsInProject())
         );
     }
 
@@ -124,12 +136,12 @@ public class Common {
         for (File file : files) {
             if (file.isDirectory()) {
                 // By convention we export of .services and .service package
-                if (file.getName().endsWith("services")  || file.getName().endsWith("service")) {
+                if (file.getName().endsWith("services") || file.getName().endsWith("service")) {
                     services.add(file);
                 }
             } else {
                 // We need to compute the path
-                String path = file.getAbsolutePath().substring(classes.getAbsolutePath().length() +1);
+                String path = file.getAbsolutePath().substring(classes.getAbsolutePath().length() + 1);
                 tested.add(path, file.toURI().toURL());
                 System.out.println(file.getName() + " added to " + path);
             }
@@ -137,8 +149,10 @@ public class Common {
 
         String export = "";
         for (File file : services) {
-            if (export.length() > 0) { export += ", "; }
-            String path = file.getAbsolutePath().substring(classes.getAbsolutePath().length() +1);
+            if (export.length() > 0) {
+                export += ", ";
+            }
+            String path = file.getAbsolutePath().substring(classes.getAbsolutePath().length() + 1);
             String packageName = path.replace('/', '.');
             export += packageName;
         }
@@ -169,6 +183,7 @@ public class Common {
      * </ul>
      * If the stability can't be reached after a specified time,
      * the method throws a {@link IllegalStateException}.
+     *
      * @param context the bundle context
      * @throws IllegalStateException when the stability can't be reach after a several attempts.
      */
@@ -195,7 +210,7 @@ public class Common {
         count = 0;
         int count1 = 0;
         int count2 = 0;
-        while (! serviceStability && count < 500) {
+        while (!serviceStability && count < 500) {
             try {
                 ServiceReference[] refs = context.getServiceReferences((String) null, null);
                 count1 = refs.length;
@@ -219,6 +234,7 @@ public class Common {
 
     /**
      * Are bundle stables.
+     *
      * @param bc the bundle context
      * @return <code>true</code> if every bundles are activated.
      */
