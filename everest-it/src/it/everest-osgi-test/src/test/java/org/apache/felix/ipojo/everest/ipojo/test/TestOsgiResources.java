@@ -1,7 +1,8 @@
 package org.apache.felix.ipojo.everest.ipojo.test;
 
-import org.apache.felix.ipojo.everest.impl.DefaultRequest;
-import org.apache.felix.ipojo.everest.services.*;
+import org.apache.felix.ipojo.everest.services.IllegalActionOnResourceException;
+import org.apache.felix.ipojo.everest.services.Resource;
+import org.apache.felix.ipojo.everest.services.ResourceNotFoundException;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -20,6 +21,26 @@ public class TestOsgiResources extends Common {
     public void testOsgiRootIsPresent() throws ResourceNotFoundException, IllegalActionOnResourceException {
         Resource osgi = get("/osgi");
         Assert.assertNotNull(osgi);
+    }
+
+    @Test
+    public void testOsgiBundles() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        Assert.assertNotNull(get("/osgi/bundles"));
+    }
+
+    @Test
+    public void testOsgiPackages() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        Assert.assertNotNull(get("/osgi/packages"));
+    }
+
+    @Test
+    public void testOsgiServices() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        Assert.assertNotNull(get("/osgi/services"));
+    }
+
+    @Test
+    public void testOsgiBundleZero() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        Assert.assertNotNull(get("/osgi/bundles/0"));
     }
 
 }
