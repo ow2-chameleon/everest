@@ -31,7 +31,7 @@ public class InstancesResource extends DefaultReadOnlyResource {
 
     void removeInstance(Architecture instance) {
         synchronized (m_instances) {
-            m_instances.remove(instance.getInstanceDescription().getName());
+            m_instances.remove(instance.getInstanceDescription().getName()).setStale();
         }
     }
 

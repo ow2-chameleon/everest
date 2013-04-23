@@ -6,6 +6,7 @@ import org.apache.felix.ipojo.IPojoFactory;
 import org.apache.felix.ipojo.architecture.Architecture;
 import org.apache.felix.ipojo.architecture.InstanceDescription;
 import org.apache.felix.ipojo.everest.impl.DefaultRequest;
+import org.apache.felix.ipojo.everest.ipojo.services.FooService;
 import org.apache.felix.ipojo.everest.services.*;
 import org.junit.Test;
 import org.osgi.framework.InvalidSyntaxException;
@@ -14,7 +15,9 @@ import org.osgi.framework.ServiceReference;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.fest.assertions.Assertions.*;
 
@@ -58,6 +61,23 @@ public class TestFactories extends Common {
         assertThat(bar2.get("version")).isEqualTo("2.0.0");
     }
 
+    // Test that illegal actions on /ipojo/factory are illegal
+
+    @Test(expected = IllegalActionOnResourceException.class)
+    public void testCreateOnFactories() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        everest.process(new DefaultRequest(Action.CREATE, Path.from("/ipojo/factory"), null));
+    }
+
+    @Test(expected = IllegalActionOnResourceException.class)
+    public void testUpdateOnFactories() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        everest.process(new DefaultRequest(Action.UPDATE, Path.from("/ipojo/factory"), null));
+    }
+
+    @Test(expected = IllegalActionOnResourceException.class)
+    public void testDeleteOnFactories() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        everest.process(new DefaultRequest(Action.DELETE, Path.from("/ipojo/factory"), null));
+    }
+
     /**
      * Test that the resource representing all the factories named "Foo" has the expected content.
      */
@@ -73,6 +93,23 @@ public class TestFactories extends Common {
         assertThat(foo).isNotNull();
         assertThat(foo.get("name")).isEqualTo("Foo");
         assertThat(foo.get("version")).isEqualTo("1.2.3.foo");
+    }
+
+    // Test that illegal actions on /ipojo/factory/Foo are illegal
+
+    @Test(expected = IllegalActionOnResourceException.class)
+    public void testCreateOnFooFactories() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        everest.process(new DefaultRequest(Action.CREATE, Path.from("/ipojo/factory/Foo"), null));
+    }
+
+    @Test(expected = IllegalActionOnResourceException.class)
+    public void testUpdateOnFooFactories() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        everest.process(new DefaultRequest(Action.UPDATE, Path.from("/ipojo/factory/Foo"), null));
+    }
+
+    @Test(expected = IllegalActionOnResourceException.class)
+    public void testDeleteOnFooFactories() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        everest.process(new DefaultRequest(Action.DELETE, Path.from("/ipojo/factory/Foo"), null));
     }
 
     /**
@@ -167,14 +204,13 @@ public class TestFactories extends Common {
         //TODO Check more, as soon as more metadata are provided...
     }
 
-    //TODO test CREATE with good config, bad config (missing mandatory property)
     //TODO test that UPDATE is forbidden on factories
 
     /**
      * Test that a CREATE action on the resource representing Foo factory has the expected behavior.
      */
     @Test
-    public void tesCreateOnFooFactory() throws ResourceNotFoundException, IllegalActionOnResourceException {
+    public void testCreateOnFooFactory() throws ResourceNotFoundException, IllegalActionOnResourceException {
 
         // Request creation on factory Foo, without any parameter
         Request req = new DefaultRequest(Action.CREATE, Path.from("/ipojo/factory/Foo/1.2.3.foo"), null);
@@ -185,9 +221,67 @@ public class TestFactories extends Common {
         ResourceMetadata meta = result.getMetadata();
 
         // Check name
-        assertThat(meta.get("name", String.class)).startsWith("Foo-");
+        String name = meta.get("name", String.class);
+        assertThat(name).startsWith("Foo-");
+
+        // Check default configuration has taken place.
+        ServiceReference ref = ipojoHelper.getServiceReferenceByName(FooService.class.getName(), name);
+        assertThat(ref).isNotNull();
+        assertThat(ref.getProperty("fooCounter")).isEqualTo(0);
+
+        FooService foo = (FooService) bc.getService(ref);
+        assertThat(foo.getFoo()).isEqualTo("0");
 
         //TODO check relation to factory
+    }
+
+    /**
+     * Test that a CREATE action (with parameters) on the resource representing Foo factory has the expected behavior.
+     */
+    @Test
+    public void testCreateOnFooFactoryWithConfiguration() throws ResourceNotFoundException, IllegalActionOnResourceException {
+
+        Map<String, Object> config = new LinkedHashMap<String, Object>();
+        config.put("instance.name", "ConfiguredFoo");
+        config.put("fooPrefix", "__configured");
+        config.put("fooCounter", 666);
+
+        // Request creation on factory Foo, with configuration
+        Request req = new DefaultRequest(Action.CREATE, Path.from("/ipojo/factory/Foo/1.2.3.foo"), config);
+        Resource result = everest.process(req);
+        assertThat(result).isNotNull();
+
+        // Read metadata of resulting resource
+        ResourceMetadata meta = result.getMetadata();
+
+        // Check name
+        assertThat(meta.get("name", String.class)).isEqualTo("ConfiguredFoo");
+
+        // Check configuration has been taken into consideration.
+        ServiceReference ref = ipojoHelper.getServiceReferenceByName(FooService.class.getName(), "ConfiguredFoo");
+        assertThat(ref).isNotNull();
+        assertThat(ref.getProperty("fooCounter")).isEqualTo(666);
+
+        FooService foo = (FooService) bc.getService(ref);
+        assertThat(foo.getFoo()).isEqualTo("__configured666");
+        //TODO check relation to factory
+    }
+
+    /**
+     * Test that a CREATE action (with BAD parameters) on the resource representing Foo factory has the expected behavior.
+     */
+    @Test(expected=IllegalActionOnResourceException.class)
+    public void testCreateOnFooFactoryWithBadConfiguration() throws ResourceNotFoundException, IllegalActionOnResourceException {
+
+        Map<String, Object> badConfig = new LinkedHashMap<String, Object>();
+        badConfig.put("instance.name", "BadConfiguredFoo");
+        badConfig.put("fooPrefix", "__bad_configured");
+        badConfig.put("fooCounter", "notAnInteger");
+
+        // Request creation on factory Foo, with bad configuration
+        Request req = new DefaultRequest(Action.CREATE, Path.from("/ipojo/factory/Foo/1.2.3.foo"), badConfig);
+        Resource result = everest.process(req);
+
     }
 
     // ========================================================================
@@ -229,44 +323,48 @@ public class TestFactories extends Common {
         }
     }
 
-    // WARN: this is a hack!!!
-    private boolean killInstance(String name) throws InvalidSyntaxException {
+    // HACKS below this point!!!
+
+    private Architecture getArchitecture(String name) throws InvalidSyntaxException {
         Collection<ServiceReference<Architecture>> refs = bc.getServiceReferences(Architecture.class, "(architecture.instance=" + name + ")");
         if (refs.isEmpty()) {
-            return false;
+            return null;
         } else if (refs.size() > 1) {
             // Should never happen!
             throw new AssertionError("multiple architecture service with same instance name");
         }
         ServiceReference<Architecture> ref = refs.iterator().next();
-        Architecture arch = bc.getService(ref);
-        try {
-            ComponentInstance instance;
-            InstanceDescription desc = arch.getInstanceDescription();
-            Field shunt = InstanceDescription.class.getDeclaredField("m_instance");
-            shunt.setAccessible(true);
-            try {
-                instance = (ComponentInstance) shunt.get(desc);
-            } finally {
-                shunt.setAccessible(false);
-            }
-            // FATALITY!!!
-            instance.dispose();
-        } catch (NoSuchFieldException e) {
-            // Should never happen!
-            throw new AssertionError(e);
-        } catch (IllegalAccessException e) {
-            // Should never happen too!
-            throw new AssertionError(e);
-        } finally {
-            bc.ungetService(ref);
-        }
-        return true;
+        return bc.getService(ref);
+    }
 
+    private ComponentInstance getComponentInstance(String name) throws InvalidSyntaxException, NoSuchFieldException, IllegalAccessException {
+        Architecture arch = getArchitecture(name);
+        if (arch == null) {
+            return null;
+        }
+        ComponentInstance instance;
+        InstanceDescription desc = arch.getInstanceDescription();
+        Field shunt = InstanceDescription.class.getDeclaredField("m_instance");
+        shunt.setAccessible(true);
+        try {
+            return (ComponentInstance) shunt.get(desc);
+        } finally {
+            shunt.setAccessible(false);
+        }
     }
 
     // WARN: this is a hack!!!
-    private boolean killFactory(String name, String version) throws InvalidSyntaxException {
+    private boolean killInstance(String name) throws InvalidSyntaxException, NoSuchFieldException, IllegalAccessException {
+        ComponentInstance instance = getComponentInstance(name);
+        if (instance == null) {
+            return false;
+        }
+        // FATALITY!!!
+        instance.dispose();
+        return true;
+    }
+
+    private Factory getFactory(String name, String version) throws InvalidSyntaxException {
         // Scientifically build the selection filter.
         String filter = "(&(factory.name=" + name + ")";
         if (version != null) {
@@ -278,13 +376,22 @@ public class TestFactories extends Common {
 
         Collection<ServiceReference<Factory>> refs = bc.getServiceReferences(Factory.class, filter);
         if (refs.isEmpty()) {
-            return false;
+            return null;
         } else if (refs.size() > 1) {
             // Should never happen!
             throw new AssertionError("multiple factory service with same name/version");
         }
-        ServiceReference<Factory> ref = refs.iterator().next();
-        IPojoFactory f = (IPojoFactory) bc.getService(ref);
+        return bc.getService(refs.iterator().next());
+    }
+
+    // WARN: this is a hack!!!
+    private boolean killFactory(String name, String version) throws InvalidSyntaxException {
+        Factory factory = getFactory(name, version);
+        if (factory == null) {
+            return false;
+        }
+
+        IPojoFactory f = (IPojoFactory) factory;
         Method weapon = null;
         try {
             weapon = IPojoFactory.class.getDeclaredMethod("dispose");

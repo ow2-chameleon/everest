@@ -8,14 +8,14 @@ import org.apache.felix.ipojo.everest.ipojo.services.FooService;
 @Provides
 public class FooProviderImpl implements FooService {
 
-    @Property
+    @Property(value = "")
     private String fooPrefix;
 
-    @ServiceProperty
+    @ServiceProperty(value = "0")
     private int fooCounter;
 
     public String getFoo() {
-        return fooPrefix + Integer.toString(fooCounter);
+        return fooPrefix + Integer.toString(fooCounter++);
     }
     
 }
