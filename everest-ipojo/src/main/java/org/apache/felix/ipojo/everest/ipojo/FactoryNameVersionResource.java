@@ -1,10 +1,12 @@
 package org.apache.felix.ipojo.everest.ipojo;
 
 import org.apache.felix.ipojo.Factory;
+import org.apache.felix.ipojo.IPojoFactory;
 import org.apache.felix.ipojo.everest.impl.DefaultResource;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
-import org.apache.felix.ipojo.everest.services.Path;
-import org.apache.felix.ipojo.everest.services.ResourceMetadata;
+import org.apache.felix.ipojo.everest.services.*;
+
+import java.lang.reflect.Method;
 
 /**
  * '/ipojo/factory/$name/$version' resource, where $name stands for the name of a factory, and $version for its version.
@@ -69,5 +71,29 @@ public class FactoryNameVersionResource extends DefaultResource {
             default:
                 return "unknown";
         }
+    }
+
+    @Override
+    public Resource delete(Request request) throws IllegalActionOnResourceException {
+        // The factory must be destroyed.
+        IPojoFactory f = (IPojoFactory) m_factory;
+        Method weapon = null;
+        try {
+            //TODO find a common agreement on how to kill a factory. Is this the right way???
+            weapon = IPojoFactory.class.getDeclaredMethod("dispose");
+            weapon.setAccessible(true);
+            // FATALITY!!!
+            weapon.invoke(m_factory);
+        } catch (Exception e) {
+            throw new IllegalStateException("cannot kill factory", e);
+        } finally {
+            // It's a bad idea to let kids play with such a weapon...
+            if (weapon != null) {
+                weapon.setAccessible(false);
+            }
+        }
+        // This resource should be auto-removed from its parent, since the represented Factory service has gone (forever)
+        // Rest in peace little factory!
+        return null;
     }
 }
