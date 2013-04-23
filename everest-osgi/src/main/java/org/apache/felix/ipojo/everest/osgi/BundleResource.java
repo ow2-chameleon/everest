@@ -1,5 +1,7 @@
 package org.apache.felix.ipojo.everest.osgi;
 
+import org.apache.felix.ipojo.everest.impl.DefaultParameter;
+import org.apache.felix.ipojo.everest.impl.DefaultRelation;
 import org.apache.felix.ipojo.everest.impl.DefaultResource;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.services.*;
@@ -7,6 +9,7 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.Constants;
 import org.osgi.framework.wiring.BundleRevision;
 
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,16 +26,15 @@ import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.bundleStateT
  */
 public class BundleResource extends DefaultResource {
 
-    private final static String START_RELATION_NAME = "start";
-    private final static String STOP_RELATION_NAME = "stop";
-    private final static String UPDATE_RELATION_NAME = "start";
+    private final static String NEW_STATE_RELATION = "new-state";
+    private final static String UPDATE_RELATION_NAME = "update";
 
     private final Bundle m_bundle;
 
     private final boolean isFragment;
 
     public BundleResource(Bundle bundle) {
-        super(BUNDLE_PATH.add(Path.from(Path.SEPARATOR + Long.toString(bundle.getBundleId()))));
+        super(BUNDLE_PATH.addElements(Long.toString(bundle.getBundleId())));
         m_bundle = bundle;
         // Check if is fragment
         BundleRevision rev = m_bundle.adapt(BundleRevision.class);
@@ -43,7 +45,18 @@ public class BundleResource extends DefaultResource {
         }
 
         setRelations(
-                //        new DefaultRelation(getPath(), Action.UPDATE, , "")
+                new DefaultRelation(getPath(), Action.UPDATE, UPDATE_RELATION_NAME,
+                        new DefaultParameter()
+                                .name("input")
+                                .description("input data")
+                                .optional(false)
+                                .type(ByteArrayInputStream.class)),
+                new DefaultRelation(getPath(), Action.UPDATE, NEW_STATE_RELATION,
+                        new DefaultParameter()
+                                .name("newState")
+                                .description(BUNDLE_STATE)
+                                .optional(false)
+                                .type(Integer.class))
         );
 
     }

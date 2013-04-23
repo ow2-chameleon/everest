@@ -1,8 +1,9 @@
 package org.apache.felix.ipojo.everest.osgi;
 
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
+import org.apache.felix.ipojo.everest.impl.DefaultRelation;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
-import org.apache.felix.ipojo.everest.impl.SymbolicLinkResource;
+import org.apache.felix.ipojo.everest.services.Action;
 import org.apache.felix.ipojo.everest.services.Path;
 import org.apache.felix.ipojo.everest.services.Resource;
 import org.apache.felix.ipojo.everest.services.ResourceMetadata;
@@ -46,12 +47,16 @@ public class PackageResource extends DefaultReadOnlyResource {
     private ArrayList<Bundle> importers = new ArrayList<Bundle>();
 
     public PackageResource(BundleCapability bundleCapability) {
-        super(PACKAGE_PATH.add(Path.from(Path.SEPARATOR + uniqueCapabilityId(bundleCapability))));
+        super(PACKAGE_PATH.addElements(uniqueCapabilityId(bundleCapability)));
         m_bundleCapability = bundleCapability;
         m_attributes = bundleCapability.getAttributes();
         m_directives = bundleCapability.getDirectives();
         m_packageName = (String) m_attributes.get(PACKAGE_NAMESPACE);
         m_version = (Version) m_attributes.get(PACKAGE_VERSION_ATTRIBUTE);
+
+        // provider bundle
+        Bundle bundle = m_bundleCapability.getRevision().getBundle();
+        Path bundlePath = BundleResourceManager.getInstance().getPath().addElements(Long.toString(bundle.getBundleId()));
 
         // calculate importers
         BundleWiring wiring = m_bundleCapability.getRevision().getBundle().adapt(BundleWiring.class);
@@ -62,6 +67,10 @@ public class PackageResource extends DefaultReadOnlyResource {
                 importers.add(requirerBundle);
             }
         }
+        // Set relations
+        setRelations(
+                new DefaultRelation(bundlePath, Action.READ, PROVIDER_BUNDLE_NAME)
+        );
 
     }
 
@@ -98,16 +107,8 @@ public class PackageResource extends DefaultReadOnlyResource {
     @Override
     public List<Resource> getResources() {
         ArrayList<Resource> resources = new ArrayList<Resource>();
-        // provider bundle
-        Bundle bundle = m_bundleCapability.getRevision().getBundle();
-        // create a link to bundle
-        Resource bundleResource = BundleResourceManager.getInstance().getResource(BundleResourceManager.BUNDLE_PATH.add(Path.from(Path.SEPARATOR + bundle.getBundleId())).toString());
-        if (bundleResource != null) {
-            resources.add(new SymbolicLinkResource(getPath().add(Path.from(Path.SEPARATOR + PROVIDER_BUNDLE_NAME)), bundleResource));
-        }
-
         // create links to importer bundles
-        resources.add(new ReadOnlyBundleSymlinksResource(getPath().add(Path.from(Path.SEPARATOR + IMPORTER_BUNDLE_NAME)), importers.toArray(new Bundle[0])));
+        resources.add(new BundleRelationsResource(getPath().addElements(IMPORTER_BUNDLE_NAME), importers.toArray(new Bundle[0])));
         return resources;
     }
 }

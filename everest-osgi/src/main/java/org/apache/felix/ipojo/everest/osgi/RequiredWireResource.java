@@ -1,18 +1,16 @@
 package org.apache.felix.ipojo.everest.osgi;
 
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
+import org.apache.felix.ipojo.everest.impl.DefaultRelation;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
-import org.apache.felix.ipojo.everest.impl.SymbolicLinkResource;
+import org.apache.felix.ipojo.everest.services.Action;
 import org.apache.felix.ipojo.everest.services.Path;
-import org.apache.felix.ipojo.everest.services.Resource;
 import org.apache.felix.ipojo.everest.services.ResourceMetadata;
 import org.osgi.framework.wiring.BundleCapability;
 import org.osgi.framework.wiring.BundleWire;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.*;
+import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.uniqueCapabilityId;
+import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.uniqueRequirementId;
 
 /**
  * Created with IntelliJ IDEA.
@@ -29,6 +27,16 @@ public class RequiredWireResource extends DefaultReadOnlyResource {
     public RequiredWireResource(Path path, BundleWire wire) {
         super(path.add(Path.from(Path.SEPARATOR + wire.hashCode())));
         m_wire = wire;
+        //find capability
+        BundleCapability capability = m_wire.getCapability();
+        String capabilityId = OsgiResourceUtils.uniqueCapabilityId(capability);
+        Path capabilityPath = BundleResourceManager.getInstance().getPath().addElements(
+                Long.toString(capability.getRevision().getBundle().getBundleId()),
+                BundleWiresResource.WIRES_PATH,
+                BundleWiresResource.CAPABILITIES_PATH,
+                capabilityId
+        );
+        setRelations(new DefaultRelation(capabilityPath, Action.READ, WIRE_CAPABILITY));
     }
 
     @Override
@@ -37,21 +45,6 @@ public class RequiredWireResource extends DefaultReadOnlyResource {
         metadataBuilder.set(BundleWiresResource.REQUIREMENT_PATH, uniqueRequirementId(m_wire.getRequirement()));
         metadataBuilder.set(BundleWiresResource.CAPABILITY_PATH, uniqueCapabilityId(m_wire.getCapability()));
         return metadataBuilder.build();
-    }
-
-    @Override
-    public List<Resource> getResources() {
-        ArrayList<Resource> resources = new ArrayList<Resource>();
-        //find capability
-        BundleCapability capability = m_wire.getCapability();
-        String capabilityId = OsgiResourceUtils.uniqueCapabilityId(capability);
-        Resource bundleRes = getChild(BundleResourceManager.getInstance(), Long.toString(capability.getRevision().getBundle().getBundleId()));
-        Resource capabilitiesRes = getChild(bundleRes, BundleWiresResource.WIRES_PATH + Path.SEPARATOR + BundleWiresResource.CAPABILITIES_PATH);
-        Resource capabilityRes = getChild(capabilitiesRes, capabilityId);
-        if (capabilityRes != null) {
-            resources.add(new SymbolicLinkResource(getPath().add(Path.from(Path.SEPARATOR + WIRE_CAPABILITY)), capabilityRes));
-        }
-        return resources;
     }
 
 }

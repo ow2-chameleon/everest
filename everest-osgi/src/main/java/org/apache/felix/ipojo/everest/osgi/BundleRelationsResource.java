@@ -1,10 +1,11 @@
 package org.apache.felix.ipojo.everest.osgi;
 
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
+import org.apache.felix.ipojo.everest.impl.DefaultRelation;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
-import org.apache.felix.ipojo.everest.impl.SymbolicLinkResource;
+import org.apache.felix.ipojo.everest.services.Action;
 import org.apache.felix.ipojo.everest.services.Path;
-import org.apache.felix.ipojo.everest.services.Resource;
+import org.apache.felix.ipojo.everest.services.Relation;
 import org.apache.felix.ipojo.everest.services.ResourceMetadata;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Constants;
@@ -21,13 +22,21 @@ import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.bundleStateT
  * Date: 4/21/13
  * Time: 7:01 PM
  */
-public class ReadOnlyBundleSymlinksResource extends DefaultReadOnlyResource {
+public class BundleRelationsResource extends DefaultReadOnlyResource {
 
     private final Bundle[] m_uses;
 
-    public ReadOnlyBundleSymlinksResource(Path path, Bundle[] uses) {
+    public BundleRelationsResource(Path path, Bundle[] uses) {
         super(path);
         m_uses = uses;
+        if (m_uses != null) {
+            List<Relation> relations = new ArrayList<Relation>();
+            for (Bundle use : m_uses) {
+                Path bundlePath = BundleResourceManager.getInstance().getPath().add(Path.from(Path.SEPARATOR + use.getBundleId()));
+                relations.add(new DefaultRelation(bundlePath, Action.READ, Long.toString(use.getBundleId())));
+            }
+            setRelations(relations);
+        }
     }
 
     @Override
@@ -43,20 +52,5 @@ public class ReadOnlyBundleSymlinksResource extends DefaultReadOnlyResource {
             }
         }
         return metadataBuilder.build();
-    }
-
-    @Override
-    public List<Resource> getResources() {
-        ArrayList<Resource> resources = new ArrayList<Resource>();
-        if (m_uses != null) {
-            for (Bundle use : m_uses) {
-                Path usesPath = getPath().add(Path.from(Path.SEPARATOR + use.getBundleId()));
-                Resource resource = BundleResourceManager.getInstance().getResource(BundleResourceManager.BUNDLE_PATH.add(Path.from(Path.SEPARATOR + use.getBundleId())).toString());
-                if (resource != null) {
-                    resources.add(new SymbolicLinkResource(usesPath, resource));
-                }
-            }
-        }
-        return resources;
     }
 }

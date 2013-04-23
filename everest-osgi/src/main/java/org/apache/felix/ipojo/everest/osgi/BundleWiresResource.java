@@ -42,7 +42,7 @@ public class BundleWiresResource extends DefaultReadOnlyResource {
     Map<BundleRequirement, Set<BundleWire>> requirements = new HashMap<BundleRequirement, Set<BundleWire>>();
 
     public BundleWiresResource(Path path, Bundle bundle) {
-        super(path.add(Path.from(Path.SEPARATOR + WIRES_PATH)));
+        super(path.addElements(WIRES_PATH));
         m_bundle = bundle;
         BundleWiring wiring = m_bundle.adapt(BundleWiring.class);
 
@@ -91,10 +91,10 @@ public class BundleWiresResource extends DefaultReadOnlyResource {
     public List<Resource> getResources() {
         ArrayList<Resource> resources = new ArrayList<Resource>();
         for (Entry<BundleCapability, Set<BundleWire>> capabilityWires : capabilities.entrySet()) {
-            resources.add(new BundleCapabilityResource(getPath().add(Path.from(Path.SEPARATOR + CAPABILITIES_PATH)), capabilityWires.getKey(), capabilityWires.getValue()));
+            resources.add(new BundleCapabilityResource(getPath().addElements(CAPABILITIES_PATH), capabilityWires.getKey(), capabilityWires.getValue()));
         }
         for (Entry<BundleRequirement, Set<BundleWire>> requirementWires : requirements.entrySet()) {
-            resources.add(new BundleRequirementResource(getPath().add(Path.from(Path.SEPARATOR + REQUIREMENTS_PATH)), requirementWires.getKey(), requirementWires.getValue()));
+            resources.add(new BundleRequirementResource(getPath().addElements(REQUIREMENTS_PATH), requirementWires.getKey(), requirementWires.getValue()));
         }
         return resources;
     }

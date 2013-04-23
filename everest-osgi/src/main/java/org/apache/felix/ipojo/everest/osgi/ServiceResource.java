@@ -1,19 +1,21 @@
 package org.apache.felix.ipojo.everest.osgi;
 
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
+import org.apache.felix.ipojo.everest.impl.DefaultRelation;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
-import org.apache.felix.ipojo.everest.impl.SymbolicLinkResource;
-import org.apache.felix.ipojo.everest.services.Path;
-import org.apache.felix.ipojo.everest.services.Resource;
-import org.apache.felix.ipojo.everest.services.ResourceMetadata;
+import org.apache.felix.ipojo.everest.services.*;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
+import org.osgi.framework.wiring.BundleCapability;
+import org.osgi.framework.wiring.BundleRevision;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.getChild;
+import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.PackageNamespace.PACKAGE_NAMESPACE;
+import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.packageNamesFromService;
+import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.uniqueCapabilityId;
 import static org.apache.felix.ipojo.everest.osgi.ServiceResourceManager.SERVICES_PATH;
 
 /**
@@ -35,6 +37,32 @@ public class ServiceResource extends DefaultReadOnlyResource {
     public ServiceResource(ServiceReference serviceReference) {
         super(SERVICES_PATH.add(Path.from(Path.SEPARATOR + Long.toString((Long) serviceReference.getProperty(Constants.SERVICE_ID)))));
         m_serviceReference = serviceReference;
+        List<Relation> relations = new ArrayList<Relation>();
+        // Bundle from which this service is registered
+        Bundle bundle = m_serviceReference.getBundle();
+        Path bundlePath = BundleResourceManager.getInstance().getPath().add(Path.from(Path.SEPARATOR + bundle.getBundleId()));
+        relations.add(new DefaultRelation(bundlePath, Action.READ, FROM_BUNDLE_NAME));
+        //Package of the bundle that is exposed for this service
+        String[] packageNames = packageNamesFromService(m_serviceReference);
+        BundleRevision rev = bundle.adapt(BundleRevision.class);
+        List<BundleCapability> capabilities = rev.getDeclaredCapabilities(PACKAGE_NAMESPACE);
+        BundleCapability capability = null;
+        //TODO go find the package
+        for (BundleCapability cap : capabilities) {
+            for (String packageName : packageNames) {
+                if (cap.getAttributes().get(PACKAGE_NAMESPACE).equals(packageName)) {
+                    //System.out.println(serviceReference.getProperty(Constants.OBJECTCLASS)+" - "+packageName);
+                    capability = cap;
+                }
+            }
+        }
+        if (capability != null) {
+            Path packagePath = PackageResourceManager.getInstance().getPath().add(Path.from(Path.SEPARATOR + uniqueCapabilityId(capability)));
+            new DefaultRelation(packagePath, Action.READ, FROM_PACKAGE_NAME);
+        }
+
+        // Create relations
+        setRelations(relations);
     }
 
     public ResourceMetadata getSimpleMetadata() {
@@ -57,21 +85,10 @@ public class ServiceResource extends DefaultReadOnlyResource {
     @Override
     public List<Resource> getResources() {
         ArrayList<Resource> resources = new ArrayList<Resource>();
-
-        // Bundle from which this service is registered
-        Bundle bundle = m_serviceReference.getBundle();
-        // TODO Wow should reconsider this!!
-        Resource bundleResource = getChild(BundleResourceManager.getInstance(), Path.SEPARATOR + bundle.getBundleId());
-        if (bundleResource != null) {
-            resources.add(new SymbolicLinkResource(getPath().add(Path.from(Path.SEPARATOR + FROM_BUNDLE_NAME)), bundleResource));
-        }
-
         // Uses Bundles
         Bundle[] uses = m_serviceReference.getUsingBundles();
-        resources.add(new ReadOnlyBundleSymlinksResource(getPath().add(Path.from(Path.SEPARATOR + USES_BUNDLES_NAME)), uses));
-
-        //Package of the bundle that is exposed for this service
-        //TODO find the package exporting this service...
+        resources.add(new BundleRelationsResource(getPath().addElements(USES_BUNDLES_NAME), uses));
         return resources;
     }
+
 }

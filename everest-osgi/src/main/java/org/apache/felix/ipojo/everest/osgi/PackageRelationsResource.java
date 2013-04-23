@@ -1,10 +1,11 @@
 package org.apache.felix.ipojo.everest.osgi;
 
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
+import org.apache.felix.ipojo.everest.impl.DefaultRelation;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
-import org.apache.felix.ipojo.everest.impl.SymbolicLinkResource;
+import org.apache.felix.ipojo.everest.services.Action;
 import org.apache.felix.ipojo.everest.services.Path;
-import org.apache.felix.ipojo.everest.services.Resource;
+import org.apache.felix.ipojo.everest.services.Relation;
 import org.apache.felix.ipojo.everest.services.ResourceMetadata;
 import org.osgi.framework.Version;
 import org.osgi.framework.wiring.BundleCapability;
@@ -21,13 +22,23 @@ import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.uniqueCapabi
  * Date: 4/21/13
  * Time: 9:46 PM
  */
-public class ReadOnlyPackageSymlinksResource extends DefaultReadOnlyResource {
+public class PackageRelationsResource extends DefaultReadOnlyResource {
 
     BundleCapability[] m_capabilities;
 
-    public ReadOnlyPackageSymlinksResource(Path path, BundleCapability[] capability) {
+    public PackageRelationsResource(Path path, BundleCapability[] capabilities) {
         super(path);
-        m_capabilities = capability;
+        m_capabilities = capabilities;
+        if (m_capabilities != null) {
+            List<Relation> relations = new ArrayList<Relation>();
+            for (BundleCapability capability : m_capabilities) {
+                // calculate unique package Id
+                String packageId = uniqueCapabilityId(capability);
+                Path packagePath = PackageResourceManager.getInstance().getPath().addElements(packageId);
+                relations.add(new DefaultRelation(packagePath, Action.READ, packageId));
+            }
+            setRelations(relations);
+        }
     }
 
     @Override
@@ -50,20 +61,4 @@ public class ReadOnlyPackageSymlinksResource extends DefaultReadOnlyResource {
         return metadataBuilder.build();
     }
 
-    @Override
-    public List<Resource> getResources() {
-        ArrayList<Resource> resources = new ArrayList<Resource>();
-        if (m_capabilities != null) {
-            for (BundleCapability capability : m_capabilities) {
-                // calculate unique package Id
-                String packageId = uniqueCapabilityId(capability);
-                Path usesPath = getPath().add(Path.from(Path.SEPARATOR + packageId));
-                Resource resource = PackageResourceManager.getInstance().getResource(PackageResourceManager.PACKAGE_PATH.add(Path.from(Path.SEPARATOR + packageId)).toString());
-                if (resource != null) {
-                    resources.add(new SymbolicLinkResource(usesPath, resource));
-                }
-            }
-        }
-        return resources;
-    }
 }

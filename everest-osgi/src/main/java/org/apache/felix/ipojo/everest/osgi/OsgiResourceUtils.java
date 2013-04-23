@@ -4,6 +4,8 @@ import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.services.Path;
 import org.apache.felix.ipojo.everest.services.Resource;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.Constants;
+import org.osgi.framework.ServiceReference;
 import org.osgi.framework.Version;
 import org.osgi.framework.wiring.BundleCapability;
 import org.osgi.framework.wiring.BundleRequirement;
@@ -90,6 +92,18 @@ public class OsgiResourceUtils {
             resource = parentResource.getResource(parentResource.getPath().add(Path.from(Path.SEPARATOR + childName)).toString());
         }
         return resource;
+    }
+
+    // TODO
+    public static String[] packageNamesFromService(ServiceReference m_serviceReference) {
+        String[] interfaces = (String[]) m_serviceReference.getProperty(Constants.OBJECTCLASS);
+        String[] packageNames = new String[interfaces.length];
+        for (int i = 0; i < interfaces.length; i++) {
+            int index = interfaces[i].lastIndexOf(".");
+            String s = interfaces[i].substring(0, index);
+            packageNames[i] = s;
+        }
+        return packageNames;
     }
 
     public class BundleNamespace {

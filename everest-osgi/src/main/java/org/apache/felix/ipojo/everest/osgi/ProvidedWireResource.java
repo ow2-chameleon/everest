@@ -1,18 +1,16 @@
 package org.apache.felix.ipojo.everest.osgi;
 
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
+import org.apache.felix.ipojo.everest.impl.DefaultRelation;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
-import org.apache.felix.ipojo.everest.impl.SymbolicLinkResource;
+import org.apache.felix.ipojo.everest.services.Action;
 import org.apache.felix.ipojo.everest.services.Path;
-import org.apache.felix.ipojo.everest.services.Resource;
 import org.apache.felix.ipojo.everest.services.ResourceMetadata;
 import org.osgi.framework.wiring.BundleRequirement;
 import org.osgi.framework.wiring.BundleWire;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.*;
+import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.uniqueCapabilityId;
+import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.uniqueRequirementId;
 
 /**
  * Created with IntelliJ IDEA.
@@ -29,6 +27,16 @@ public class ProvidedWireResource extends DefaultReadOnlyResource {
     public ProvidedWireResource(Path path, BundleWire wire) {
         super(path.add(Path.from(Path.SEPARATOR + wire.hashCode())));
         m_wire = wire;
+
+        //find requirement
+        BundleRequirement requirement = m_wire.getRequirement();
+        String requirementId = OsgiResourceUtils.uniqueRequirementId(requirement);
+        Path requirementPath = BundleResourceManager.getInstance().getPath().addElements(
+                Long.toString(requirement.getRevision().getBundle().getBundleId()),
+                BundleWiresResource.WIRES_PATH,
+                BundleWiresResource.REQUIREMENTS_PATH,
+                requirementId);
+        setRelations(new DefaultRelation(requirementPath, Action.READ, WIRE_REQUIREMENT));
     }
 
     @Override
@@ -39,18 +47,4 @@ public class ProvidedWireResource extends DefaultReadOnlyResource {
         return metadataBuilder.build();
     }
 
-    @Override
-    public List<Resource> getResources() {
-        ArrayList<Resource> resources = new ArrayList<Resource>();
-        //find requirement
-        BundleRequirement requirement = m_wire.getRequirement();
-        String requirementId = OsgiResourceUtils.uniqueRequirementId(requirement);
-        Resource bundleRes = getChild(BundleResourceManager.getInstance(), Long.toString(requirement.getRevision().getBundle().getBundleId()));
-        Resource requirementsRes = getChild(bundleRes, BundleWiresResource.WIRES_PATH + Path.SEPARATOR + BundleWiresResource.REQUIREMENTS_PATH);
-        Resource requirementRes = getChild(requirementsRes, requirementId);
-        if (requirementRes != null) {
-            resources.add(new SymbolicLinkResource(getPath().add(Path.from(Path.SEPARATOR + WIRE_REQUIREMENT)), requirementRes));
-        }
-        return resources;
-    }
 }

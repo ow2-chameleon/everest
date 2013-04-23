@@ -41,7 +41,7 @@ public class BundleHeadersResource extends DefaultReadOnlyResource {
     ImmutableResourceMetadata metadata;
 
     public BundleHeadersResource(Path path, Bundle bundle) {
-        super(path.add(Path.from(Path.SEPARATOR + HEADERS_PATH)));
+        super(path.addElements(HEADERS_PATH));
         m_bundle = bundle;
         ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
         Dictionary<String, String> headers = m_bundle.getHeaders();
@@ -69,7 +69,7 @@ public class BundleHeadersResource extends DefaultReadOnlyResource {
         BundleRevision rev = m_bundle.adapt(BundleRevision.class);
         // package export
         List<BundleCapability> capabilities = rev.getDeclaredCapabilities(BundleRevision.PACKAGE_NAMESPACE);
-        resources.add(new ReadOnlyPackageSymlinksResource(getPath().add(Path.from(Path.SEPARATOR + EXPORT_PACKAGE)), capabilities.toArray(new BundleCapability[0])));
+        resources.add(new PackageRelationsResource(getPath().addElements(EXPORT_PACKAGE), capabilities.toArray(new BundleCapability[0])));
 
         // package import / dynamic import
         List<BundleRequirement> requirements = rev.getDeclaredRequirements(BundleRevision.PACKAGE_NAMESPACE);
@@ -86,9 +86,9 @@ public class BundleHeadersResource extends DefaultReadOnlyResource {
             }
         }
         // Dynamic import package leaf resource collection
-        resources.add(new ReadOnlyLeafCollectionResource(getPath().add(Path.from(Path.SEPARATOR + DYNAMIC_IMPORT_PACKAGE)), dynamicImports));
+        resources.add(new ReadOnlyLeafCollectionResource(getPath().addElements(DYNAMIC_IMPORT_PACKAGE), dynamicImports));
         // Import package leaf resource collection
-        resources.add(new ReadOnlyLeafCollectionResource(getPath().add(Path.from(Path.SEPARATOR + IMPORT_PACKAGE)), imports));
+        resources.add(new ReadOnlyLeafCollectionResource(getPath().addElements(IMPORT_PACKAGE), imports));
 
         // bundle requirements
         List<BundleRequirement> bundleRequirements = rev.getDeclaredRequirements(BundleRevision.BUNDLE_NAMESPACE);
@@ -96,7 +96,7 @@ public class BundleHeadersResource extends DefaultReadOnlyResource {
         for (BundleRequirement req : bundleRequirements) {
             bundleRequires.put(uniqueRequirementId(req), metadataFrom(new ImmutableResourceMetadata.Builder(), req).build());
         }
-        resources.add(new ReadOnlyLeafCollectionResource(getPath().add(Path.from(Path.SEPARATOR + REQUIRE_BUNDLE)), bundleRequires));
+        resources.add(new ReadOnlyLeafCollectionResource(getPath().addElements(REQUIRE_BUNDLE), bundleRequires));
 
         // TODO Native-Code
 
