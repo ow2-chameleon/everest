@@ -49,7 +49,7 @@ public class FactoryNameResource extends DefaultReadOnlyResource {
 
     public boolean removeFactoryVersion(Factory factory) {
         synchronized (m_versions) {
-            m_versions.remove(parseVersion(factory.getVersion()));
+            m_versions.remove(parseVersion(factory.getVersion())).setStale();
             return m_versions.isEmpty();
         }
     }

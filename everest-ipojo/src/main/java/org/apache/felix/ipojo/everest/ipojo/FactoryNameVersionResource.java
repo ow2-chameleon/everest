@@ -7,6 +7,7 @@ import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.services.*;
 
 import java.lang.reflect.Method;
+import java.util.Collections;
 
 /**
  * '/ipojo/factory/$name/$version' resource, where $name stands for the name of a factory, and $version for its version.
@@ -17,6 +18,11 @@ public class FactoryNameVersionResource extends DefaultResource {
      * The represented factory.
      */
     private final Factory m_factory;
+
+    /**
+     * Flag indicating if the underlying factory still exists.
+     */
+    private volatile boolean m_isStale = false;
 
     /**
      * The base immutable metadata of this resource.
@@ -44,6 +50,10 @@ public class FactoryNameVersionResource extends DefaultResource {
         m_baseMetadata = mb.build();
     }
 
+    public void setStale() {
+        m_isStale = true;
+    }
+
     @Override
     public synchronized ResourceMetadata getMetadata() {
         // Append mutable state to the immutable metadata.
@@ -51,7 +61,9 @@ public class FactoryNameVersionResource extends DefaultResource {
 
 
         mb.set("state", stateAsString(m_factory.getState())); // String
-        mb.set("missingHandlers", m_factory.getMissingHandlers()); // List<String>
+
+        // Some factory getters miserably fail when the factory is stale.
+        mb.set("missingHandlers", !m_isStale ? m_factory.getMissingHandlers() : Collections.emptyList()); // List<String>
 
         return mb.build();
     }
@@ -79,11 +91,11 @@ public class FactoryNameVersionResource extends DefaultResource {
         IPojoFactory f = (IPojoFactory) m_factory;
         Method weapon = null;
         try {
-            //TODO find a common agreement on how to kill a factory. Is this the right way???
+            //TODO find a common agreement on how to kill a factory. Is this the right (messy) way???
             weapon = IPojoFactory.class.getDeclaredMethod("dispose");
             weapon.setAccessible(true);
             // FATALITY!!!
-            weapon.invoke(m_factory);
+            weapon.invoke(f);
         } catch (Exception e) {
             throw new IllegalStateException("cannot kill factory", e);
         } finally {
@@ -94,6 +106,8 @@ public class FactoryNameVersionResource extends DefaultResource {
         }
         // This resource should be auto-removed from its parent, since the represented Factory service has gone (forever)
         // Rest in peace little factory!
-        return null;
+
+        // Assassin may want to analyze the cadaver, so let's return it.
+        return this;
     }
 }

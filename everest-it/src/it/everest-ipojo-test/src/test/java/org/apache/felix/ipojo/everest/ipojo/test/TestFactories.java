@@ -1,15 +1,21 @@
 package org.apache.felix.ipojo.everest.ipojo.test;
 
+import org.apache.felix.ipojo.ComponentInstance;
 import org.apache.felix.ipojo.Factory;
+import org.apache.felix.ipojo.IPojoFactory;
+import org.apache.felix.ipojo.PrimitiveInstanceDescription;
+import org.apache.felix.ipojo.architecture.Architecture;
+import org.apache.felix.ipojo.architecture.InstanceDescription;
 import org.apache.felix.ipojo.everest.impl.DefaultRequest;
 import org.apache.felix.ipojo.everest.services.*;
 import org.junit.Test;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import static org.fest.assertions.Assertions.*;
 
@@ -162,6 +168,29 @@ public class TestFactories extends Common {
         //TODO Check more, as soon as more metadata are provided...
     }
 
+    //TODO test CREATE with good config, bad config (missing mandatory property)
+    //TODO test that UPDATE is forbidden on factories
+
+    /**
+     * Test that a CREATE action on the resource representing Foo factory has the expected behavior.
+     */
+    @Test
+    public void tesCreateOnFooFactory() throws ResourceNotFoundException, IllegalActionOnResourceException {
+
+        // Request creation on factory Foo, without any parameter
+        Request req = new DefaultRequest(Action.CREATE, Path.from("/ipojo/factory/Foo/1.2.3.foo"), null);
+        Resource result = everest.process(req);
+        assertThat(result).isNotNull();
+
+        // Read metadata of resulting resource
+        ResourceMetadata meta = result.getMetadata();
+
+        // Check name
+        assertThat(meta.get("name", String.class)).startsWith("Foo-");
+
+        //TODO check relation to factory
+    }
+
     // ========================================================================
     // Destructive tests that MUST be executed at the very end of this suite!!!
 
@@ -177,8 +206,13 @@ public class TestFactories extends Common {
         // Delete factory Bar v2.0.0
         Request req = new DefaultRequest(Action.DELETE, Path.from("/ipojo/factory/" + BAR + "/2.0.0"), null);
         Resource result = everest.process(req);
-        //TODO what is result? what can we check on it?
-        //assertThat(result).isNull();
+
+        // Check that the result represents the killed factory
+        assertThat(result).isNotNull();
+        ResourceMetadata meta = result.getMetadata();
+        assertThat(meta.get("name")).isEqualTo(BAR);
+        assertThat(meta.get("version")).isEqualTo("2.0.0");
+        assertThat(meta.get("className")).isEqualTo(BAR_2);
 
         // Check that the service reference has gone.
         Collection<ServiceReference<Factory>> refs2 = bc.getServiceReferences(Factory.class, "(factory.name=" + BAR + ")");
@@ -187,7 +221,7 @@ public class TestFactories extends Common {
         // Check that accessing Bar version null still works
         assertThat(read("/ipojo/factory/" + BAR + "/null")).isNotNull();
 
-        // Check that accessing Bar version "2.0.0" fails miserably
+        // Check that accessing the deleted resource (Bar version "2.0.0") fails miserably
         try {
             read("/ipojo/factory/" + BAR + "/2.0.0");
             org.junit.Assert.fail("/ipojo/factory/" + BAR + "/2.0.0 should not exist anymore" );
