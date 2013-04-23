@@ -71,7 +71,7 @@ public class IpojoResource extends DefaultReadOnlyResource {
         m_ipojoVersion = v;
 
         // Create the sub-resources
-        m_factories = new FactoriesResource();
+        m_factories = new FactoriesResource(this);
         m_handlers = new HandlersResource();
         m_instances = new InstancesResource();
         m_declarations = new DeclarationsResource();

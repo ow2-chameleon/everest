@@ -35,15 +35,21 @@ public class FactoryNameResource extends DefaultReadOnlyResource {
         return v == null ? null : Version.parseVersion(v);
     }
 
+    /**
+     * The enclosing iPOJO resource.
+     */
+    private final IpojoResource m_ipojo;
+
     private final SortedMap<Version, FactoryNameVersionResource> m_versions = new TreeMap<Version, FactoryNameVersionResource>(VERSION_COMPARATOR);
 
-    public FactoryNameResource(String name) {
+    public FactoryNameResource(IpojoResource ipojo, String name) {
         super(FactoriesResource.PATH.addElements(name));
+        m_ipojo = ipojo;
     }
 
     public void addFactoryVersion(Factory factory) {
         synchronized (m_versions) {
-            m_versions.put(parseVersion(factory.getVersion()), new FactoryNameVersionResource(factory));
+            m_versions.put(parseVersion(factory.getVersion()), new FactoryNameVersionResource(m_ipojo, factory));
         }
     }
 

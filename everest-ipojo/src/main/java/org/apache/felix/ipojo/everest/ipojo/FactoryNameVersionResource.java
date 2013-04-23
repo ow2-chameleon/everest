@@ -1,18 +1,24 @@
 package org.apache.felix.ipojo.everest.ipojo;
 
-import org.apache.felix.ipojo.Factory;
-import org.apache.felix.ipojo.IPojoFactory;
-import org.apache.felix.ipojo.everest.impl.DefaultResource;
+import org.apache.felix.ipojo.*;
+import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
+import org.apache.felix.ipojo.everest.impl.DefaultRequest;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.services.*;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
+import java.util.Hashtable;
 
 /**
  * '/ipojo/factory/$name/$version' resource, where $name stands for the name of a factory, and $version for its version.
  */
-public class FactoryNameVersionResource extends DefaultResource {
+public class FactoryNameVersionResource extends DefaultReadOnlyResource {
+
+    /**
+     * The enclosing iPOJO resource.
+     */
+    private final IpojoResource m_ipojo;
 
     /**
      * The represented factory.
@@ -20,7 +26,7 @@ public class FactoryNameVersionResource extends DefaultResource {
     private final Factory m_factory;
 
     /**
-     * Flag indicating if the underlying factory still exists.
+     * Flag indicating if the underlying Factory service still exists.
      */
     private volatile boolean m_isStale = false;
 
@@ -39,8 +45,9 @@ public class FactoryNameVersionResource extends DefaultResource {
      * @param factory the factory represented by this resource
      */
     @SuppressWarnings("deprecation")
-    public FactoryNameVersionResource(Factory factory) {
+    public FactoryNameVersionResource(IpojoResource ipojo, Factory factory) {
         super(canonicalPathOf(factory));
+        m_ipojo = ipojo;
         m_factory = factory;
         // Build the immutable metadata of this factory.
         ImmutableResourceMetadata.Builder mb = new ImmutableResourceMetadata.Builder();
@@ -50,7 +57,10 @@ public class FactoryNameVersionResource extends DefaultResource {
         m_baseMetadata = mb.build();
     }
 
-    public void setStale() {
+    /**
+     * Set this factory resource as stale. It happens when the underlying Factory service vanishes.
+     */
+    void setStale() {
         m_isStale = true;
     }
 
@@ -86,6 +96,38 @@ public class FactoryNameVersionResource extends DefaultResource {
     }
 
     @Override
+    public Resource create(Request request) throws IllegalActionOnResourceException {
+        // Get configuration of the component instance to create.
+        Hashtable<String, Object> config;
+        if (request.parameters() != null) {
+            config = new Hashtable(request.parameters());
+        } else {
+            config = new Hashtable();
+        }
+
+        // Create the instance.
+        String name;
+        try {
+            name = m_factory.createComponentInstance(config).getInstanceName();
+        } catch (Exception e) {
+            IllegalActionOnResourceException ee = new IllegalActionOnResourceException(request, this, "cannot create component instance");
+            ee.initCause(e);
+            throw ee;
+        }
+
+        // Tricky part : return the resource representing the created instance.
+        Resource instance;
+        try {
+            instance = m_ipojo.process(new DefaultRequest(Action.READ, Path.from("/ipojo/instance").addElements(name), null));
+        } catch (ResourceNotFoundException e) {
+            // An instance has been created, however its Architecture service is not present.
+            //TODO Should we fail here??? Can null returned value be considered as a confession of failure?
+            return null;
+        }
+        return instance;
+    }
+
+    @Override
     public Resource delete(Request request) throws IllegalActionOnResourceException {
         // The factory must be destroyed.
         IPojoFactory f = (IPojoFactory) m_factory;
@@ -96,6 +138,7 @@ public class FactoryNameVersionResource extends DefaultResource {
             weapon.setAccessible(true);
             // FATALITY!!!
             weapon.invoke(f);
+            // Rest in peace little factory!
         } catch (Exception e) {
             throw new IllegalStateException("cannot kill factory", e);
         } finally {
@@ -104,9 +147,7 @@ public class FactoryNameVersionResource extends DefaultResource {
                 weapon.setAccessible(false);
             }
         }
-        // This resource should be auto-removed from its parent, since the represented Factory service has gone (forever)
-        // Rest in peace little factory!
-
+        // This resource should now have be auto-removed from its parent and marked as stale, since the represented Factory service has gone (forever).
         // Assassin may want to analyze the cadaver, so let's return it.
         return this;
     }

@@ -19,10 +19,16 @@ public class FactoriesResource extends DefaultReadOnlyResource {
 
     public static final Path PATH = IpojoResource.PATH.addElements("factory");
 
+    /**
+     * The enclosing iPOJO resource.
+     */
+    private final IpojoResource m_ipojo;
+
     private final Map<String, FactoryNameResource> m_factories = new LinkedHashMap<String, FactoryNameResource>();
 
-    public FactoriesResource() {
+    public FactoriesResource(IpojoResource ipojo) {
         super(PATH);
+        m_ipojo = ipojo;
     }
 
     public void addFactory(Factory factory) {
@@ -31,7 +37,7 @@ public class FactoriesResource extends DefaultReadOnlyResource {
             String name = factory.getName();
             r = m_factories.get(name);
             if (r == null) {
-                r = new FactoryNameResource(name);
+                r = new FactoryNameResource(m_ipojo, name);
                 m_factories.put(name, r);
             }
         }
