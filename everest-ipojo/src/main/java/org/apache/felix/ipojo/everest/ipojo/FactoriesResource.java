@@ -2,8 +2,10 @@ package org.apache.felix.ipojo.everest.ipojo;
 
 import org.apache.felix.ipojo.Factory;
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
+import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.services.Path;
 import org.apache.felix.ipojo.everest.services.Resource;
+import org.apache.felix.ipojo.everest.services.ResourceMetadata;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -53,4 +55,15 @@ public class FactoriesResource extends DefaultReadOnlyResource {
         }
     }
 
+    @Override
+    public ResourceMetadata getMetadata() {
+        ImmutableResourceMetadata.Builder b = new ImmutableResourceMetadata.Builder();
+        synchronized (m_factories) {
+            // For each factory name...
+            for (String name : m_factories.keySet()) {
+                b.set(name, m_factories.get(name).getMetadata());
+            }
+        }
+        return b.build();
+    }
 }

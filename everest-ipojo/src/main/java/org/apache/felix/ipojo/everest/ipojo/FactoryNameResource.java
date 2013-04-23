@@ -2,7 +2,9 @@ package org.apache.felix.ipojo.everest.ipojo;
 
 import org.apache.felix.ipojo.Factory;
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
+import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.services.Resource;
+import org.apache.felix.ipojo.everest.services.ResourceMetadata;
 import org.osgi.framework.Version;
 
 import java.util.*;
@@ -59,5 +61,14 @@ public class FactoryNameResource extends DefaultReadOnlyResource {
         }
     }
 
-
+    @Override
+    public ResourceMetadata getMetadata() {
+        ImmutableResourceMetadata.Builder b = new ImmutableResourceMetadata.Builder();
+        synchronized (m_versions) {
+            for(Version v : m_versions.keySet()) {
+                b.set(v == null ? null : v.toString(), m_versions.get(v).getMetadata());
+            }
+        }
+        return b.build();
+    }
 }
