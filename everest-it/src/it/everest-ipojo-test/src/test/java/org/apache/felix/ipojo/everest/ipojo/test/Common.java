@@ -71,6 +71,7 @@ public class Common {
                 junitBundles(),
                 festBundles(),
                 testedBundle(),
+                testedBundle2(),
                 systemProperty("org.ops4j.pax.logging.DefaultServiceLog.level").value("WARN")
         );
     }
@@ -120,6 +121,8 @@ public class Common {
         );
     }
 
+    // Generated bundle that contains everything in src/main/java BUT BarProviderImpl2 class.
+    // See testedBundle2() for details...
     public Option testedBundle() throws MalformedURLException {
         File out = new File("target/tested/bundle.jar");
 
@@ -138,6 +141,12 @@ public class Common {
             } else {
                 // We need to compute the path
                 String path = file.getAbsolutePath().substring(classes.getAbsolutePath().length() + 1);
+
+                // Skip BarProviderImpl2
+                if (path.contains("BarProviderImpl2")) {
+                    continue;
+                }
+
                 tested.add(path, file.toURI().toURL());
                 System.out.println(file.getName() + " added to " + path);
             }
@@ -159,6 +168,49 @@ public class Common {
                 .set(Constants.BUNDLE_SYMBOLICNAME, "test.bundle")
                 .set(Constants.IMPORT_PACKAGE, "*")
                 .set(Constants.EXPORT_PACKAGE, export)
+                .build(IPOJOStrategy.withiPOJO(new File("src/main/resources")));
+
+        try {
+            FileUtils.copyInputStreamToFile(inputStream, out);
+            return bundle(out.toURI().toURL().toExternalForm());
+        } catch (MalformedURLException e) {
+            throw new RuntimeException("Cannot compute the url of the manipulated bundle");
+        } catch (IOException e) {
+            throw new RuntimeException("Cannot write of the manipulated bundle");
+        }
+    }
+
+    // It seems that we cannot define iPOJO component types twice (with different versions) in the same bundle
+    // So the second bundle just contains version "2.0.0" or BarProviderImpl component type
+    // Implementation class name is BarProviderImpl2
+    //TODO @cescoffier make sure that iPOJO behavior is wanted, not accidental!
+    public Option testedBundle2() throws MalformedURLException {
+        File out = new File("target/tested/bundle2.jar");
+
+        TinyBundle tested = TinyBundles.bundle();
+
+        // We just add the BarProviderImpl2 class, service interfaces are imported from testedBundle()
+        File classes = new File("target/classes");
+        Collection<File> files = FileUtils.listFilesAndDirs(classes, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE);
+        List<File> services = new ArrayList<File>();
+        for (File file : files) {
+            if (!file.isDirectory()) {
+                // We need to compute the path
+                String path = file.getAbsolutePath().substring(classes.getAbsolutePath().length() + 1);
+
+                // Skip non BarProviderImpl2
+                if (!path.contains("BarProviderImpl2")) {
+                    continue;
+                }
+
+                tested.add(path, file.toURI().toURL());
+                System.out.println(file.getName() + " added to " + path);
+            }
+        }
+
+        InputStream inputStream = tested
+                .set(Constants.BUNDLE_SYMBOLICNAME, "test.bundle2")
+                .set(Constants.IMPORT_PACKAGE, "*")
                 .build(IPOJOStrategy.withiPOJO(new File("src/main/resources")));
 
         try {
