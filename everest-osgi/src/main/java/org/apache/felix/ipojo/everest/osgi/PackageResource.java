@@ -34,19 +34,35 @@ public class PackageResource extends DefaultReadOnlyResource {
 
     public static final String IMPORTER_BUNDLE_NAME = "importer-bundles";
 
+    public static final String PACKAGE_IN_USE = "in-use";
+
     private final BundleCapability m_bundleCapability;
     private final String m_packageName;
     private final Version m_version;
     private final Map<String, Object> m_attributes;
     private final Map<String, String> m_directives;
 
+    // importers of this package
+    private ArrayList<Bundle> importers = new ArrayList<Bundle>();
+
     public PackageResource(BundleCapability bundleCapability) {
-        super(PACKAGE_PATH.add(Path.from(uniqueCapabilityId(bundleCapability))));
+        super(PACKAGE_PATH.add(Path.from(Path.SEPARATOR + uniqueCapabilityId(bundleCapability))));
         m_bundleCapability = bundleCapability;
         m_attributes = bundleCapability.getAttributes();
         m_directives = bundleCapability.getDirectives();
         m_packageName = (String) m_attributes.get(PACKAGE_NAMESPACE);
         m_version = (Version) m_attributes.get(PACKAGE_VERSION_ATTRIBUTE);
+
+        // calculate importers
+        BundleWiring wiring = m_bundleCapability.getRevision().getBundle().adapt(BundleWiring.class);
+        List<BundleWire> wires = wiring.getProvidedWires(PACKAGE_NAMESPACE);
+        for (BundleWire wire : wires) {
+            if (wire.getCapability().equals(m_bundleCapability)) {
+                Bundle requirerBundle = wire.getRequirerWiring().getBundle();
+                importers.add(requirerBundle);
+            }
+        }
+
     }
 
     public String getUniquePackageId() {
@@ -63,6 +79,7 @@ public class PackageResource extends DefaultReadOnlyResource {
         metadataBuilder.set(PACKAGE_VERSION_ATTRIBUTE, m_version);
         metadataBuilder.set(CAPABILITY_BUNDLE_SYMBOLICNAME_ATTRIBUTE, getBundle().getSymbolicName());
         metadataBuilder.set(CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, getBundle().getVersion());
+        metadataBuilder.set(PACKAGE_IN_USE, !importers.isEmpty());
         return metadataBuilder.build();
     }
 
@@ -89,16 +106,6 @@ public class PackageResource extends DefaultReadOnlyResource {
             resources.add(new SymbolicLinkResource(getPath().add(Path.from(Path.SEPARATOR + PROVIDER_BUNDLE_NAME)), bundleResource));
         }
 
-        // importers of this package
-        ArrayList<Bundle> importers = new ArrayList<Bundle>();
-        BundleWiring wiring = m_bundleCapability.getRevision().getBundle().adapt(BundleWiring.class);
-        List<BundleWire> wires = wiring.getProvidedWires(PACKAGE_NAMESPACE);
-        for (BundleWire wire : wires) {
-            if (wire.getCapability().equals(m_bundleCapability)) {
-                Bundle requirerBundle = wire.getRequirerWiring().getBundle();
-                importers.add(requirerBundle);
-            }
-        }
         // create links to importer bundles
         resources.add(new ReadOnlyBundleSymlinksResource(getPath().add(Path.from(Path.SEPARATOR + IMPORTER_BUNDLE_NAME)), importers.toArray(new Bundle[0])));
         return resources;

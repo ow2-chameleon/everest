@@ -181,6 +181,9 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
 
     public Object addingBundle(Bundle bundle, BundleEvent bundleEvent) {
         m_bundleResourceManager.addBundle(bundle);
+        if (bundle.getState() == Bundle.ACTIVE || bundle.getState() == Bundle.RESOLVED) {
+            m_packageResourceManager.addPackagesFrom(bundle);
+        }
         return bundle.getBundleId();
     }
 
