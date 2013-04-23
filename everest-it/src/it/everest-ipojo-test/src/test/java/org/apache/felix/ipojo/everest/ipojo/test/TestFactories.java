@@ -3,7 +3,6 @@ package org.apache.felix.ipojo.everest.ipojo.test;
 import org.apache.felix.ipojo.ComponentInstance;
 import org.apache.felix.ipojo.Factory;
 import org.apache.felix.ipojo.IPojoFactory;
-import org.apache.felix.ipojo.PrimitiveInstanceDescription;
 import org.apache.felix.ipojo.architecture.Architecture;
 import org.apache.felix.ipojo.architecture.InstanceDescription;
 import org.apache.felix.ipojo.everest.impl.DefaultRequest;
@@ -228,6 +227,79 @@ public class TestFactories extends Common {
         } catch (ResourceNotFoundException e) {
             // Ok : that's normal!
         }
+    }
+
+    // WARN: this is a hack!!!
+    private boolean killInstance(String name) throws InvalidSyntaxException {
+        Collection<ServiceReference<Architecture>> refs = bc.getServiceReferences(Architecture.class, "(architecture.instance=" + name + ")");
+        if (refs.isEmpty()) {
+            return false;
+        } else if (refs.size() > 1) {
+            // Should never happen!
+            throw new AssertionError("multiple architecture service with same instance name");
+        }
+        ServiceReference<Architecture> ref = refs.iterator().next();
+        Architecture arch = bc.getService(ref);
+        try {
+            ComponentInstance instance;
+            InstanceDescription desc = arch.getInstanceDescription();
+            Field shunt = InstanceDescription.class.getDeclaredField("m_instance");
+            shunt.setAccessible(true);
+            try {
+                instance = (ComponentInstance) shunt.get(desc);
+            } finally {
+                shunt.setAccessible(false);
+            }
+            // FATALITY!!!
+            instance.dispose();
+        } catch (NoSuchFieldException e) {
+            // Should never happen!
+            throw new AssertionError(e);
+        } catch (IllegalAccessException e) {
+            // Should never happen too!
+            throw new AssertionError(e);
+        } finally {
+            bc.ungetService(ref);
+        }
+        return true;
+
+    }
+
+    // WARN: this is a hack!!!
+    private boolean killFactory(String name, String version) throws InvalidSyntaxException {
+        // Scientifically build the selection filter.
+        String filter = "(&(factory.name=" + name + ")";
+        if (version != null) {
+            filter += "(factory.version=" + version + ")";
+        } else {
+            filter += "(!(factory.version=*))";
+        }
+        filter += ")";
+
+        Collection<ServiceReference<Factory>> refs = bc.getServiceReferences(Factory.class, filter);
+        if (refs.isEmpty()) {
+            return false;
+        } else if (refs.size() > 1) {
+            // Should never happen!
+            throw new AssertionError("multiple factory service with same name/version");
+        }
+        ServiceReference<Factory> ref = refs.iterator().next();
+        IPojoFactory f = (IPojoFactory) bc.getService(ref);
+        Method weapon = null;
+        try {
+            weapon = IPojoFactory.class.getDeclaredMethod("dispose");
+            weapon.setAccessible(true);
+            // FATALITY!!!
+            weapon.invoke(f);
+        } catch (Exception e) {
+            throw new IllegalStateException("cannot kill factory", e);
+        } finally {
+            // It's a bad idea to let kids play with such a weapon...
+            if (weapon != null) {
+                weapon.setAccessible(false);
+            }
+        }
+        return true;
     }
 
 }
