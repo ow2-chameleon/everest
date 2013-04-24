@@ -38,22 +38,25 @@ public class BundleHeadersResource extends DefaultReadOnlyResource {
 
     private final Bundle m_bundle;
 
-    ImmutableResourceMetadata metadata;
+    private final ImmutableResourceMetadata metadata;
 
     public BundleHeadersResource(Path path, Bundle bundle) {
         super(path.addElements(HEADERS_PATH));
         m_bundle = bundle;
         ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
         Dictionary<String, String> headers = m_bundle.getHeaders();
-
-        headers.remove(Constants.EXPORT_PACKAGE);
-        headers.remove(Constants.IMPORT_PACKAGE);
-        headers.remove(Constants.DYNAMICIMPORT_PACKAGE);
-        headers.remove(Constants.REQUIRE_BUNDLE);
-        headers.remove(Constants.BUNDLE_NATIVECODE);
-        while (headers.keys().hasMoreElements()) {
-            String key = headers.keys().nextElement();
-            metadataBuilder.set(key, headers.get(key));
+        //
+        Enumeration<String> keys = headers.keys();
+        while (keys.hasMoreElements()) {
+            String key = keys.nextElement();
+            //omitting those
+            if (!(key.equals(Constants.EXPORT_PACKAGE) ||
+                    key.equals(Constants.IMPORT_PACKAGE) ||
+                    key.equals(Constants.DYNAMICIMPORT_PACKAGE) ||
+                    key.equals(Constants.REQUIRE_BUNDLE) ||
+                    key.equals(Constants.BUNDLE_NATIVECODE))) {
+                metadataBuilder.set(key, headers.get(key));
+            }
         }
         metadata = metadataBuilder.build();
     }
@@ -79,7 +82,7 @@ public class BundleHeadersResource extends DefaultReadOnlyResource {
 
             ResourceMetadata metadata = metadataFrom(new ImmutableResourceMetadata.Builder(), req).build();
             String reqId = uniqueRequirementId(req);
-            if (req.getDirectives().get(REQUIREMENT_RESOLUTION_DIRECTIVE).equals(RESOLUTION_DYNAMIC)) {
+            if (RESOLUTION_DYNAMIC.equals(req.getDirectives().get(REQUIREMENT_RESOLUTION_DIRECTIVE))) {
                 dynamicImports.put(reqId, metadata);
             } else {
                 imports.put(reqId, metadata);
