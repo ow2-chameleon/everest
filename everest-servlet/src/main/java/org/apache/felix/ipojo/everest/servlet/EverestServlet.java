@@ -53,7 +53,7 @@ public class EverestServlet extends HttpServlet {
         if (request == null) {
             resp.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
             resp.setContentType("application/json");
-            stream.write("{error:\"The HTTP request cannot be translate to Everest\"}");
+            stream.write("{\"error\":\"The HTTP request cannot be translate to Everest\"}");
             stream.close();
             resp.flushBuffer();
             return;
@@ -61,9 +61,9 @@ public class EverestServlet extends HttpServlet {
 
         try {
             Resource resource = everest.process(request);
-            toJSON(resource, stream); // This writes the json answer in the stream.
             resp.setStatus(HttpServletResponse.SC_OK);
             resp.setContentType("application/json");
+            toJSON(resource, stream); // This writes the json answer in the stream.
             stream.close();
             resp.flushBuffer();
         } catch (IllegalActionOnResourceException e) {
@@ -76,7 +76,7 @@ public class EverestServlet extends HttpServlet {
         } catch (ResourceNotFoundException e) {
             resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
             resp.setContentType("application/json");
-            stream.write("{\"error\":\"Illegal action on resource\", \"path\":\"" + request.path() + "\", " +
+            stream.write("{\"error\":\"Resource not found\", \"path\":\"" + request.path() + "\", " +
                     "\"action\":\"" + request.action() + "\", \"message\":\"" + e.getMessage() + "\"}");
             stream.close();
             resp.flushBuffer();
@@ -148,6 +148,9 @@ public class EverestServlet extends HttpServlet {
                 toJSON(generator, null, entry.getValue());
             }
             generator.writeEndObject();
+        } else {
+            // Write object as string
+            generator.writeString(value.toString());
         }
     }
 
