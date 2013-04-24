@@ -94,7 +94,11 @@ public class EverestServlet extends HttpServlet {
 
         // Metadata
         for (Map.Entry<String, Object> entry : resource.getMetadata().entrySet()) {
-            toJSON(generator, entry.getKey(), entry.getValue());
+            Object k = entry.getKey();
+            if (k == null) {
+                k = "null";
+            }
+            toJSON(generator, k.toString(), entry.getValue());
         }
 
         // Link
@@ -135,7 +139,12 @@ public class EverestServlet extends HttpServlet {
         } else if (value instanceof Map) {
             generator.writeStartObject();
             for (Map.Entry entry : (Set<Map.Entry>) ((Map) value).entrySet()) {
-                generator.writeFieldName(entry.getKey().toString());
+                Object k = entry.getKey();
+                if (k != null) {
+                    generator.writeFieldName(entry.getKey().toString());
+                } else {
+                    generator.writeFieldName("null");
+                }
                 toJSON(generator, null, entry.getValue());
             }
             generator.writeEndObject();
