@@ -14,6 +14,7 @@
         <module>everest-osgi</module>
         <module>everest-ipojo</module>
         <module>everest-servlet</module>
+        <module>everest-example</module>
         <module>everest-it</module>
     </modules>
 
