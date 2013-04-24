@@ -8,11 +8,10 @@ import org.apache.felix.ipojo.everest.services.ResourceMetadata;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.wiring.BundleCapability;
 import org.osgi.framework.wiring.BundleRequirement;
-import org.osgi.framework.wiring.BundleWire;
 import org.osgi.framework.wiring.BundleWiring;
 
-import java.util.*;
-import java.util.Map.Entry;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.*;
 
@@ -37,51 +36,54 @@ public class BundleWiresResource extends DefaultReadOnlyResource {
 
     private final Bundle m_bundle;
 
-    Map<BundleCapability, Set<BundleWire>> capabilities = new HashMap<BundleCapability, Set<BundleWire>>();
+    List<BundleCapability> capabilities;
 
-    Map<BundleRequirement, Set<BundleWire>> requirements = new HashMap<BundleRequirement, Set<BundleWire>>();
+    List<BundleRequirement> requirements;
 
     public BundleWiresResource(Path path, Bundle bundle) {
         super(path.addElements(WIRES_PATH));
         m_bundle = bundle;
         BundleWiring wiring = m_bundle.adapt(BundleWiring.class);
+        // get capabilities from all namespaces
+        capabilities = wiring.getCapabilities(null);
+        // get requirements from all namespaces
+        requirements = wiring.getRequirements(null);
 
-        // get provided wires from all namespaces
-        List<BundleWire> providedWires = wiring.getProvidedWires(null);
-        for (BundleWire providedWire : providedWires) {
-            BundleCapability capability = providedWire.getCapability();
-            if (capabilities.containsKey(providedWire.getCapability())) {
-                capabilities.get(capability).add(providedWire);
-            } else {
-                Set<BundleWire> newWireSet = new HashSet<BundleWire>();
-                newWireSet.add(providedWire);
-                capabilities.put(capability, newWireSet);
-            }
-        }
-
-        // get required wires from all namespaces
-        Map<BundleRequirement, Set<BundleWire>> requirements = new HashMap<BundleRequirement, Set<BundleWire>>();
-        List<BundleWire> requiredWires = wiring.getRequiredWires(null);
-        for (BundleWire requiredWire : requiredWires) {
-            BundleRequirement requirement = requiredWire.getRequirement();
-            if (requirements.containsKey(requirement)) {
-                requirements.get(requirement).add(requiredWire);
-            } else {
-                Set<BundleWire> newWireSet = new HashSet<BundleWire>();
-                newWireSet.add(requiredWire);
-                requirements.put(requirement, newWireSet);
-            }
-        }
+//        // get provided wires from all namespaces
+//        List<BundleWire> providedWires = wiring.getProvidedWires(null);
+//        for (BundleWire providedWire : providedWires) {
+//            BundleCapability capability = providedWire.getCapability();
+//            if (capabilities.containsKey(providedWire.getCapability())) {
+//                capabilities.get(capability).add(providedWire);
+//            } else {
+//                Set<BundleWire> newWireSet = new HashSet<BundleWire>();
+//                newWireSet.add(providedWire);
+//                capabilities.put(capability, newWireSet);
+//            }
+//        }
+//
+//        // get required wires from all namespaces
+//        List<BundleWire> requiredWires = wiring.getRequiredWires(null);
+//        for (BundleWire requiredWire : requiredWires) {
+//            BundleRequirement requirement = requiredWire.getRequirement();
+//            if (requirements.containsKey(requirement)) {
+//                requirements.get(requirement).add(requiredWire);
+//            } else {
+//                Set<BundleWire> newWireSet = new HashSet<BundleWire>();
+//                newWireSet.add(requiredWire);
+//                requirements.put(requirement, newWireSet);
+//            }
+//        }
 
     }
 
     @Override
     public ResourceMetadata getMetadata() {
         ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
-        for (BundleCapability capability : capabilities.keySet()) {
+        for (BundleCapability capability : capabilities) {
             metadataBuilder.set(uniqueCapabilityId(capability), metadataFrom(new ImmutableResourceMetadata.Builder(), capability).build());
         }
-        for (BundleRequirement requirement : requirements.keySet()) {
+        for (BundleRequirement requirement : requirements) {
             metadataBuilder.set(uniqueRequirementId(requirement), metadataFrom(new ImmutableResourceMetadata.Builder(), requirement).build());
         }
         return metadataBuilder.build();
@@ -90,11 +92,11 @@ public class BundleWiresResource extends DefaultReadOnlyResource {
     @Override
     public List<Resource> getResources() {
         ArrayList<Resource> resources = new ArrayList<Resource>();
-        for (Entry<BundleCapability, Set<BundleWire>> capabilityWires : capabilities.entrySet()) {
-            resources.add(new BundleCapabilityResource(getPath().addElements(CAPABILITIES_PATH), capabilityWires.getKey(), capabilityWires.getValue()));
+        for (BundleCapability capability : capabilities) {
+            resources.add(new BundleCapabilityResource(getPath().addElements(CAPABILITIES_PATH), capability));
         }
-        for (Entry<BundleRequirement, Set<BundleWire>> requirementWires : requirements.entrySet()) {
-            resources.add(new BundleRequirementResource(getPath().addElements(REQUIREMENTS_PATH), requirementWires.getKey(), requirementWires.getValue()));
+        for (BundleRequirement requirement : requirements) {
+            resources.add(new BundleRequirementResource(getPath().addElements(REQUIREMENTS_PATH), requirement));
         }
         return resources;
     }

@@ -20,12 +20,12 @@ import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.uniqueRequir
  */
 public class ProvidedWireResource extends DefaultReadOnlyResource {
 
-    public static final String WIRE_REQUIREMENT = "wire-requirement";
+    public static final String WIRE_REQUIREMENT = "requirement";
 
     private final BundleWire m_wire;
 
     public ProvidedWireResource(Path path, BundleWire wire) {
-        super(path.add(Path.from(Path.SEPARATOR + wire.hashCode())));
+        super(path.addElements("wire" + wire.hashCode()));
         m_wire = wire;
 
         //find requirement
@@ -35,7 +35,8 @@ public class ProvidedWireResource extends DefaultReadOnlyResource {
                 Long.toString(requirement.getRevision().getBundle().getBundleId()),
                 BundleWiresResource.WIRES_PATH,
                 BundleWiresResource.REQUIREMENTS_PATH,
-                requirementId);
+                requirementId
+        );
         setRelations(new DefaultRelation(requirementPath, Action.READ, WIRE_REQUIREMENT));
     }
 

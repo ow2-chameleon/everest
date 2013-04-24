@@ -9,7 +9,6 @@ import org.osgi.framework.wiring.BundleWire;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.metadataFrom;
 import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.uniqueCapabilityId;
@@ -22,30 +21,37 @@ import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.uniqueCapabi
  */
 public class BundleCapabilityResource extends DefaultReadOnlyResource {
 
-    public static final String PROVIDED_WIRES_PATH = "provided-wire";
+    public final static String PACKAGE_RELATION = "package";
 
-    private final Set<BundleWire> m_wires;
+    private final List<BundleWire> m_wires = new ArrayList<BundleWire>();
     private final BundleCapability m_capability;
     private final boolean isPackage;
 
-    public BundleCapabilityResource(Path path, BundleCapability bundleCapability, Set<BundleWire> wires) {
-        super(path);
+    public BundleCapabilityResource(Path path, BundleCapability bundleCapability) {
+        super(path.addElements(uniqueCapabilityId(bundleCapability)));
         m_capability = bundleCapability;
-        m_wires = wires;
+        // calculate wires coming from this capability
+        List<BundleWire> allWires = m_capability.getRevision().getWiring().getProvidedWires(m_capability.getNamespace());
+        for (BundleWire wire : allWires) {
+            if (wire.getCapability().equals(m_capability)) {
+                m_wires.add(wire);
+            }
+        }
+
         isPackage = m_capability.getNamespace().equals(OsgiResourceUtils.PackageNamespace.PACKAGE_NAMESPACE);
         List<Relation> relations = new ArrayList<Relation>();
         if (isPackage) {
             // add relation to package
             String packageId = uniqueCapabilityId(m_capability);
             Path packagePath = PackageResourceManager.getInstance().getPath().addElements(packageId);
-            relations.add(new DefaultRelation(packagePath, Action.READ, packageId));
+            relations.add(new DefaultRelation(packagePath, Action.READ, PACKAGE_RELATION));
             // add relation to bundle export package header
             long bundleId = m_capability.getRevision().getBundle().getBundleId();
             Path exportPackagePath = BundleResourceManager.getInstance().getPath()
                     .addElements(Long.toString(bundleId), BundleHeadersResource.HEADERS_PATH, BundleHeadersResource.EXPORT_PACKAGE, packageId);
             relations.add(new DefaultRelation(exportPackagePath, Action.READ, BundleHeadersResource.EXPORT_PACKAGE));
         }
-        setRelations();
+        setRelations(relations);
     }
 
     @Override
@@ -59,7 +65,7 @@ public class BundleCapabilityResource extends DefaultReadOnlyResource {
     public List<Resource> getResources() {
         ArrayList<Resource> resources = new ArrayList<Resource>();
         for (BundleWire wire : m_wires) {
-            resources.add(new ProvidedWireResource(getPath().add(Path.from(Path.SEPARATOR + PROVIDED_WIRES_PATH)), wire));
+            resources.add(new ProvidedWireResource(getPath(), wire));
         }
         return resources;
     }

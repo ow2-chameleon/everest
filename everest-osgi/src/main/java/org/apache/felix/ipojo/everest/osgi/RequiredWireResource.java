@@ -20,13 +20,14 @@ import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.uniqueRequir
  */
 public class RequiredWireResource extends DefaultReadOnlyResource {
 
-    public static final String WIRE_CAPABILITY = "wire-capability";
+    public static final String WIRE_CAPABILITY = "capability";
 
-    BundleWire m_wire;
+    private final BundleWire m_wire;
 
     public RequiredWireResource(Path path, BundleWire wire) {
-        super(path.add(Path.from(Path.SEPARATOR + wire.hashCode())));
+        super(path.addElements("wire" + wire.hashCode()));
         m_wire = wire;
+
         //find capability
         BundleCapability capability = m_wire.getCapability();
         String capabilityId = OsgiResourceUtils.uniqueCapabilityId(capability);

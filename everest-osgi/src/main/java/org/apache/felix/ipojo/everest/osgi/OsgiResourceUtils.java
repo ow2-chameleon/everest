@@ -2,18 +2,16 @@ package org.apache.felix.ipojo.everest.osgi;
 
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.services.Path;
-import org.apache.felix.ipojo.everest.services.Resource;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
-import org.osgi.framework.Version;
 import org.osgi.framework.wiring.BundleCapability;
 import org.osgi.framework.wiring.BundleRequirement;
 
+import java.util.Collection;
 import java.util.Map;
 
-import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.PackageNamespace.PACKAGE_ID_SEPARATOR;
-import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.PackageNamespace.PACKAGE_VERSION_ATTRIBUTE;
+import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.PackageNamespace.*;
 
 
 /**
@@ -45,24 +43,59 @@ public class OsgiResourceUtils {
 
     public static String uniqueCapabilityId(BundleCapability bundleCapability) {
         long bundleId = bundleCapability.getRevision().getBundle().getBundleId();
-        String packageName = bundleCapability.getAttributes().get(bundleCapability.getNamespace()).toString();
-        Version version = (Version) bundleCapability.getAttributes().get(PACKAGE_VERSION_ATTRIBUTE); // crossing fingers
+        String capabilityName = "";
+        Object capability = bundleCapability.getAttributes().get(bundleCapability.getNamespace());
+        if (capability != null) { // you never know
+            // crossing fingers capability can be a collection
+            if (capability instanceof Collection) {
+                for (Object c : (Collection) capability) {
+                    capabilityName += c.toString() + PACKAGE_ID_SEPARATOR;
+                }
+                capabilityName = capabilityName.substring(0, capabilityName.length() - 1);
+            } else if (capability instanceof Object[]) { // in some cases string array
+                for (Object c : (Object[]) capability) {
+                    capabilityName += c.toString() + PACKAGE_ID_SEPARATOR;
+                }
+                capabilityName = capabilityName.substring(0, capabilityName.length() - 1);
+            } else {
+                capabilityName = capability.toString();
+            }
+            // look for {@code Path.SEPARATOR} in capabilityName
+            capabilityName = capabilityName.replaceAll(Path.SEPARATOR, PACKAGE_ID_SEPARATOR);
+        }
+        // crossing fingers :: Version can also be list of versions
+        String versionString = "";
+        Object version = bundleCapability.getAttributes().get(PACKAGE_VERSION_ATTRIBUTE);
+        if (version != null) { // never know
+            if (version instanceof Collection) {
+                for (Object v : (Collection) version) {
+                    versionString += v.toString() + PACKAGE_ID_SEPARATOR;
+                }
+                versionString = versionString.substring(0, versionString.length() - 1);
+            } else {
+                versionString = version.toString();
+            }
+        }
         StringBuilder sb = new StringBuilder();
         sb.append(bundleId);
         sb.append(PACKAGE_ID_SEPARATOR);
-        sb.append(packageName);
+        sb.append(capabilityName);
         sb.append(PACKAGE_ID_SEPARATOR);
-        sb.append(version);
+        sb.append(versionString);
         return sb.toString();
     }
 
     public static String uniqueRequirementId(BundleRequirement bundleRequirement) {
         long bundleId = bundleRequirement.getRevision().getBundle().getBundleId();
-        String packageName = (String) bundleRequirement.getAttributes().get(bundleRequirement.getNamespace());
+        String requirementString = "";
+        Object requirementName = bundleRequirement.getDirectives().get(REQUIREMENT_FILTER_ATTRIBUTE);
+        if (requirementName != null) { // you never know
+            requirementString = requirementName.toString();
+        }
         StringBuilder sb = new StringBuilder();
         sb.append(bundleId);
         sb.append(PACKAGE_ID_SEPARATOR);
-        sb.append(packageName);
+        sb.append(requirementString);
         return sb.toString();
     }
 
@@ -84,14 +117,6 @@ public class OsgiResourceUtils {
             metadataBuilder.set(dir.getKey(), dir.getValue());
         }
         return metadataBuilder;
-    }
-
-    public static Resource getChild(Resource parentResource, String childName) {
-        Resource resource = null;
-        if (parentResource != null) {
-            resource = parentResource.getResource(parentResource.getPath().add(Path.from(Path.SEPARATOR + childName)).toString());
-        }
-        return resource;
     }
 
     // TODO
@@ -125,7 +150,10 @@ public class OsgiResourceUtils {
 
         public static final String PACKAGE_NAMESPACE = "osgi.wiring.package";
 
+        // TODO should be externalized into a general namespace
         public static final String PACKAGE_VERSION_ATTRIBUTE = "version";
+
+        public static final String REQUIREMENT_FILTER_ATTRIBUTE = "filter";
 
         public static final String CAPABILITY_BUNDLE_SYMBOLICNAME_ATTRIBUTE = "bundle-symbolic-name";
 
