@@ -1,6 +1,7 @@
 package org.apache.felix.ipojo.everest.ipojo.test;
 
 import org.apache.felix.ipojo.everest.services.IllegalActionOnResourceException;
+import org.apache.felix.ipojo.everest.services.Relation;
 import org.apache.felix.ipojo.everest.services.Resource;
 import org.apache.felix.ipojo.everest.services.ResourceNotFoundException;
 import org.junit.Assert;
@@ -93,6 +94,28 @@ public class TestOsgiResources extends Common {
         ServiceRegistration reg = osgiHelper.getContext().registerService(this.getClass().getName(), this, null);
         r = get("/osgi/services");
         Assert.assertEquals("Services should have incremented", size + 1, r.getResources().size());
+    }
+
+    @Test
+    public void testBundleWiring() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        //TODO should find a way to write assertions on wires
+        Resource bundles = get("/osgi/bundles");
+        for (int i = 0; i < bundles.getResources().size(); i++) {
+            Resource wires = get("/osgi/bundles/" + i + "/wires");
+            for (Resource res : wires.getResources()) {
+                System.out.println(res.getPath());
+                System.out.println("Related to :");
+                for (Relation relation : res.getRelations()) {
+                    System.out.println("\t" + relation.getName() + " - " + relation.getHref());
+                }
+                System.out.println("\tWires :");
+                for (Resource wire : res.getResources()) {
+                    for (Relation relation : wire.getRelations()) {
+                        System.out.println("\t\t" + relation.getName() + " - " + relation.getHref());
+                    }
+                }
+            }
+        }
     }
 
 }
