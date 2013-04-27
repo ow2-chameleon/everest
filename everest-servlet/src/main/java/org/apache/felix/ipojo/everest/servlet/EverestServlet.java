@@ -20,6 +20,8 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
+import static org.apache.felix.ipojo.everest.servlet.HttpUtils.*;
+
 /**
  * The Everest servlet.
  */
@@ -61,10 +63,13 @@ public class EverestServlet extends HttpServlet {
 
         try {
             Resource resource = everest.process(request);
+            // If the request was a HEAD, just return ok.
             resp.setStatus(HttpServletResponse.SC_OK);
-            resp.setContentType("application/json");
-            toJSON(resource, stream); // This writes the json answer in the stream.
-            stream.close();
+            if (!isHead(req)) {
+                resp.setContentType("application/json");
+                toJSON(resource, stream); // This writes the json answer in the stream.
+                stream.close();
+            }
             resp.flushBuffer();
         } catch (IllegalActionOnResourceException e) {
             resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
@@ -158,13 +163,13 @@ public class EverestServlet extends HttpServlet {
         System.out.println("Path info : " + request.getPathInfo());
         Path path = Path.from(request.getPathInfo());
         Action action;
-        if ("GET".equals(request.getMethod())) {
+        if (isGet(request)  || isHead(request)) {
             action = Action.READ;
-        } else if ("PUT".equals(request.getMethod())) {
+        } else if (isPut(request)) {
             action = Action.CREATE;
-        } else if ("POST".equals(request.getMethod())) {
+        } else if (isPost(request)) {
             action = Action.UPDATE;
-        } else if ("DELETE".equals(request.getMethod())) {
+        } else if (isDelete(request)) {
             action = Action.DELETE;
         } else {
             return null; // Unsupported request.
