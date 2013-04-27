@@ -1,7 +1,7 @@
 package org.apache.felix.ipojo.everest.impl;
 
 import org.apache.felix.ipojo.everest.core.Everest;
-import org.apache.felix.ipojo.everest.filters.Filters;
+import org.apache.felix.ipojo.everest.filters.ResourceFilters;
 import org.apache.felix.ipojo.everest.managers.everest.EverestRootResource;
 import org.apache.felix.ipojo.everest.services.*;
 import org.junit.Test;
@@ -45,7 +45,7 @@ public class TestResourceExtender {
 
         public ResourceFilter getFilter() {
             Resource res = everest.getResource("/everest/domains/everest");
-            return Filters.hasPath(res.getPath());
+            return ResourceFilters.hasPath(res.getPath());
         }
 
         public Resource extend(Request request, Resource resource) {
