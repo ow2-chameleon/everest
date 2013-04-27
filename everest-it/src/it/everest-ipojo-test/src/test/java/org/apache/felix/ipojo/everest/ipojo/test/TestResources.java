@@ -1,10 +1,14 @@
 package org.apache.felix.ipojo.everest.ipojo.test;
 
+import org.apache.felix.ipojo.everest.filters.RelationFilters;
 import org.apache.felix.ipojo.everest.impl.DefaultRequest;
 import org.apache.felix.ipojo.everest.services.*;
 import org.junit.Test;
 import org.ops4j.pax.exam.MavenUtils;
+import org.osgi.framework.Bundle;
 
+import static org.apache.felix.ipojo.everest.filters.RelationFilters.*;
+import static org.apache.felix.ipojo.everest.ipojo.test.ResourceAssert.assertThatResource;
 import static org.fest.assertions.Assertions.assertThat;
 
 public class TestResources extends Common {
@@ -39,6 +43,22 @@ public class TestResources extends Common {
         // Get the iPOJO version using Pax Exam and compare versions.
         String version = MavenUtils.getArtifactVersion("org.apache.felix", "org.apache.felix.ipojo").replace('-', '.');
         assertThat(ipojo.getMetadata().get("version")).isEqualTo(version);
+    }
+
+    /**
+     * Check that the '/ipojo' has a relation to the iPOJO bundle.
+     */
+    @Test
+    public void testRelationToIpojoBundle() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        long ipojoBundleId = -1L;
+        for(Bundle b : context.getBundles()) {
+            if ("org.apache.felix.ipojo".equals(b.getSymbolicName())) {
+                ipojoBundleId = b.getBundleId();
+                break;
+            }
+        }
+        String href = "/everest/osgi/bundles/" + ipojoBundleId;
+        assertThatResource(read("/ipojo")).hasRelation(and(hasName("bundle"), hasAction(Action.READ), hasHref(href)));
     }
 
     /**
