@@ -2,8 +2,10 @@ package org.apache.felix.ipojo.everest.ipojo;
 
 import org.apache.felix.ipojo.HandlerFactory;
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
+import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.services.Path;
 import org.apache.felix.ipojo.everest.services.Resource;
+import org.apache.felix.ipojo.everest.services.ResourceMetadata;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -53,4 +55,15 @@ public class HandlersResource extends DefaultReadOnlyResource {
         }
     }
 
+    @Override
+    public ResourceMetadata getMetadata() {
+        ImmutableResourceMetadata.Builder b = new ImmutableResourceMetadata.Builder();
+        synchronized (m_handlers) {
+            // For each namespace
+            for (String ns : m_handlers.keySet()) {
+                b.set(ns, m_handlers.get(ns).getMetadata());
+            }
+        }
+        return b.build();
+    }
 }

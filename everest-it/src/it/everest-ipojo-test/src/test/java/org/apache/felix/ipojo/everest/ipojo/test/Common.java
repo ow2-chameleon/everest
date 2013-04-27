@@ -13,8 +13,6 @@ import org.junit.runner.RunWith;
 import org.ops4j.pax.exam.Configuration;
 import org.ops4j.pax.exam.Option;
 import org.ops4j.pax.exam.junit.PaxExam;
-import org.ops4j.pax.exam.options.CompositeOption;
-import org.ops4j.pax.exam.options.DefaultCompositeOption;
 import org.ops4j.pax.exam.spi.reactors.ExamReactorStrategy;
 import org.ops4j.pax.exam.spi.reactors.PerClass;
 import org.ops4j.pax.tinybundles.core.TinyBundle;
@@ -47,39 +45,57 @@ import static org.ops4j.pax.exam.CoreOptions.*;
 @ExamReactorStrategy(PerClass.class)
 public class Common {
 
+    OSGiHelper osgiHelper;
+
+    IPOJOHelper ipojoHelper;
+
     @Inject
-    BundleContext bc;
+    BundleContext context;
 
     @Inject
     EverestService everest;
 
-    OSGiHelper osgiHelper;
-    IPOJOHelper ipojoHelper;
+    @Configuration
+    public Option[] config() throws MalformedURLException {
+        // Adjust the log level
+        ((Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)).setLevel(Level.INFO);
 
+        return options(
+                systemProperty("org.ops4j.pax.logging.DefaultServiceLog.level").value("WARN"),
+                // iPOJO bundles
+                mavenBundle("org.apache.felix", "org.apache.felix.ipojo").versionAsInProject(),
+                // Test utility bundles
+                junitBundles(),
+                wrappedBundle(mavenBundle("org.easytesting", "fest-util").versionAsInProject()),
+                wrappedBundle(mavenBundle("org.easytesting", "fest-assert").versionAsInProject()),
+                mavenBundle("org.ow2.chameleon.testing", "osgi-helpers").versionAsInProject(),
+                // everest bundles
+                mavenBundle("org.apache.felix.ipojo", "everest-core").versionAsInProject(),
+                mavenBundle("org.apache.felix.ipojo", "everest-ipojo").versionAsInProject(),
+                // Generated test bundles
+                testedBundle(),
+                testedBundle2()
+        );
+    }
+
+    /**
+     * Read the resource at the given path.
+     *
+     * @param path the path of the resource
+     * @return the read resource
+     * @throws ResourceNotFoundException if there is no resource at the given path
+     * @throws IllegalActionOnResourceException if reading this resource is an illegal action
+     */
     public Resource read(String path) throws ResourceNotFoundException, IllegalActionOnResourceException {
         return everest.process(new DefaultRequest(Action.READ, Path.from(path), null));
     }
 
-    @Configuration
-    public Option[] config() throws MalformedURLException {
-        Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-        root.setLevel(Level.INFO);
 
-        return options(
-                ipojoBundles(),
-                everestBundles(),
-                junitBundles(),
-                festBundles(),
-                testedBundle(),
-                testedBundle2(),
-                systemProperty("org.ops4j.pax.logging.DefaultServiceLog.level").value("WARN")
-        );
-    }
 
     @Before
     public void commonSetUp() {
-        osgiHelper = new OSGiHelper(bc);
-        ipojoHelper = new IPOJOHelper(bc);
+        osgiHelper = new OSGiHelper(context);
+        ipojoHelper = new IPOJOHelper(context);
 
         // Dump OSGi Framework information
         String vendor = (String) osgiHelper.getBundle(0).getHeaders().get(Constants.BUNDLE_VENDOR);
@@ -89,36 +105,13 @@ public class Common {
         String version = (String) osgiHelper.getBundle(0).getHeaders().get(Constants.BUNDLE_VERSION);
         System.out.println("OSGi Framework : " + vendor + " - " + version);
 
-        waitForStability(bc);
+        waitForStability(context);
     }
 
     @After
     public void commonTearDown() {
         ipojoHelper.dispose();
         osgiHelper.dispose();
-    }
-
-    public CompositeOption ipojoBundles() {
-        return new DefaultCompositeOption(
-                mavenBundle("org.apache.felix", "org.apache.felix.ipojo").versionAsInProject(),
-                mavenBundle("org.ow2.chameleon.testing", "osgi-helpers").versionAsInProject(),
-                mavenBundle("org.apache.felix", "org.apache.felix.configadmin").versionAsInProject()
-        );
-    }
-
-    public CompositeOption everestBundles() {
-        return new DefaultCompositeOption(
-                mavenBundle("org.apache.felix.ipojo", "everest-core").versionAsInProject(),
-                mavenBundle("org.apache.felix.ipojo", "everest-ipojo").versionAsInProject()
-        );
-    }
-
-    // Wrap fest-util and fest-assert into a bundle so we can test with happiness.
-    public CompositeOption festBundles() {
-        return new DefaultCompositeOption(
-                wrappedBundle(mavenBundle("org.easytesting", "fest-util").versionAsInProject()),
-                wrappedBundle(mavenBundle("org.easytesting", "fest-assert").versionAsInProject())
-        );
     }
 
     // Generated bundle that contains everything in src/main/java BUT BarProviderImpl2 class.
@@ -183,7 +176,6 @@ public class Common {
     // It seems that we cannot define iPOJO component types twice (with different versions) in the same bundle
     // So the second bundle just contains version "2.0.0" or BarProviderImpl component type
     // Implementation class name is BarProviderImpl2
-    //TODO @cescoffier make sure that iPOJO behavior is wanted, not accidental!
     public Option testedBundle2() throws MalformedURLException {
         File out = new File("target/tested/bundle2.jar");
 

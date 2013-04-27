@@ -19,8 +19,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.fest.assertions.Assertions.*;
+import static org.fest.assertions.Assertions.assertThat;
+import static org.apache.felix.ipojo.everest.ipojo.test.ResourceAssert.assertThat;
 
+/**
+ * Test for factory resources.
+ */
 public class TestFactories extends Common {
 
     private static final String BAR = "org.apache.felix.ipojo.everest.ipojo.components.BarProviderImpl";
@@ -215,7 +219,6 @@ public class TestFactories extends Common {
         // Request creation on factory Foo, without any parameter
         Request req = new DefaultRequest(Action.CREATE, Path.from("/ipojo/factory/Foo/1.2.3.foo"), null);
         Resource result = everest.process(req);
-        assertThat(result).isNotNull();
 
         // Read metadata of resulting resource
         ResourceMetadata meta = result.getMetadata();
@@ -229,7 +232,7 @@ public class TestFactories extends Common {
         assertThat(ref).isNotNull();
         assertThat(ref.getProperty("fooCounter")).isEqualTo(0);
 
-        FooService foo = (FooService) bc.getService(ref);
+        FooService foo = (FooService) context.getService(ref);
         assertThat(foo.getFoo()).isEqualTo("0");
 
         //TODO check relation to factory
@@ -262,7 +265,7 @@ public class TestFactories extends Common {
         assertThat(ref).isNotNull();
         assertThat(ref.getProperty("fooCounter")).isEqualTo(666);
 
-        FooService foo = (FooService) bc.getService(ref);
+        FooService foo = (FooService) context.getService(ref);
         assertThat(foo.getFoo()).isEqualTo("__configured666");
         //TODO check relation to factory
     }
@@ -293,7 +296,7 @@ public class TestFactories extends Common {
     @Test
     public void testDeleteBar2Factory() throws ResourceNotFoundException, IllegalActionOnResourceException, InvalidSyntaxException {
         // Check refs before
-        Collection<ServiceReference<Factory>> refs1 = bc.getServiceReferences(Factory.class, "(factory.name=" + BAR + ")");
+        Collection<ServiceReference<Factory>> refs1 = context.getServiceReferences(Factory.class, "(factory.name=" + BAR + ")");
         assertThat(refs1).hasSize(2);
 
         // Delete factory Bar v2.0.0
@@ -308,7 +311,7 @@ public class TestFactories extends Common {
         assertThat(meta.get("className")).isEqualTo(BAR_2);
 
         // Check that the service reference has gone.
-        Collection<ServiceReference<Factory>> refs2 = bc.getServiceReferences(Factory.class, "(factory.name=" + BAR + ")");
+        Collection<ServiceReference<Factory>> refs2 = context.getServiceReferences(Factory.class, "(factory.name=" + BAR + ")");
         assertThat(refs2).hasSize(1);
 
         // Check that accessing Bar version null still works
@@ -326,7 +329,7 @@ public class TestFactories extends Common {
     // HACKS below this point!!!
 
     private Architecture getArchitecture(String name) throws InvalidSyntaxException {
-        Collection<ServiceReference<Architecture>> refs = bc.getServiceReferences(Architecture.class, "(architecture.instance=" + name + ")");
+        Collection<ServiceReference<Architecture>> refs = context.getServiceReferences(Architecture.class, "(architecture.instance=" + name + ")");
         if (refs.isEmpty()) {
             return null;
         } else if (refs.size() > 1) {
@@ -334,7 +337,7 @@ public class TestFactories extends Common {
             throw new AssertionError("multiple architecture service with same instance name");
         }
         ServiceReference<Architecture> ref = refs.iterator().next();
-        return bc.getService(ref);
+        return context.getService(ref);
     }
 
     private ComponentInstance getComponentInstance(String name) throws InvalidSyntaxException, NoSuchFieldException, IllegalAccessException {
@@ -374,14 +377,14 @@ public class TestFactories extends Common {
         }
         filter += ")";
 
-        Collection<ServiceReference<Factory>> refs = bc.getServiceReferences(Factory.class, filter);
+        Collection<ServiceReference<Factory>> refs = context.getServiceReferences(Factory.class, filter);
         if (refs.isEmpty()) {
             return null;
         } else if (refs.size() > 1) {
             // Should never happen!
             throw new AssertionError("multiple factory service with same name/version");
         }
-        return bc.getService(refs.iterator().next());
+        return context.getService(refs.iterator().next());
     }
 
     // WARN: this is a hack!!!

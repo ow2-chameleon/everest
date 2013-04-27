@@ -2,8 +2,10 @@ package org.apache.felix.ipojo.everest.ipojo;
 
 import org.apache.felix.ipojo.architecture.Architecture;
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
+import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.services.Path;
 import org.apache.felix.ipojo.everest.services.Resource;
+import org.apache.felix.ipojo.everest.services.ResourceMetadata;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -42,4 +44,15 @@ public class InstancesResource extends DefaultReadOnlyResource {
         }
     }
 
+    @Override
+    public ResourceMetadata getMetadata() {
+        ImmutableResourceMetadata.Builder b = new ImmutableResourceMetadata.Builder();
+        synchronized (m_instances) {
+            // For each instance name...
+            for (String name : m_instances.keySet()) {
+                b.set(name, m_instances.get(name).getMetadata());
+            }
+        }
+        return b.build();
+    }
 }

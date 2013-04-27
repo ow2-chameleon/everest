@@ -1,6 +1,7 @@
 package org.apache.felix.ipojo.everest.ipojo;
 
-import org.apache.felix.ipojo.*;
+import org.apache.felix.ipojo.Factory;
+import org.apache.felix.ipojo.IPojoFactory;
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
 import org.apache.felix.ipojo.everest.impl.DefaultRequest;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
@@ -100,9 +101,9 @@ public class FactoryNameVersionResource extends DefaultReadOnlyResource {
         // Get configuration of the component instance to create.
         Hashtable<String, Object> config;
         if (request.parameters() != null) {
-            config = new Hashtable(request.parameters());
+            config = new Hashtable<String, Object>(request.parameters());
         } else {
-            config = new Hashtable();
+            config = new Hashtable<String, Object>();
         }
 
         // Create the instance.

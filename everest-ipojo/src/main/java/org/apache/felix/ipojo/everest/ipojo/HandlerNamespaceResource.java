@@ -2,7 +2,9 @@ package org.apache.felix.ipojo.everest.ipojo;
 
 import org.apache.felix.ipojo.HandlerFactory;
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
+import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.services.Resource;
+import org.apache.felix.ipojo.everest.services.ResourceMetadata;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -22,13 +24,13 @@ public class HandlerNamespaceResource extends DefaultReadOnlyResource {
 
     public void addHandlerName(HandlerFactory handler) {
         synchronized (m_names) {
-            m_names.put(handler.getHandlerName(), new HandlerNamespaceNameResource(handler));
+            m_names.put(handler.getName(), new HandlerNamespaceNameResource(handler));
         }
     }
 
     public boolean removeHandlerName(HandlerFactory handler) {
         synchronized (m_names) {
-            m_names.remove(handler.getHandlerName());
+            m_names.remove(handler.getName());
             return m_names.isEmpty();
         }
     }
@@ -40,4 +42,15 @@ public class HandlerNamespaceResource extends DefaultReadOnlyResource {
         }
     }
 
+    @Override
+    public ResourceMetadata getMetadata() {
+        ImmutableResourceMetadata.Builder b = new ImmutableResourceMetadata.Builder();
+        synchronized (m_names) {
+            // For each namespace
+            for (String name : m_names.keySet()) {
+                b.set(name, m_names.get(name).getMetadata());
+            }
+        }
+        return b.build();
+    }
 }

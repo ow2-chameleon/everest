@@ -1,14 +1,10 @@
 package org.apache.felix.ipojo.everest.ipojo;
 
 import org.apache.felix.ipojo.ComponentInstance;
-import org.apache.felix.ipojo.Factory;
 import org.apache.felix.ipojo.architecture.Architecture;
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
-import org.apache.felix.ipojo.everest.impl.DefaultResource;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.services.ResourceMetadata;
-
-import java.util.Collections;
 
 /**
  * '/ipojo/instance/$name' resource, where $name stands for the name of an instance.
