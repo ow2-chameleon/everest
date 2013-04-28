@@ -10,7 +10,6 @@ import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
 import org.osgi.framework.wiring.BundleRevision;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +35,8 @@ public class BundleResource extends DefaultResource {
 
     private final static String UPDATE_RELATION_PARAMETER = "input";
 
+    private static final String UNINSTALL_RELATION = "uninstall";
+
     private final Bundle m_bundle;
 
     private final boolean isFragment;
@@ -53,15 +54,20 @@ public class BundleResource extends DefaultResource {
                                 .name(UPDATE_RELATION_PARAMETER)
                                 .description(UPDATE_RELATION_PARAMETER)
                                 .optional(false)
-                                .type(ByteArrayInputStream.class)),
+                                .type(InputStream.class)),
                 new DefaultRelation(getPath(), Action.UPDATE, NEW_STATE_RELATION,
                         new DefaultParameter()
                                 .name(NEW_STATE_RELATION_PARAMETER)
                                 .description(BUNDLE_STATE)
                                 .optional(false)
-                                .type(Integer.class))
+                                .type(Integer.class)),
+                new DefaultRelation(getPath(), Action.DELETE, UNINSTALL_RELATION)
         );
 
+    }
+
+    public Bundle getBundle() {
+        return m_bundle;
     }
 
     public ResourceMetadata getSimpleMetadata() {
@@ -93,11 +99,11 @@ public class BundleResource extends DefaultResource {
 
     @Override
     public Resource update(Request request) throws IllegalActionOnResourceException {
+        Resource resource = this;
         if (request.parameters().get(UPDATE_RELATION_PARAMETER) != null) {
             try {
-                Object parameter = request.parameters().get(UPDATE_RELATION_PARAMETER);
-                if (parameter != null) {
-                    InputStream ioStream = (InputStream) parameter;
+                InputStream ioStream = request.get(UPDATE_RELATION_PARAMETER, InputStream.class);
+                if (ioStream != null) {
                     m_bundle.update(ioStream);
                 } else {
                     m_bundle.update();
@@ -109,10 +115,9 @@ public class BundleResource extends DefaultResource {
             }
         } else if (request.parameters().get(NEW_STATE_RELATION_PARAMETER) != null) {
             try {
-                Object parameter = request.parameters().get(NEW_STATE_RELATION_PARAMETER);
-                if (parameter != null) {
+                Integer newState = request.get(NEW_STATE_RELATION_PARAMETER, Integer.class);
+                if (newState != null) {
                     // calculate new state
-                    int newState = (Integer) parameter;
                     if (m_bundle.getState() != newState) {
                         switch (newState) {
                             case Bundle.ACTIVE:
@@ -127,18 +132,25 @@ public class BundleResource extends DefaultResource {
                             default:
                                 break;
                         }
-                    }
+                    }// else noop
                 }
             } catch (Throwable t) {
                 throw new IllegalActionOnResourceException(request, t.getMessage());
             }
+        } else {
+            throw new IllegalActionOnResourceException(request, "Operation not recognized");
         }
-        return this;
+        return resource;
     }
 
     @Override
     public Resource delete(Request request) throws IllegalActionOnResourceException {
-
+        try {
+            m_bundle.uninstall();
+        } catch (BundleException e) {
+            throw new IllegalActionOnResourceException(request, e.getMessage());
+        }
+        //TODO should build a resource here new DefaultReadOnlyResource.Builder()
         return null;
     }
 }

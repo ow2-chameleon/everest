@@ -36,6 +36,7 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import static junit.framework.Assert.assertNotNull;
 import static org.ops4j.pax.exam.CoreOptions.*;
@@ -58,6 +59,14 @@ public class Common {
 
     public Resource get(String path) throws ResourceNotFoundException, IllegalActionOnResourceException {
         return everest.process(new DefaultRequest(Action.READ, Path.from(path), null));
+    }
+
+    public Resource update(Path path, Map<String, Object> params) throws ResourceNotFoundException, IllegalActionOnResourceException {
+        return everest.process(new DefaultRequest(Action.UPDATE, path, params));
+    }
+
+    public Resource create(Path path, Map<String, Object> params) throws ResourceNotFoundException, IllegalActionOnResourceException {
+        return everest.process(new DefaultRequest(Action.CREATE, path, params));
     }
 
     @Configuration

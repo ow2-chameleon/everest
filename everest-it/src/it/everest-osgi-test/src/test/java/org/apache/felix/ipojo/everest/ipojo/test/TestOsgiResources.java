@@ -1,17 +1,26 @@
 package org.apache.felix.ipojo.everest.ipojo.test;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
 import org.apache.felix.ipojo.everest.services.IllegalActionOnResourceException;
 import org.apache.felix.ipojo.everest.services.Relation;
 import org.apache.felix.ipojo.everest.services.Resource;
 import org.apache.felix.ipojo.everest.services.ResourceNotFoundException;
 import org.junit.Assert;
 import org.junit.Test;
+import org.ops4j.pax.exam.Configuration;
+import org.ops4j.pax.exam.Option;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.framework.Version;
 import org.osgi.service.packageadmin.ExportedPackage;
+import org.slf4j.LoggerFactory;
 
+import java.net.MalformedURLException;
 import java.util.List;
+
+import static org.ops4j.pax.exam.CoreOptions.*;
+
 
 /**
  * Created with IntelliJ IDEA.
@@ -20,6 +29,21 @@ import java.util.List;
  * Time: 4:24 PM
  */
 public class TestOsgiResources extends Common {
+
+    @Configuration
+    public Option[] config() throws MalformedURLException {
+        Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+        root.setLevel(Level.INFO);
+
+        return options(
+                ipojoBundles(),
+                everestBundles(),
+                junitBundles(),
+                festBundles(),
+                testedBundle(),
+                systemProperty("org.ops4j.pax.logging.DefaultServiceLog.level").value("WARN")
+        );
+    }
 
     /**
      * Check that the '/osgi' resource is present.
