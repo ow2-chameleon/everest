@@ -1,8 +1,7 @@
 package org.apache.felix.ipojo.everest.servlet;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.felix.ipojo.annotations.*;
 import org.apache.felix.ipojo.everest.impl.DefaultRequest;
 import org.apache.felix.ipojo.everest.services.*;
@@ -15,10 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.Writer;
-import java.lang.reflect.Array;
-import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
 
 import static org.apache.felix.ipojo.everest.servlet.HttpUtils.*;
 
@@ -53,110 +49,74 @@ public class EverestServlet extends HttpServlet {
         // Translate request
         DefaultRequest request = translate(req);
         if (request == null) {
-            resp.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
-            resp.setContentType("application/json");
-            stream.write("{\"error\":\"The HTTP request cannot be translate to Everest\"}");
-            stream.close();
-            resp.flushBuffer();
+            ObjectNode node = JsonUtils.get().newObject();
+            node.put("error", "The HTTP request cannot be translated to Everest");
+            notimplemented(node).wrap(resp);
             return;
         }
 
+        HttpResult result = null;
         try {
             Resource resource = everest.process(request);
-            // If the request was a HEAD, just return ok.
-            resp.setStatus(HttpServletResponse.SC_OK);
             if (!isHead(req)) {
-                resp.setContentType("application/json");
-                toJSON(resource, stream); // This writes the json answer in the stream.
-                stream.close();
+                // PUT => CREATION
+                if (isPut(req)) {
+                    result = created(toJSON(resource));
+                } else {
+                    result = ok(toJSON(resource));
+                }
+            } else {
+                result = ok();
             }
-            resp.flushBuffer();
+            // Compute and add location
+            result.location(toURL(req, resource.getPath()));
+
         } catch (IllegalActionOnResourceException e) {
-            resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            resp.setContentType("application/json");
-            stream.write("{\"error\":\"Illegal action on resource\", \"path\":\"" + request.path() + "\", " +
-                    "\"action\":\"" + request.action() + "\", \"message\":\"" + e.getMessage() + "\"}");
-            stream.close();
-            resp.flushBuffer();
+            ObjectNode node = JsonUtils.get().newObject();
+            node.put("error", "illegal action on resource");
+            node.put("path", request.path().toString());
+            node.put("action", request.action().toString());
+            node.put("message", e.getMessage());
+            result = notallowed(node);
         } catch (ResourceNotFoundException e) {
-            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            resp.setContentType("application/json");
-            stream.write("{\"error\":\"Resource not found\", \"path\":\"" + request.path() + "\", " +
-                    "\"action\":\"" + request.action() + "\", \"message\":\"" + e.getMessage() + "\"}");
-            stream.close();
-            resp.flushBuffer();
+            ObjectNode node = JsonUtils.get().newObject();
+            node.put("error", "resource not found");
+            node.put("path", request.path().toString());
+            node.put("action", request.action().toString());
+            node.put("message", e.getMessage());
+            result = notfound(node);
         }
+
+        result.wrap(resp);
     }
 
-    protected void toJSON(Resource resource, Writer writer) throws IOException {
-        JsonFactory factory = new JsonFactory();
-        // configure, if necessary:
-        factory.enable(JsonParser.Feature.ALLOW_COMMENTS);
-        JsonGenerator generator = factory.createGenerator(writer);
+    /**
+     * Computes the HTTP url of the given path.
+     * The url is computed thanks to the request.
+     * @param  request the HTTP Request
+     * @param path the path
+     * @return the URL pointing to the given path
+     */
+    private String toURL(HttpServletRequest request, Path path) {
+        return request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() +
+                EVEREST_SERVLET_PATH + "/" + path.toString();
+    }
 
-        // Main object wrapper.
-        generator.writeStartObject();
+    protected JsonNode toJSON(Resource resource) throws IOException {
+        ObjectNode root = JsonUtils.get().newObject();
 
         // Metadata
         for (Map.Entry<String, Object> entry : resource.getMetadata().entrySet()) {
-            Object k = entry.getKey();
+            String k = entry.getKey();
             if (k == null) {
                 k = "null";
             }
-            toJSON(generator, k.toString(), entry.getValue());
+            root.put(k, JsonUtils.get().toJson(entry.getValue()));
         }
 
         // Link
 
-        // End of main object
-        generator.writeEndObject();
-
-        generator.close();
-    }
-
-    protected void toJSON(JsonGenerator generator, String fieldName, Object value) throws IOException {
-        if (fieldName != null) {
-            generator.writeFieldName(fieldName);
-        }
-        if (value == null) {
-            generator.writeNull();
-        } else if (value instanceof String) {
-            generator.writeString(value.toString());
-        } else if (value instanceof Integer) {
-            generator.writeNumber((Integer) value);
-        } else if (value instanceof Double) {
-            generator.writeNumber((Double) value);
-        } else if (value instanceof Boolean) {
-            generator.writeBoolean((Boolean) value);
-        } else if (value instanceof Collection) {
-            generator.writeStartArray();
-            for (Object o : ((Collection) value)) {
-                toJSON(generator, null, o);
-            }
-            generator.writeEndArray();
-        } else if (value.getClass().isArray()) {
-            generator.writeStartArray();
-            int length = Array.getLength(value);
-            for (int i = 0; i < length; i++) {
-                toJSON(generator, null, Array.get(value, i));
-            }
-            generator.writeEndArray();
-        } else if (value instanceof Map) {
-            generator.writeStartObject();
-            for (Map.Entry entry : (Set<Map.Entry>) ((Map) value).entrySet()) {
-                Object k = entry.getKey();
-                if (k != null) {
-                    generator.writeFieldName(entry.getKey().toString());
-                } else {
-                    generator.writeFieldName("null");
-                }
-                toJSON(generator, null, entry.getValue());
-            }
-            generator.writeEndObject();
-        } else {
-            // Write object as string
-            generator.writeString(value.toString());
-        }
+       return root;
     }
 
     private DefaultRequest translate(HttpServletRequest request) {

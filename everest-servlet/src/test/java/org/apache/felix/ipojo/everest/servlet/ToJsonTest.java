@@ -31,32 +31,29 @@ public class ToJsonTest {
 
     @Test
     public void serializationOfString() throws IllegalResourceException, IOException {
-        StringWriter writer = new StringWriter();
-        String s = "this is a string";
+         String s = "this is a string";
         Resource resource = new DefaultResource.Builder()
                 .fromPath("/foo")
                 .with(new ImmutableResourceMetadata.Builder().set("data", s).build())
                 .build();
 
-        servlet.toJSON(resource, writer);
-        assertThat(writer.toString()).isEqualToIgnoringCase("{\"data\":\"" + s + "\"}");
+        String result = servlet.toJSON(resource).toString();
+        assertThat(result).isEqualToIgnoringCase("{\"data\":\"" + s + "\"}");
     }
 
     @Test
     public void serializationOfNull() throws IllegalResourceException, IOException {
-        StringWriter writer = new StringWriter();
         Resource resource = new DefaultResource.Builder()
                 .fromPath("/foo")
                 .with(new ImmutableResourceMetadata.Builder().set("data", null).build())
                 .build();
 
-        servlet.toJSON(resource, writer);
-        assertThat(writer.toString()).isEqualToIgnoringCase("{\"data\":null}");
+        String result = servlet.toJSON(resource).toString();
+        assertThat(result).isEqualToIgnoringCase("{\"data\":null}");
     }
 
     @Test
     public void serializationOfNumbers() throws IllegalResourceException, IOException {
-        StringWriter writer = new StringWriter();
         Resource resource = new DefaultResource.Builder()
                 .fromPath("/foo")
                 .with(new ImmutableResourceMetadata.Builder()
@@ -65,14 +62,13 @@ public class ToJsonTest {
                         .build())
                 .build();
 
-        servlet.toJSON(resource, writer);
-        assertThat(writer.toString()).contains("\"int\":" + 1);
-        assertThat(writer.toString()).contains("\"double\":" + 1.0);
+        String result = servlet.toJSON(resource).toString();
+        assertThat(result).contains("\"int\":" + 1);
+        assertThat(result).contains("\"double\":" + 1.0);
     }
 
     @Test
     public void serializationOfBooleans() throws IllegalResourceException, IOException {
-        StringWriter writer = new StringWriter();
         Resource resource = new DefaultResource.Builder()
                 .fromPath("/foo")
                 .with(new ImmutableResourceMetadata.Builder()
@@ -81,14 +77,13 @@ public class ToJsonTest {
                         .build())
                 .build();
 
-        servlet.toJSON(resource, writer);
-        assertThat(writer.toString()).contains("\"right\":" + true);
-        assertThat(writer.toString()).contains("\"wrong\":" + false);
+        String result = servlet.toJSON(resource).toString();
+        assertThat(result).contains("\"right\":" + true);
+        assertThat(result).contains("\"wrong\":" + false);
     }
 
     @Test
     public void serializationOfSimpleLists() throws IllegalResourceException, IOException {
-        StringWriter writer = new StringWriter();
         List<String> l1 = Arrays.asList("a", "b", "c");
         List<Integer> l2 = Arrays.asList(1, 2, 3);
         Resource resource = new DefaultResource.Builder()
@@ -99,14 +94,13 @@ public class ToJsonTest {
                         .build())
                 .build();
 
-        servlet.toJSON(resource, writer);
-        assertThat(writer.toString()).contains("\"l1\":[\"a\",\"b\",\"c\"]");
-        assertThat(writer.toString()).contains("\"l2\":[1,2,3]");
+        String result = servlet.toJSON(resource).toString();
+        assertThat(result).contains("\"l1\":[\"a\",\"b\",\"c\"]");
+        assertThat(result).contains("\"l2\":[1,2,3]");
     }
 
     @Test
     public void serializationOfArrays() throws IllegalResourceException, IOException {
-        StringWriter writer = new StringWriter();
         String[] a1 = new String[]{"a", "b", "c"};
         int[] a2 = new int[]{1, 2, 3};
         Resource resource = new DefaultResource.Builder()
@@ -117,14 +111,13 @@ public class ToJsonTest {
                         .build())
                 .build();
 
-        servlet.toJSON(resource, writer);
-        assertThat(writer.toString()).contains("\"l1\":[\"a\",\"b\",\"c\"]");
-        assertThat(writer.toString()).contains("\"l2\":[1,2,3]");
+        String result = servlet.toJSON(resource).toString();
+        assertThat(result).contains("\"l1\":[\"a\",\"b\",\"c\"]");
+        assertThat(result).contains("\"l2\":[1,2,3]");
     }
 
     @Test
     public void serializationOfSimpleSets() throws IllegalResourceException, IOException {
-        StringWriter writer = new StringWriter();
         List<String> l1 = Arrays.asList("a", "b", "c");
         List<Integer> l2 = Arrays.asList(1, 2, 3);
         Resource resource = new DefaultResource.Builder()
@@ -135,14 +128,13 @@ public class ToJsonTest {
                         .build())
                 .build();
 
-        servlet.toJSON(resource, writer);
-        assertThat(writer.toString()).contains("\"l1\":[\"a\",\"b\",\"c\"]");
-        assertThat(writer.toString()).contains("\"l2\":[1,2,3]");
+        String result = servlet.toJSON(resource).toString();
+        assertThat(result).contains("\"l1\":[\"a\",\"b\",\"c\"]");
+        assertThat(result).contains("\"l2\":[1,2,3]");
     }
 
     @Test
     public void serializationOfMaps() throws IllegalResourceException, IOException {
-        StringWriter writer = new StringWriter();
         ImmutableMap<String, String> mapOfString = new ImmutableMap.Builder<String, String>()
                 .put("one", "1")
                 .put("two", "2")
@@ -160,14 +152,13 @@ public class ToJsonTest {
                         .build())
                 .build();
 
-        servlet.toJSON(resource, writer);
-        assertThat(writer.toString()).contains("\"m1\":{\"one\":\"1\",\"two\":\"2\"}");
-        assertThat(writer.toString()).contains("\"m2\":{\"one\":1,\"two\":2}");
+        String result = servlet.toJSON(resource).toString();
+        assertThat(result).contains("\"m1\":{\"one\":\"1\",\"two\":\"2\"}");
+        assertThat(result).contains("\"m2\":{\"one\":1,\"two\":2}");
     }
 
     @Test
     public void serializationOfComplexList() throws IllegalResourceException, IOException {
-        StringWriter writer = new StringWriter();
         List<ImmutableMap<String, List<Integer>>> l1 = Arrays.asList(
                 new ImmutableMap.Builder<String, List<Integer>>()
                         .put("a1", Arrays.asList(1, 2, 3))
@@ -184,8 +175,8 @@ public class ToJsonTest {
                         .build())
                 .build();
 
-        servlet.toJSON(resource, writer);
-        assertThat(writer.toString()).isEqualToIgnoringCase(
+        String result = servlet.toJSON(resource).toString();
+        assertThat(result).isEqualToIgnoringCase(
                 "{\"object\":[" +
                         "{\"a1\":[1,2,3],\"a2\":[4,5,6]}," +
                         "{\"b1\":[9,8,7],\"b2\":[6,5,4]}" +
