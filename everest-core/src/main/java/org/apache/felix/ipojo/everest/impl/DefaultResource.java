@@ -1,6 +1,6 @@
 package org.apache.felix.ipojo.everest.impl;
 
-import org.apache.felix.ipojo.everest.filters.Filters;
+import org.apache.felix.ipojo.everest.filters.ResourceFilters;
 import org.apache.felix.ipojo.everest.services.*;
 
 import java.util.ArrayList;
@@ -89,7 +89,7 @@ public class DefaultResource implements Resource {
     }
 
     public Resource getResource(String path) {
-        List<Resource> list = getResources(Filters.hasPath(path));
+        List<Resource> list = getResources(ResourceFilters.hasPath(path));
         if (! list.isEmpty()) {
             return list.get(0);
         } else {

@@ -1,13 +1,6 @@
 package org.apache.felix.ipojo.everest.impl;
 
-import org.apache.felix.ipojo.everest.filters.Filters;
 import org.apache.felix.ipojo.everest.services.*;
-
-import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Read only resource.

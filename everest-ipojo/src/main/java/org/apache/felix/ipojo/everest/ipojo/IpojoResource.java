@@ -5,10 +5,9 @@ import org.apache.felix.ipojo.HandlerFactory;
 import org.apache.felix.ipojo.annotations.*;
 import org.apache.felix.ipojo.architecture.Architecture;
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
+import org.apache.felix.ipojo.everest.impl.DefaultRelation;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
-import org.apache.felix.ipojo.everest.services.Path;
-import org.apache.felix.ipojo.everest.services.Resource;
-import org.apache.felix.ipojo.everest.services.ResourceMetadata;
+import org.apache.felix.ipojo.everest.services.*;
 import org.apache.felix.ipojo.extender.Declaration;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -25,12 +24,20 @@ import java.util.List;
 @Provides(specifications = Resource.class)
 public class IpojoResource extends DefaultReadOnlyResource {
 
+    /**
+     * Path to self.
+     */
     public static final Path PATH = Path.from("/ipojo");
 
     /**
-     * The version of iPOJO.
+     * Path to OSGi bundles domain
      */
-    private final Version m_ipojoVersion;
+    public static final Path PATH_TO_BUNDLES = Path.from("/everest/osgi/bundles");
+
+    /**
+     * The iPOJO bundle
+     */
+    private final Bundle m_ipojo;
 
     /**
      * The '/factory' sub-resource.
@@ -60,28 +67,32 @@ public class IpojoResource extends DefaultReadOnlyResource {
     public IpojoResource(BundleContext context) {
         super(PATH);
 
-        // Retrieve used version of iPOJO.
-        Version v = null;
-        for (Bundle b : context.getBundles()) {
-            if ("org.apache.felix.ipojo".equals(b.getSymbolicName())) {
-                v = b.getVersion();
+        // Retrieve the iPOJO bundle.
+        Bundle b = null;
+        for (Bundle bundle : context.getBundles()) {
+            if ("org.apache.felix.ipojo".equals(bundle.getSymbolicName())) {
+                b = bundle;
                 break;
             }
         }
-        m_ipojoVersion = v;
+        m_ipojo = b;
 
         // Create the sub-resources
         m_factories = new FactoriesResource(this);
         m_handlers = new HandlersResource();
         m_instances = new InstancesResource();
         m_declarations = new DeclarationsResource();
+
+        // Add relation to the iPOJO bundle
+        DefaultRelation bundle = new DefaultRelation(PATH_TO_BUNDLES.addElements(String.valueOf(m_ipojo.getBundleId())), Action.READ, "bundle");
+        setRelations(bundle);
     }
 
 
     @Override
     public ResourceMetadata getMetadata() {
         // Return the used version of iPOJO
-        return new ImmutableResourceMetadata.Builder().set("version", m_ipojoVersion.toString()).build();
+        return new ImmutableResourceMetadata.Builder().set("version", m_ipojo.getVersion().toString()).build();
     }
 
     @Override

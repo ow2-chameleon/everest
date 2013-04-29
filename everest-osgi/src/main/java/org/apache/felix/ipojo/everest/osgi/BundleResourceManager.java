@@ -6,8 +6,10 @@ import org.apache.felix.ipojo.everest.impl.DefaultResource;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.services.*;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleException;
+import org.osgi.framework.wiring.FrameworkWiring;
 
-import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,7 +28,9 @@ public class BundleResourceManager extends DefaultResource {
 
     public static final String BUNDLE_ROOT_NAME = "bundles";
 
-    public static final String INSTALL_RELATION_PARAMETER = "input";
+    public static final String INSTALL_INPUT_PARAMETER = "input";
+
+    private static final String INSTALL_LOCATION_PARAMETER = "location";
 
     public static final String BUNDLE_INSTALL_RELATION = "install";
 
@@ -35,6 +39,7 @@ public class BundleResourceManager extends DefaultResource {
     private static final String BUNDLE_REFRESH_RELATION = "refresh";
 
     private static final String REFRESH_PARAMETER = "bundles";
+
 
     private Map<Long, BundleResource> bundleResources = new HashMap<Long, BundleResource>();
 
@@ -49,10 +54,15 @@ public class BundleResourceManager extends DefaultResource {
 
         setRelations(new DefaultRelation(getPath(), Action.CREATE, BUNDLE_INSTALL_RELATION,
                 new DefaultParameter()
-                        .name(INSTALL_RELATION_PARAMETER)
-                        .description(INSTALL_RELATION_PARAMETER)
+                        .name(INSTALL_LOCATION_PARAMETER)
+                        .description(INSTALL_LOCATION_PARAMETER)
                         .optional(false)
-                        .type(ByteArrayInputStream.class)),
+                        .type(String.class),
+                new DefaultParameter()
+                        .name(INSTALL_INPUT_PARAMETER)
+                        .description(INSTALL_INPUT_PARAMETER)
+                        .optional(true)
+                        .type(InputStream.class)),
                 new DefaultRelation(getPath(), Action.UPDATE, BUNDLE_REFRESH_RELATION,
                         new DefaultParameter()
                                 .name(REFRESH_PARAMETER)
@@ -96,11 +106,36 @@ public class BundleResourceManager extends DefaultResource {
     @Override
     public Resource create(Request request) throws IllegalActionOnResourceException {
         Resource resource = this;
-        Object parameter = request.parameters().get(INSTALL_RELATION_PARAMETER);
-        if (parameter != null) {
-
+        try {
+            Bundle fw = bundleResources.get(0L).getBundle();
+            String location = request.get(INSTALL_LOCATION_PARAMETER, String.class);
+            if (location != null) {
+                InputStream input = request.get(INSTALL_INPUT_PARAMETER, InputStream.class);
+                Bundle newBundle = fw.getBundleContext().installBundle(location, input);
+                resource = new BundleResource(newBundle);
+            }
+        } catch (BundleException e) {
+            throw new IllegalActionOnResourceException(request, e.getMessage());
         }
         return resource;
     }
 
+    @Override
+    public Resource update(Request request) throws IllegalActionOnResourceException {
+        Resource resource = this;
+        try {
+            Bundle fw = bundleResources.get(0L).getBundle();
+            FrameworkWiring fwiring = fw.adapt(FrameworkWiring.class);
+            List refreshBundles = request.get(REFRESH_PARAMETER, List.class);
+            fwiring.refreshBundles(refreshBundles);
+        } catch (Throwable t) {
+            throw new IllegalActionOnResourceException(request, t.getMessage());
+        }
+        return resource;
+    }
+
+    @Override
+    public Resource delete(Request request) throws IllegalActionOnResourceException {
+        return super.delete(request);    //To change body of overridden methods use File | Settings | File Templates.
+    }
 }

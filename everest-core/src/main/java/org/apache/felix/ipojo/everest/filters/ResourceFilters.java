@@ -7,7 +7,7 @@ import org.apache.felix.ipojo.everest.services.ResourceFilter;
 /**
  * A static class giving a couple of common resource filters
  */
-public class Filters {
+public class ResourceFilters {
 
     public static ResourceFilter all() {
         return new ResourceFilter() {
