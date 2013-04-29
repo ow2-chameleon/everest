@@ -2,6 +2,7 @@ package org.apache.felix.ipojo.everest.osgi;
 
 import org.apache.felix.ipojo.annotations.*;
 import org.apache.felix.ipojo.everest.impl.AbstractResourceManager;
+import org.apache.felix.ipojo.everest.impl.DefaultRelation;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.services.*;
 import org.osgi.framework.*;
@@ -34,6 +35,8 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
 
     public static final String OSGI_DESCRIPTION = "This root represents osgi framework and its subresources";
 
+    public static final String FRAMEWORK_STOP_RELATION = "stop";
+
     private final Object resourceLock = new Object();
 
     private final BundleContext m_context;
@@ -62,17 +65,15 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
         super(OSGI_ROOT, OSGI_DESCRIPTION);
 
         m_context = context;
-
         // Initialize subresource managers
         m_bundleResourceManager = BundleResourceManager.getInstance();
         m_packageResourceManager = PackageResourceManager.getInstance();
         m_serviceResourceManager = ServiceResourceManager.getInstance();
-
+        // Construct framework metadata
         ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
-
-        //TODO take some metadata from the framework
-
         Bundle fw = m_context.getBundle(0);
+        fwiring = fw.adapt(FrameworkWiring.class);
+        //TODO take some metadata from the framework
         BundleContext fwContext = fw.getBundleContext();
         metadataBuilder.set(Constants.FRAMEWORK_VERSION, fwContext.getProperty(Constants.FRAMEWORK_VERSION));
         metadataBuilder.set(Constants.FRAMEWORK_VENDOR, fwContext.getProperty(Constants.FRAMEWORK_VENDOR));
@@ -87,7 +88,6 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
         metadataBuilder.set(Constants.SUPPORTS_BOOTCLASSPATH_EXTENSION, fwContext.getProperty(Constants.SUPPORTS_BOOTCLASSPATH_EXTENSION));
         metadataBuilder.set(Constants.FRAMEWORK_BOOTDELEGATION, fwContext.getProperty(Constants.FRAMEWORK_BOOTDELEGATION));
         metadataBuilder.set(Constants.FRAMEWORK_SYSTEMPACKAGES, fwContext.getProperty(Constants.FRAMEWORK_SYSTEMPACKAGES));
-        fwiring = fw.adapt(FrameworkWiring.class);
 
         // Initialize bundle & service trackers
         int stateMask = Bundle.ACTIVE | Bundle.INSTALLED | Bundle.RESOLVED | Bundle.STARTING | Bundle.STOPPING | Bundle.UNINSTALLED;
@@ -108,9 +108,9 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
 
         m_metadata = metadataBuilder.build();
 
-//        setRelations(
-//            new DefaultRelation(getPath(),Action.DELETE,""),
-//        );
+        setRelations(
+                new DefaultRelation(getPath(), Action.DELETE, FRAMEWORK_STOP_RELATION, "Stops the osgi framework")
+        );
     }
 
     @Validate
@@ -242,6 +242,7 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
 
     @Override
     public Resource update(Request request) throws IllegalActionOnResourceException {
+
         return this;
     }
 
