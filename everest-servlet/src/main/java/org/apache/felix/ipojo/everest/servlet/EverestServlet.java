@@ -27,11 +27,12 @@ public class EverestServlet extends HttpServlet {
 
 
     public static final String EVEREST_SERVLET_PATH = "/everest";
+
     @Requires
     private EverestService everest;
 
     @Bind
-    public void bindHttp(HttpService service) throws ServletException, NamespaceException {
+    public void bindHttp(HttpService service, Map properties) throws ServletException, NamespaceException {
         service.registerServlet(EVEREST_SERVLET_PATH, this, null, null);
     }
 
@@ -43,8 +44,6 @@ public class EverestServlet extends HttpServlet {
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         System.out.println("Everest servlet called");
-
-        Writer stream = resp.getWriter();
 
         // Translate request
         DefaultRequest request = translate(req);
@@ -61,9 +60,9 @@ public class EverestServlet extends HttpServlet {
             if (!isHead(req)) {
                 // PUT => CREATION
                 if (isPut(req)) {
-                    result = created(toJSON(resource));
+                    result = created(toJSON(req, resource));
                 } else {
-                    result = ok(toJSON(resource));
+                    result = ok(toJSON(req, resource));
                 }
             } else {
                 result = ok();
@@ -102,7 +101,21 @@ public class EverestServlet extends HttpServlet {
                 EVEREST_SERVLET_PATH + "/" + path.toString();
     }
 
-    protected JsonNode toJSON(Resource resource) throws IOException {
+    protected JsonNode toJSON(HttpServletRequest request, Resource resource) throws IOException {
+        ObjectNode root = toJSON(resource);
+
+        // Relations
+        // Relations are indexed by their name
+        ObjectNode relations = JsonUtils.get(request).newObject();
+        for (Relation relation : resource.getRelations()) {
+            relations.put(relation.getName(), JsonUtils.get(request).toJson(relation));
+        }
+
+        root.put("__relations", relations);
+        return root;
+    }
+
+    protected ObjectNode toJSON(Resource resource) throws IOException {
         ObjectNode root = JsonUtils.get().newObject();
 
         // Metadata
@@ -114,14 +127,13 @@ public class EverestServlet extends HttpServlet {
             root.put(k, JsonUtils.get().toJson(entry.getValue()));
         }
 
-        // Link
-
        return root;
     }
 
     private DefaultRequest translate(HttpServletRequest request) {
         System.out.println("Path info : " + request.getPathInfo());
         Path path = Path.from(request.getPathInfo());
+
         Action action;
         if (isGet(request)  || isHead(request)) {
             action = Action.READ;

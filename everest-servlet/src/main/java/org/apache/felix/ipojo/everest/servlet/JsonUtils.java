@@ -2,7 +2,10 @@ package org.apache.felix.ipojo.everest.servlet;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Json utilities.
@@ -12,16 +15,33 @@ public class JsonUtils {
     public static String CONTENT_TYPE = "application/json";
 
     private static Json default_singleton = new Json();
+    private static Json request_json;
 
     public  static Json get() {
         return default_singleton;
     }
+
+    public  static Json get(HttpServletRequest request) {
+        // Once we have the request-based mapper, we keep it.
+        if (request_json == null) {
+            SimpleModule everest = new SimpleModule("Everest");
+            everest.addSerializer(new PathSerializer(request, EverestServlet.EVEREST_SERVLET_PATH));
+
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(everest);
+            request_json =  new Json(mapper);
+        }
+
+        return request_json;
+    }
+
 
     public static  class Json {
         private final ObjectMapper mapper;
 
         public Json() {
             mapper = new ObjectMapper();
+
         }
 
         public Json(ObjectMapper mapper) {
