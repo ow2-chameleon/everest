@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import java.net.MalformedURLException;
 import java.util.List;
 
+import static org.fest.assertions.Assertions.assertThat;
 import static org.ops4j.pax.exam.CoreOptions.*;
 
 
@@ -89,6 +90,7 @@ public class TestOsgiResources extends Common {
         for (Resource bundle : bundles.getResources()) {
             Bundle b = osgiHelper.getBundle(Long.parseLong(bundle.getPath().getLast()));
             Assert.assertNotNull(b);
+            //System.out.println(b.getSymbolicName()+" - "+b.getVersion());
         }
     }
 
@@ -127,15 +129,17 @@ public class TestOsgiResources extends Common {
         for (int i = 0; i < bundles.getResources().size(); i++) {
             Resource wires = get("/osgi/bundles/" + i + "/wires");
             for (Resource res : wires.getResources()) {
-                System.out.println(res.getPath());
-                System.out.println("Related to :");
+                assertThat(res).isNotNull();
+                //System.out.println(res.getPath());
+                //System.out.println("Related to :");
                 for (Relation relation : res.getRelations()) {
-                    System.out.println("\t" + relation.getName() + " - " + relation.getHref());
+                    //System.out.println("\t" + relation.getName() + " - " + relation.getHref());
                 }
-                System.out.println("\tWires :");
+                //System.out.println("\tWires :");
                 for (Resource wire : res.getResources()) {
                     for (Relation relation : wire.getRelations()) {
-                        System.out.println("\t\t" + relation.getName() + " - " + relation.getHref());
+                        assertThat(relation).isNotNull();
+                        //System.out.println("\t\t" + relation.getName() + " - " + relation.getHref());
                     }
                 }
             }
