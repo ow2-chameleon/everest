@@ -1,11 +1,15 @@
 package org.apache.felix.ipojo.everest.servlet;
 
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 
 /**
  * Json utilities.
@@ -40,12 +44,12 @@ public class JsonUtils {
         private final ObjectMapper mapper;
 
         public Json() {
-            mapper = new ObjectMapper();
-
+            this(new ObjectMapper());
         }
 
         public Json(ObjectMapper mapper) {
             this.mapper = mapper;
+            this.mapper.getSerializerProvider().setNullKeySerializer(new NullKeySerializer("null"));
         }
 
         public ObjectMapper getMapper() {
@@ -105,8 +109,21 @@ public class JsonUtils {
         }
     }
 
+    /**
+     * JsonSerializer that translates {@code null} keys in Java map by a customizable field name.
+     */
+    private static class NullKeySerializer extends JsonSerializer<Object> {
 
+        private final String nullFieldName;
 
+        private NullKeySerializer(String nullFieldName) {
+            this.nullFieldName = nullFieldName;
+        }
 
+        @Override
+        public void serialize(Object nullKey, JsonGenerator jsonGenerator, SerializerProvider unused) throws IOException {
+            jsonGenerator.writeFieldName(nullFieldName);
+        }
+    }
 
 }
