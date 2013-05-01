@@ -1,4 +1,4 @@
-package org.apache.felix.ipojo.everest.osgi;
+package org.apache.felix.ipojo.everest.osgi.bundle;
 
 import org.apache.felix.ipojo.everest.impl.DefaultParameter;
 import org.apache.felix.ipojo.everest.impl.DefaultRelation;

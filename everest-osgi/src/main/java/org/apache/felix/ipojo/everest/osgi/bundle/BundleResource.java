@@ -1,4 +1,4 @@
-package org.apache.felix.ipojo.everest.osgi;
+package org.apache.felix.ipojo.everest.osgi.bundle;
 
 import org.apache.felix.ipojo.everest.impl.DefaultParameter;
 import org.apache.felix.ipojo.everest.impl.DefaultRelation;
@@ -14,7 +14,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.apache.felix.ipojo.everest.osgi.BundleResourceManager.BUNDLE_PATH;
 import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.BundleNamespace.*;
 import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.bundleStateToString;
 
@@ -42,7 +41,7 @@ public class BundleResource extends DefaultResource {
     private final boolean isFragment;
 
     public BundleResource(Bundle bundle) {
-        super(BUNDLE_PATH.addElements(Long.toString(bundle.getBundleId())));
+        super(BundleResourceManager.BUNDLE_PATH.addElements(Long.toString(bundle.getBundleId())));
         m_bundle = bundle;
         // Check if is fragment
         BundleRevision rev = m_bundle.adapt(BundleRevision.class);

@@ -1,4 +1,4 @@
-package org.apache.felix.ipojo.everest.osgi;
+package org.apache.felix.ipojo.everest.osgi.deploy;
 
 import org.apache.felix.ipojo.everest.impl.DefaultResource;
 import org.apache.felix.ipojo.everest.services.Path;
@@ -19,6 +19,6 @@ public class DeploymentAdminResourceManager extends DefaultResource {
     public static final Path DEPLOY_PATH = OSGI_ROOT_PATH.add(Path.from(Path.SEPARATOR + DEPLOY_ROOT_NAME));
 
     public DeploymentAdminResourceManager(DeploymentAdmin deploymentAdmin) {
-         super(DEPLOY_PATH);
+        super(DEPLOY_PATH);
     }
 }

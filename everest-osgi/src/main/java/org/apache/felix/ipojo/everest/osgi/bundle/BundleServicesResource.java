@@ -1,6 +1,7 @@
-package org.apache.felix.ipojo.everest.osgi;
+package org.apache.felix.ipojo.everest.osgi.bundle;
 
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
+import org.apache.felix.ipojo.everest.osgi.service.ServiceRelationsResource;
 import org.apache.felix.ipojo.everest.services.Path;
 import org.apache.felix.ipojo.everest.services.Resource;
 import org.osgi.framework.Bundle;
@@ -22,6 +23,7 @@ public class BundleServicesResource extends DefaultReadOnlyResource {
     public static final String BUNDLE_REGISTERED_SERVICES_NAME = "registered";
 
     public static final String BUNDLE_USE_SERVICES_NAME = "uses";
+
     private final Bundle m_bundle;
 
 

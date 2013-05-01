@@ -7,6 +7,7 @@ import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.wiring.BundleCapability;
 import org.osgi.framework.wiring.BundleRequirement;
+import org.osgi.service.log.LogService;
 
 import java.util.Collection;
 import java.util.Map;
@@ -36,6 +37,21 @@ public class OsgiResourceUtils {
                 return "INSTALLED";
             case Bundle.UNINSTALLED:
                 return "UNINSTALLED";
+            default:
+                return "";
+        }
+    }
+
+    public static String logLevelToString(int level) {
+        switch (level) {
+            case LogService.LOG_DEBUG:
+                return "DEBUG";
+            case LogService.LOG_INFO:
+                return "INFO";
+            case LogService.LOG_WARNING:
+                return "WARNING";
+            case LogService.LOG_ERROR:
+                return "ERROR";
             default:
                 return "";
         }

@@ -4,12 +4,18 @@ import org.apache.felix.ipojo.annotations.*;
 import org.apache.felix.ipojo.everest.impl.AbstractResourceManager;
 import org.apache.felix.ipojo.everest.impl.DefaultRelation;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
+import org.apache.felix.ipojo.everest.osgi.bundle.BundleResourceManager;
+import org.apache.felix.ipojo.everest.osgi.config.ConfigAdminResourceManager;
+import org.apache.felix.ipojo.everest.osgi.deploy.DeploymentAdminResourceManager;
+import org.apache.felix.ipojo.everest.osgi.log.LogServiceResourceManager;
+import org.apache.felix.ipojo.everest.osgi.packages.PackageResourceManager;
+import org.apache.felix.ipojo.everest.osgi.service.ServiceResourceManager;
 import org.apache.felix.ipojo.everest.services.*;
 import org.osgi.framework.*;
 import org.osgi.framework.wiring.FrameworkWiring;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.service.deploymentadmin.DeploymentAdmin;
-import org.osgi.service.log.LogService;
+import org.osgi.service.log.LogReaderService;
 import org.osgi.util.tracker.BundleTracker;
 import org.osgi.util.tracker.BundleTrackerCustomizer;
 import org.osgi.util.tracker.ServiceTracker;
@@ -187,14 +193,14 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
     // Log Service Bind / Unbind
 
     @Bind(id = "logservice", optional = true, aggregate = false)
-    public void bindLogService(LogService logService) {
+    public void bindLogService(LogReaderService logService) {
         synchronized (resourceLock) {
             m_logResourceManager = new LogServiceResourceManager(logService);
         }
     }
 
     @Unbind(id = "logservice")
-    public void unbindLogService(LogService logService) {
+    public void unbindLogService(LogReaderService logService) {
         synchronized (resourceLock) {
             //TODO do something to close logresourcemanager
         }

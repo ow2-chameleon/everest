@@ -1,8 +1,10 @@
-package org.apache.felix.ipojo.everest.osgi;
+package org.apache.felix.ipojo.everest.osgi.packages;
 
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
 import org.apache.felix.ipojo.everest.impl.DefaultRelation;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
+import org.apache.felix.ipojo.everest.osgi.bundle.BundleRelationsResource;
+import org.apache.felix.ipojo.everest.osgi.bundle.BundleResourceManager;
 import org.apache.felix.ipojo.everest.services.Action;
 import org.apache.felix.ipojo.everest.services.Path;
 import org.apache.felix.ipojo.everest.services.Resource;
@@ -20,7 +22,6 @@ import java.util.Map.Entry;
 
 import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.PackageNamespace.*;
 import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.uniqueCapabilityId;
-import static org.apache.felix.ipojo.everest.osgi.PackageResourceManager.PACKAGE_PATH;
 
 
 /**
@@ -47,7 +48,7 @@ public class PackageResource extends DefaultReadOnlyResource {
     private ArrayList<Bundle> importers = new ArrayList<Bundle>();
 
     public PackageResource(BundleCapability bundleCapability) {
-        super(PACKAGE_PATH.addElements(uniqueCapabilityId(bundleCapability)));
+        super(PackageResourceManager.PACKAGE_PATH.addElements(uniqueCapabilityId(bundleCapability)));
         m_bundleCapability = bundleCapability;
         m_attributes = bundleCapability.getAttributes();
         m_directives = bundleCapability.getDirectives();
