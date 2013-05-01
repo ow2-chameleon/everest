@@ -24,16 +24,16 @@ import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.bundleStateT
  */
 public class BundleRelationsResource extends DefaultReadOnlyResource {
 
-    private final Bundle[] m_uses;
+    private final Bundle[] m_bundles;
 
-    public BundleRelationsResource(Path path, Bundle[] uses) {
+    public BundleRelationsResource(Path path, Bundle[] bundles) {
         super(path);
-        m_uses = uses;
-        if (m_uses != null) {
+        m_bundles = bundles;
+        if (m_bundles != null) {
             List<Relation> relations = new ArrayList<Relation>();
-            for (Bundle use : m_uses) {
-                Path bundlePath = BundleResourceManager.getInstance().getPath().add(Path.from(Path.SEPARATOR + use.getBundleId()));
-                relations.add(new DefaultRelation(bundlePath, Action.READ, Long.toString(use.getBundleId())));
+            for (Bundle bundle : m_bundles) {
+                Path bundlePath = BundleResourceManager.getInstance().getPath().add(Path.from(Path.SEPARATOR + bundle.getBundleId()));
+                relations.add(new DefaultRelation(bundlePath, Action.READ, Long.toString(bundle.getBundleId())));
             }
             setRelations(relations);
         }
@@ -42,13 +42,13 @@ public class BundleRelationsResource extends DefaultReadOnlyResource {
     @Override
     public ResourceMetadata getMetadata() {
         ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
-        if (m_uses != null) {
-            for (Bundle use : m_uses) {
+        if (m_bundles != null) {
+            for (Bundle bundle : m_bundles) {
                 ImmutableResourceMetadata.Builder bundleMetadataBuilder = new ImmutableResourceMetadata.Builder();
-                bundleMetadataBuilder.set(BUNDLE_STATE, bundleStateToString(use.getState()));
-                bundleMetadataBuilder.set(Constants.BUNDLE_SYMBOLICNAME_ATTRIBUTE, use.getSymbolicName());
-                bundleMetadataBuilder.set(Constants.BUNDLE_VERSION_ATTRIBUTE, use.getVersion());
-                metadataBuilder.set(Long.toString(use.getBundleId()), bundleMetadataBuilder.build());
+                bundleMetadataBuilder.set(BUNDLE_STATE, bundleStateToString(bundle.getState()));
+                bundleMetadataBuilder.set(Constants.BUNDLE_SYMBOLICNAME_ATTRIBUTE, bundle.getSymbolicName());
+                bundleMetadataBuilder.set(Constants.BUNDLE_VERSION_ATTRIBUTE, bundle.getVersion());
+                metadataBuilder.set(Long.toString(bundle.getBundleId()), bundleMetadataBuilder.build());
             }
         }
         return metadataBuilder.build();
