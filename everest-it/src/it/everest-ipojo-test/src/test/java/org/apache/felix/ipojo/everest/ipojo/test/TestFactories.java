@@ -17,10 +17,7 @@ import org.osgi.framework.ServiceReference;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.apache.felix.ipojo.everest.filters.RelationFilters.*;
 import static org.apache.felix.ipojo.everest.ipojo.test.ResourceAssert.assertThatResource;
@@ -243,6 +240,10 @@ public class TestFactories extends Common {
         String name = meta.get("name", String.class);
         assertThat(name).startsWith("Foo-");
 
+        // Check factory
+        assertThat(meta.get("factory.name", String.class)).isEqualTo("Foo");
+        assertThat(meta.get("factory.version", String.class)).isEqualTo("1.2.3.foo");
+
         // Check default configuration has taken place.
         ServiceReference ref = ipojoHelper.getServiceReferenceByName(FooService.class.getName(), name);
         assertThat(ref).isNotNull();
@@ -276,6 +277,10 @@ public class TestFactories extends Common {
         // Check name
         assertThat(meta.get("name", String.class)).isEqualTo("ConfiguredFoo");
 
+        // Check factory
+        assertThat(meta.get("factory.name", String.class)).isEqualTo("Foo");
+        assertThat(meta.get("factory.version", String.class)).isEqualTo("1.2.3.foo");
+
         // Check configuration has been taken into consideration.
         ServiceReference ref = ipojoHelper.getServiceReferenceByName(FooService.class.getName(), "ConfiguredFoo");
         assertThat(ref).isNotNull();
@@ -301,6 +306,59 @@ public class TestFactories extends Common {
         Request req = new DefaultRequest(Action.CREATE, Path.from("/ipojo/factory/Foo/1.2.3.foo"), badConfig);
         Resource result = everest.process(req);
 
+    }
+
+    /**
+     * Test that a CREATE action on the resource representing Bar factory with no version has the expected behavior.
+     */
+    @Test
+    public void testCreateOnBarNullFactory() throws ResourceNotFoundException, IllegalActionOnResourceException {
+
+        // Request creation on factory Bar (no version), without any parameter
+        Request req = new DefaultRequest(Action.CREATE, Path.from("/ipojo/factory/" + BAR + "/null"), null);
+        Resource result = everest.process(req);
+
+        // Read metadata of resulting resource
+        ResourceMetadata meta = result.getMetadata();
+
+        // Check name
+        String name = meta.get("name", String.class);
+        assertThat(name).startsWith(BAR + "-");
+
+        // Check factory
+        assertThat(meta.get("factory.name", String.class)).isEqualTo(BAR);
+        assertThat(meta.get("factory.version", String.class)).isNull();
+
+        //TODO check relation to factory
+    }
+
+    /**
+     * Test that a CREATE action on the resource representing Bar 2.0.0 factory has the expected behavior.
+     */
+    @Test
+    public void testCreateOnBar2Factory() throws ResourceNotFoundException, IllegalActionOnResourceException {
+
+        // Since 2 factories shares the same namespace, instance.name must be set unless test crashes miserably.
+        // TODO check this is actually an iPOJO bug, and maybe report bug in iPOJO (before the 1.10 release ;)
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("instance.name", BAR + "-666");
+        // Request creation on factory Bar
+
+        Request req = new DefaultRequest(Action.CREATE, Path.from("/ipojo/factory/" + BAR + "/2.0.0"), params);
+        Resource result = everest.process(req);
+
+        // Read metadata of resulting resource
+        ResourceMetadata meta = result.getMetadata();
+
+        // Check name
+        String name = meta.get("name", String.class);
+        assertThat(name).startsWith(BAR + "-666");
+
+        // Check factory
+        assertThat(meta.get("factory.name", String.class)).isEqualTo(BAR);
+        assertThat(meta.get("factory.version", String.class)).isEqualTo("2.0.0");
+
+        //TODO check relation to factory
     }
 
     // ========================================================================

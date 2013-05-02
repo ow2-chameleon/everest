@@ -36,9 +36,11 @@ public class TestInstances extends Common {
         // Read metadata of resulting resource
         ResourceMetadata meta = result.getMetadata();
 
-        // Check name
+        // Check standard properties
         assertThat(meta.get("name", String.class)).isEqualTo("Foo-2001");
         assertThat(meta.get("state", String.class)).isEqualTo("valid");
+        assertThat(meta.get("factory.name", String.class)).isEqualTo("Foo");
+        assertThat(meta.get("factory.version", String.class)).isEqualTo("1.2.3.foo");
 
         // Check configuration has been taken into consideration.
         ServiceReference ref = ipojoHelper.getServiceReferenceByName(FooService.class.getName(), "Foo-2001");

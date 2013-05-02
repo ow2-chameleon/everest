@@ -1,6 +1,7 @@
 package org.apache.felix.ipojo.everest.ipojo;
 
 import org.apache.felix.ipojo.ComponentInstance;
+import org.apache.felix.ipojo.Factory;
 import org.apache.felix.ipojo.architecture.Architecture;
 import org.apache.felix.ipojo.architecture.InstanceDescription;
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
@@ -46,6 +47,10 @@ public class InstanceNameResource extends DefaultReadOnlyResource {
         // Build the immutable metadata of this instance.
         ImmutableResourceMetadata.Builder mb = new ImmutableResourceMetadata.Builder();
         mb.set("name", instance.getInstanceDescription().getName()); // String
+
+        Factory factory = getComponentInstance().getFactory();
+        mb.set("factory.name", factory.getName()); // String
+        mb.set("factory.version", factory.getVersion()); // String
         m_baseMetadata = mb.build();
     }
 
@@ -117,4 +122,5 @@ public class InstanceNameResource extends DefaultReadOnlyResource {
             }
         }
     }
+
 }
