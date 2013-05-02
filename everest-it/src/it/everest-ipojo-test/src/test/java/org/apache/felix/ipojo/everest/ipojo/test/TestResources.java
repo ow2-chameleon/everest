@@ -50,15 +50,7 @@ public class TestResources extends Common {
      */
     @Test
     public void testRelationToIpojoBundle() throws ResourceNotFoundException, IllegalActionOnResourceException {
-        long ipojoBundleId = -1L;
-        for(Bundle b : context.getBundles()) {
-            if ("org.apache.felix.ipojo".equals(b.getSymbolicName())) {
-                ipojoBundleId = b.getBundleId();
-                break;
-            }
-        }
-        String href = "/everest/osgi/bundles/" + ipojoBundleId;
-        assertThatResource(read("/ipojo")).hasRelation(and(hasName("bundle"), hasAction(Action.READ), hasHref(href)));
+        assertThatResource(read("/ipojo")).hasRelation(and(hasName("bundle"), hasAction(Action.READ), hasHref("/osgi/bundles/" + ipojoBundle.getBundleId())));
     }
 
     /**

@@ -3,6 +3,7 @@ package org.apache.felix.ipojo.everest.ipojo;
 import org.apache.felix.ipojo.HandlerFactory;
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
+import org.apache.felix.ipojo.everest.services.Relation;
 import org.apache.felix.ipojo.everest.services.Resource;
 import org.apache.felix.ipojo.everest.services.ResourceMetadata;
 
@@ -52,5 +53,11 @@ public class HandlerNamespaceResource extends DefaultReadOnlyResource {
             }
         }
         return b.build();
+    }
+
+    @Override
+    public List<Relation> getRelations() {
+        // TODO aggregate relations of m_names
+        return super.getRelations();
     }
 }

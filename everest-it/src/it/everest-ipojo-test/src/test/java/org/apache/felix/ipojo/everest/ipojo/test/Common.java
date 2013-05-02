@@ -55,6 +55,11 @@ public class Common {
     @Inject
     EverestService everest;
 
+    Bundle ipojoBundle;
+    Bundle testBundle;
+    Bundle testBundle2;
+
+
     @Configuration
     public Option[] config() throws MalformedURLException {
         // Adjust the log level
@@ -106,6 +111,17 @@ public class Common {
         System.out.println("OSGi Framework : " + vendor + " - " + version);
 
         waitForStability(context);
+
+        // Get the interesting bundles
+        for(Bundle b : context.getBundles()) {
+            if ("org.apache.felix.ipojo".equals(b.getSymbolicName())) {
+                ipojoBundle = b;
+            } else if ("test.bundle".equals(b.getSymbolicName())) {
+                testBundle = b;
+            } else if ("test.bundle2".equals(b.getSymbolicName())) {
+                testBundle2 = b;
+            }
+        }
     }
 
     @After

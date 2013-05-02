@@ -6,9 +6,12 @@ import org.apache.felix.ipojo.IPojoFactory;
 import org.apache.felix.ipojo.architecture.Architecture;
 import org.apache.felix.ipojo.architecture.InstanceDescription;
 import org.apache.felix.ipojo.everest.impl.DefaultRequest;
+import org.apache.felix.ipojo.everest.ipojo.IpojoUtil;
 import org.apache.felix.ipojo.everest.ipojo.services.FooService;
 import org.apache.felix.ipojo.everest.services.*;
+import org.junit.Before;
 import org.junit.Test;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
 
@@ -19,6 +22,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.felix.ipojo.everest.filters.RelationFilters.*;
+import static org.apache.felix.ipojo.everest.ipojo.test.ResourceAssert.assertThatResource;
 import static org.fest.assertions.Assertions.assertThat;
 
 /**
@@ -205,6 +210,18 @@ public class TestFactories extends Common {
         assertThat(meta.get("missingHandlers", List.class)).isEmpty();
 
         //TODO Check more, as soon as more metadata are provided...
+    }
+
+    /**
+     * Check that the resource representing the Foo factory has a relation to its defining bundle.
+     */
+    @Test
+    public void testFooRelations() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        Resource foo = read("/ipojo/factory/Foo/1.2.3.foo");
+        assertThatResource(foo).hasRelation(and(hasName("bundle"), hasAction(Action.READ), hasHref("/osgi/bundles/" + testBundle.getBundleId())));
+        assertThatResource(foo).hasRelation(and(hasName("requiredHandler:org.apache.felix.ipojo:properties"), hasAction(Action.READ), hasHref("/ipojo/handler/org.apache.felix.ipojo/properties")));
+        assertThatResource(foo).hasRelation(and(hasName("requiredHandler:org.apache.felix.ipojo:provides"), hasAction(Action.READ), hasHref("/ipojo/handler/org.apache.felix.ipojo/provides")));
+        assertThatResource(foo).hasRelation(and(hasName("requiredHandler:org.apache.felix.ipojo:architecture"), hasAction(Action.READ), hasHref("/ipojo/handler/org.apache.felix.ipojo/architecture")));
     }
 
     //TODO test that UPDATE is forbidden on factories

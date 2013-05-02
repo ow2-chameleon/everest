@@ -3,6 +3,7 @@ package org.apache.felix.ipojo.everest.ipojo;
 import org.apache.felix.ipojo.Factory;
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
+import org.apache.felix.ipojo.everest.services.Relation;
 import org.apache.felix.ipojo.everest.services.Resource;
 import org.apache.felix.ipojo.everest.services.ResourceMetadata;
 import org.osgi.framework.Version;
@@ -76,5 +77,11 @@ public class FactoryNameResource extends DefaultReadOnlyResource {
             }
         }
         return b.build();
+    }
+
+    @Override
+    public List<Relation> getRelations() {
+        // TODO aggregate relations of m_versions
+        return super.getRelations();
     }
 }

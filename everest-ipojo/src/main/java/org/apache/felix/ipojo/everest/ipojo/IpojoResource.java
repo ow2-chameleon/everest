@@ -32,7 +32,7 @@ public class IpojoResource extends DefaultReadOnlyResource {
     /**
      * Path to OSGi bundles domain
      */
-    public static final Path PATH_TO_BUNDLES = Path.from("/everest/osgi/bundles");
+    public static final Path PATH_TO_BUNDLES = Path.from("/osgi/bundles");
 
     /**
      * The iPOJO bundle
@@ -83,7 +83,7 @@ public class IpojoResource extends DefaultReadOnlyResource {
         m_instances = new InstancesResource();
         m_declarations = new DeclarationsResource();
 
-        // Add relation to the iPOJO bundle
+        // Add relation 'bundle' to READ the iPOJO bundle resource
         DefaultRelation bundle = new DefaultRelation(PATH_TO_BUNDLES.addElements(String.valueOf(m_ipojo.getBundleId())), Action.READ, "bundle");
         setRelations(bundle);
     }

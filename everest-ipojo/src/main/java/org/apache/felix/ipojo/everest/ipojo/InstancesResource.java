@@ -4,6 +4,7 @@ import org.apache.felix.ipojo.architecture.Architecture;
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.services.Path;
+import org.apache.felix.ipojo.everest.services.Relation;
 import org.apache.felix.ipojo.everest.services.Resource;
 import org.apache.felix.ipojo.everest.services.ResourceMetadata;
 
@@ -55,4 +56,11 @@ public class InstancesResource extends DefaultReadOnlyResource {
         }
         return b.build();
     }
+
+    @Override
+    public List<Relation> getRelations() {
+        // TODO aggregate relations of m_instances
+        return super.getRelations();
+    }
+    
 }

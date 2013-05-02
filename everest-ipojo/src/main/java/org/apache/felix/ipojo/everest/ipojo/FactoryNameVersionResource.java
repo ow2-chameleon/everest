@@ -3,13 +3,18 @@ package org.apache.felix.ipojo.everest.ipojo;
 import org.apache.felix.ipojo.Factory;
 import org.apache.felix.ipojo.IPojoFactory;
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
+import org.apache.felix.ipojo.everest.impl.DefaultRelation;
 import org.apache.felix.ipojo.everest.impl.DefaultRequest;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.services.*;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Hashtable;
+import java.util.List;
+
+import static org.apache.felix.ipojo.everest.ipojo.IpojoResource.PATH_TO_BUNDLES;
 
 /**
  * '/ipojo/factory/$name/$version' resource, where $name stands for the name of a factory, and $version for its version.
@@ -38,9 +43,8 @@ public class FactoryNameVersionResource extends DefaultReadOnlyResource {
 
     //TODO add relation to factory declaration
     //TODO add relation to instances created by this factory
-    //TODO add relation to declaring bundle
+    //TODO add relation to bundle that defines the implementation class
     //TODO add relation to Factory service
-    //TODO add relation to used handlers
 
     /**
      * @param factory the factory represented by this resource
@@ -56,6 +60,24 @@ public class FactoryNameVersionResource extends DefaultReadOnlyResource {
         mb.set("version", m_factory.getVersion()); // String
         mb.set("className", m_factory.getClassName()); // String, deprecated but who cares?
         m_baseMetadata = mb.build();
+
+        // Relations
+        List<Relation> relations = new ArrayList<Relation>();
+
+        // Add relation 'bundle' to READ the bundle that declares this factory
+        relations.add(new DefaultRelation(PATH_TO_BUNDLES.addElements(String.valueOf(m_factory.getBundleContext().getBundle().getBundleId())), Action.READ, "bundle"));
+
+        // Add relation 'requiredHandler:$ns:$name' to READ the handlers required by this factory
+        @SuppressWarnings("unchecked")
+        List <String> required = (List < String>) m_factory.getRequiredHandlers();
+        for (String nsName : required) {
+            int i = nsName.lastIndexOf(':');
+            String ns = nsName.substring(0, i);
+            String name = nsName.substring(i+1);
+            relations.add(new DefaultRelation(HandlersResource.PATH.addElements(ns, name), Action.READ, "requiredHandler:" + nsName));
+        }
+
+        setRelations(relations);
     }
 
     /**
@@ -152,4 +174,5 @@ public class FactoryNameVersionResource extends DefaultReadOnlyResource {
         // Assassin may want to analyze the cadaver, so let's return it.
         return this;
     }
+
 }
