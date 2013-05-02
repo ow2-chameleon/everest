@@ -2,9 +2,15 @@ package org.apache.felix.ipojo.everest.ipojo;
 
 import org.apache.felix.ipojo.ComponentInstance;
 import org.apache.felix.ipojo.architecture.Architecture;
+import org.apache.felix.ipojo.architecture.InstanceDescription;
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
+import org.apache.felix.ipojo.everest.services.IllegalActionOnResourceException;
+import org.apache.felix.ipojo.everest.services.Request;
+import org.apache.felix.ipojo.everest.services.Resource;
 import org.apache.felix.ipojo.everest.services.ResourceMetadata;
+
+import java.lang.reflect.Field;
 
 /**
  * '/ipojo/instance/$name' resource, where $name stands for the name of an instance.
@@ -74,6 +80,22 @@ public class InstanceNameResource extends DefaultReadOnlyResource {
         }
     }
 
-
-
+    @Override
+    public Resource delete(Request request) throws IllegalActionOnResourceException {
+        // The instance must be destroyed
+        Field weapon = null;
+        try {
+            weapon = InstanceDescription.class.getDeclaredField("m_instance");
+            weapon.setAccessible(true);
+            ComponentInstance garbage = (ComponentInstance) weapon.get(m_instance.getInstanceDescription());
+            garbage.dispose();
+        } catch (Exception e) {
+            throw new IllegalStateException("cannot kill instance", e);
+        } finally {
+            if (weapon != null) {
+                weapon.setAccessible(false);
+            }
+        }
+        return this;
+    }
 }
