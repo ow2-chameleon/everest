@@ -210,7 +210,7 @@ public class TestFactories extends Common {
     }
 
     /**
-     * Check that the resource representing the Foo factory has a relation to its defining bundle.
+     * Check that the resource representing the Foo factory has a relation to its defining bundle, required handlers, etc.
      */
     @Test
     public void testFooRelations() throws ResourceNotFoundException, IllegalActionOnResourceException {
@@ -219,6 +219,24 @@ public class TestFactories extends Common {
         assertThatResource(foo).hasRelation(and(hasName("requiredHandler:org.apache.felix.ipojo:properties"), hasAction(Action.READ), hasHref("/ipojo/handler/org.apache.felix.ipojo/properties")));
         assertThatResource(foo).hasRelation(and(hasName("requiredHandler:org.apache.felix.ipojo:provides"), hasAction(Action.READ), hasHref("/ipojo/handler/org.apache.felix.ipojo/provides")));
         assertThatResource(foo).hasRelation(and(hasName("requiredHandler:org.apache.felix.ipojo:architecture"), hasAction(Action.READ), hasHref("/ipojo/handler/org.apache.felix.ipojo/architecture")));
+    }
+
+    /**
+     * Check that the resource representing the Bar (without version) factory has a relation to its defining bundle.
+     */
+    @Test
+    public void testBarNullBundleRelations() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        Resource foo = read("/ipojo/factory/" + BAR + "/null");
+        assertThatResource(foo).hasRelation(and(hasName("bundle"), hasAction(Action.READ), hasHref("/osgi/bundles/" + testBundle.getBundleId())));
+    }
+
+    /**
+     * Check that the resource representing the Bar (without version) factory has a relation to its defining bundle.
+     */
+    @Test
+    public void testBar2BundleRelations() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        Resource foo = read("/ipojo/factory/" + BAR + "/2.0.0");
+        assertThatResource(foo).hasRelation(and(hasName("bundle"), hasAction(Action.READ), hasHref("/osgi/bundles/" + testBundle2.getBundleId())));
     }
 
     //TODO test that UPDATE is forbidden on factories
@@ -252,7 +270,8 @@ public class TestFactories extends Common {
         FooService foo = (FooService) context.getService(ref);
         assertThat(foo.getFoo()).isEqualTo("0");
 
-        //TODO check relation to factory
+        // Check relation to factory
+        assertThatResource(result).hasRelation(and(hasName("factory"), hasAction(Action.READ), hasHref("/ipojo/factory/Foo/1.2.3.foo")));
     }
 
     /**
@@ -288,7 +307,9 @@ public class TestFactories extends Common {
 
         FooService foo = (FooService) context.getService(ref);
         assertThat(foo.getFoo()).isEqualTo("__configured666");
-        //TODO check relation to factory
+
+        // Check relation to factory
+        assertThatResource(result).hasRelation(and(hasName("factory"), hasAction(Action.READ), hasHref("/ipojo/factory/Foo/1.2.3.foo")));
     }
 
     /**
@@ -329,7 +350,8 @@ public class TestFactories extends Common {
         assertThat(meta.get("factory.name", String.class)).isEqualTo(BAR);
         assertThat(meta.get("factory.version", String.class)).isNull();
 
-        //TODO check relation to factory
+        // Check relation to factory
+        assertThatResource(result).hasRelation(and(hasName("factory"), hasAction(Action.READ), hasHref("/ipojo/factory/" + BAR + "/null")));
     }
 
     /**
@@ -358,7 +380,8 @@ public class TestFactories extends Common {
         assertThat(meta.get("factory.name", String.class)).isEqualTo(BAR);
         assertThat(meta.get("factory.version", String.class)).isEqualTo("2.0.0");
 
-        //TODO check relation to factory
+        // Check relation to factory
+        assertThatResource(result).hasRelation(and(hasName("factory"), hasAction(Action.READ), hasHref("/ipojo/factory/" + BAR + "/2.0.0")));
     }
 
     // ========================================================================

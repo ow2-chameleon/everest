@@ -5,14 +5,14 @@ import org.apache.felix.ipojo.Factory;
 import org.apache.felix.ipojo.architecture.Architecture;
 import org.apache.felix.ipojo.architecture.InstanceDescription;
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
+import org.apache.felix.ipojo.everest.impl.DefaultRelation;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
-import org.apache.felix.ipojo.everest.services.IllegalActionOnResourceException;
-import org.apache.felix.ipojo.everest.services.Request;
-import org.apache.felix.ipojo.everest.services.Resource;
-import org.apache.felix.ipojo.everest.services.ResourceMetadata;
+import org.apache.felix.ipojo.everest.services.*;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 
 /**
  * '/ipojo/instance/$name' resource, where $name stands for the name of an instance.
@@ -52,6 +52,14 @@ public class InstanceNameResource extends DefaultReadOnlyResource {
         mb.set("factory.name", factory.getName()); // String
         mb.set("factory.version", factory.getVersion()); // String
         m_baseMetadata = mb.build();
+
+        // Relations
+        List<Relation> relations = new ArrayList<Relation>();
+
+        // Add relation 'factory' to READ the factory of this instance
+        relations.add(new DefaultRelation(FactoriesResource.PATH.addElements(factory.getName(), String.valueOf(factory.getVersion())), Action.READ, "factory"));
+
+        setRelations(relations);
     }
 
     /**
