@@ -1,5 +1,6 @@
 package org.apache.felix.ipojo.everest.ipojo;
 
+import org.apache.felix.ipojo.ComponentInstance;
 import org.apache.felix.ipojo.Factory;
 import org.apache.felix.ipojo.IPojoFactory;
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
@@ -8,11 +9,9 @@ import org.apache.felix.ipojo.everest.impl.DefaultRequest;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.services.*;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Hashtable;
-import java.util.List;
+import java.util.*;
 
 import static org.apache.felix.ipojo.everest.ipojo.IpojoResource.PATH_TO_BUNDLES;
 
@@ -101,6 +100,18 @@ public class FactoryNameVersionResource extends DefaultReadOnlyResource {
         return mb.build();
     }
 
+    @Override
+    public List<Relation> getRelations() {
+        List<Relation> relations = super.getRelations();
+
+        // Add relation to created instances
+        for (String instanceName : getCreatedInstanceNames()) {
+            relations.add(new DefaultRelation(InstancesResource.PATH.addElements(instanceName), Action.READ, "instance:" + instanceName));
+        }
+
+        return relations;
+    }
+
     private static Path canonicalPathOf(Factory f) {
         // Canonical path is '/ipojo/factory/$factoryName/$factoryVersion'
         // If m_version == null, then $factoryVersion is the literal 'null'
@@ -173,6 +184,23 @@ public class FactoryNameVersionResource extends DefaultReadOnlyResource {
         // This resource should now have be auto-removed from its parent and marked as stale, since the represented Factory service has gone (forever).
         // Assassin may want to analyze the cadaver, so let's return it.
         return this;
+    }
+
+    // Get the instances created by this factory
+    // This is a hack!
+    private Set<String> getCreatedInstanceNames() {
+        Field weapon = null;
+        try {
+            weapon = IPojoFactory.class.getDeclaredField("m_componentInstances");
+            weapon.setAccessible(true);
+            return ((Map<String, ComponentInstance>) weapon.get(m_factory)).keySet();
+        } catch (Exception e) {
+            throw new RuntimeException("cannot get factory created instances", e);
+        } finally {
+            if (weapon != null) {
+                weapon.setAccessible(false);
+            }
+        }
     }
 
 }

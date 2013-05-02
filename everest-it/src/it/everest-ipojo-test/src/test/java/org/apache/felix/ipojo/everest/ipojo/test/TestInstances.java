@@ -9,6 +9,8 @@ import org.osgi.framework.ServiceReference;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.felix.ipojo.everest.filters.RelationFilters.*;
+import static org.apache.felix.ipojo.everest.ipojo.test.ResourceAssert.assertThatResource;
 import static org.fest.assertions.Assertions.assertThat;
 
 /**
@@ -49,6 +51,12 @@ public class TestInstances extends Common {
 
         FooService foo = (FooService) context.getService(ref);
         assertThat(foo.getFoo()).isEqualTo("__configured666");
+
+        // Check relation to factory
+        assertThatResource(result).hasRelation(and(hasName("factory"), hasAction(Action.READ), hasHref("/ipojo/factory/Foo/1.2.3.foo")));
+
+        // Check relation from factory to instance
+        assertThatResource(read("/ipojo/factory/Foo/1.2.3.foo")).hasRelation(and(hasName("instance:Foo-2001"), hasAction(Action.READ), hasHref(result)));
     }
 
 }

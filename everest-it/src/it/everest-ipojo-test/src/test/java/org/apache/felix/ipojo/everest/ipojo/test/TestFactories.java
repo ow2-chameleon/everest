@@ -272,6 +272,9 @@ public class TestFactories extends Common {
 
         // Check relation to factory
         assertThatResource(result).hasRelation(and(hasName("factory"), hasAction(Action.READ), hasHref("/ipojo/factory/Foo/1.2.3.foo")));
+
+        // Check relation from factory to instance
+        assertThatResource(read("/ipojo/factory/Foo/1.2.3.foo")).hasRelation(and(hasName("instance:" + name), hasAction(Action.READ), hasHref(result)));
     }
 
     /**
@@ -310,6 +313,9 @@ public class TestFactories extends Common {
 
         // Check relation to factory
         assertThatResource(result).hasRelation(and(hasName("factory"), hasAction(Action.READ), hasHref("/ipojo/factory/Foo/1.2.3.foo")));
+
+        // Check relation from factory to instance
+        assertThatResource(read("/ipojo/factory/Foo/1.2.3.foo")).hasRelation(and(hasName("instance:ConfiguredFoo"), hasAction(Action.READ), hasHref(result)));
     }
 
     /**
@@ -352,6 +358,9 @@ public class TestFactories extends Common {
 
         // Check relation to factory
         assertThatResource(result).hasRelation(and(hasName("factory"), hasAction(Action.READ), hasHref("/ipojo/factory/" + BAR + "/null")));
+
+        // Check relation from factory to instance
+        assertThatResource(read("/ipojo/factory/" + BAR + "/null")).hasRelation(and(hasName("instance:" + name), hasAction(Action.READ), hasHref(result)));
     }
 
     /**
@@ -382,6 +391,9 @@ public class TestFactories extends Common {
 
         // Check relation to factory
         assertThatResource(result).hasRelation(and(hasName("factory"), hasAction(Action.READ), hasHref("/ipojo/factory/" + BAR + "/2.0.0")));
+
+        // Check relation from factory to instance
+        assertThatResource(read("/ipojo/factory/" + BAR + "/2.0.0")).hasRelation(and(hasName("instance:" + name), hasAction(Action.READ), hasHref(result)));
     }
 
     // ========================================================================
