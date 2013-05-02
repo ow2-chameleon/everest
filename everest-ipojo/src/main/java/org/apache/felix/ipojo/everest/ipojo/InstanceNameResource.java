@@ -11,6 +11,7 @@ import org.apache.felix.ipojo.everest.services.Resource;
 import org.apache.felix.ipojo.everest.services.ResourceMetadata;
 
 import java.lang.reflect.Field;
+import java.util.Hashtable;
 
 /**
  * '/ipojo/instance/$name' resource, where $name stands for the name of an instance.
@@ -83,19 +84,37 @@ public class InstanceNameResource extends DefaultReadOnlyResource {
     @Override
     public Resource delete(Request request) throws IllegalActionOnResourceException {
         // The instance must be destroyed
-        Field weapon = null;
+        getComponentInstance().dispose();
+        // At this point, this resource must have been set to a stale state!
+        return this;
+    }
+
+    @Override
+    public Resource update(Request request) throws IllegalActionOnResourceException {
+        // The instance configuration must be updated.
+        Hashtable<String, ?> config;
+        if (request.parameters() != null) {
+            config = new Hashtable<String, Object>(request.parameters());
+        } else {
+            config = new Hashtable<String, Object>();
+        }
+        getComponentInstance().reconfigure(config);
+        return this;
+    }
+
+    // This is a hack!
+    private ComponentInstance getComponentInstance() {
+        Field shunt = null;
         try {
-            weapon = InstanceDescription.class.getDeclaredField("m_instance");
-            weapon.setAccessible(true);
-            ComponentInstance garbage = (ComponentInstance) weapon.get(m_instance.getInstanceDescription());
-            garbage.dispose();
+            shunt = InstanceDescription.class.getDeclaredField("m_instance");
+            shunt.setAccessible(true);
+            return (ComponentInstance) shunt.get(m_instance.getInstanceDescription());
         } catch (Exception e) {
-            throw new IllegalStateException("cannot kill instance", e);
+            throw new IllegalStateException("cannot get component instance", e);
         } finally {
-            if (weapon != null) {
-                weapon.setAccessible(false);
+            if (shunt != null) {
+                shunt.setAccessible(false);
             }
         }
-        return this;
     }
 }
