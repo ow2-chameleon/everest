@@ -1,0 +1,52 @@
+package org.apache.felix.ipojo.everest.ipojo.test;
+
+import org.apache.felix.ipojo.everest.impl.DefaultRequest;
+import org.apache.felix.ipojo.everest.ipojo.services.FooService;
+import org.apache.felix.ipojo.everest.services.*;
+import org.junit.Test;
+import org.osgi.framework.ServiceReference;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.fest.assertions.Assertions.assertThat;
+
+/**
+ * Test for instance resources.
+ */
+public class TestInstances extends Common {
+
+    /**
+     * Check that a "good" CREATE request to the path of an non-existing instance actually creates the instance.
+     */
+    @Test
+    public void testInstanceCreation() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("factory.name", "Foo");
+        params.put("factory.version", "1.2.3.foo");
+        params.put("factory.version", "1.2.3.foo");
+        params.put("fooPrefix", "__configured");
+        params.put("fooCounter", 666);
+
+        // Request instance creation
+        Request req = new DefaultRequest(Action.CREATE, Path.from("/ipojo/instance/Foo-2001"), params);
+        Resource result = everest.process(req);
+        assertThat(result).isNotNull();
+
+        // Read metadata of resulting resource
+        ResourceMetadata meta = result.getMetadata();
+
+        // Check name
+        assertThat(meta.get("name", String.class)).isEqualTo("Foo-2001");
+        assertThat(meta.get("state", String.class)).isEqualTo("valid");
+
+        // Check configuration has been taken into consideration.
+        ServiceReference ref = ipojoHelper.getServiceReferenceByName(FooService.class.getName(), "Foo-2001");
+        assertThat(ref).isNotNull();
+        assertThat(ref.getProperty("fooCounter")).isEqualTo(666);
+
+        FooService foo = (FooService) context.getService(ref);
+        assertThat(foo.getFoo()).isEqualTo("__configured666");
+    }
+
+}

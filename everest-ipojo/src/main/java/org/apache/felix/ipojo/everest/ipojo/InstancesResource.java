@@ -116,10 +116,11 @@ public class InstancesResource extends DefaultReadOnlyResource {
 
         // Now we have enough to try to create the instance...
 
-        Hashtable<String, ?> config = new Hashtable<String, Object>(request.parameters());
+        Hashtable<String, Object> config = new Hashtable<String, Object>(request.parameters());
         // Not part of the instance configuration
         config.remove(FACTORY_NAME);
         config.remove(FACTORY_VERSION);
+        config.put("instance.name", instanceName.getElement(0));
 
         // Get the factory
         ServiceReference<Factory> ref = getFactory(factoryName, factoryVersion.toString());
