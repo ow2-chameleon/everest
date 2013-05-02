@@ -80,7 +80,7 @@ public class IpojoResource extends DefaultReadOnlyResource {
         // Create the sub-resources
         m_factories = new FactoriesResource(this);
         m_handlers = new HandlersResource();
-        m_instances = new InstancesResource();
+        m_instances = new InstancesResource(context);
         m_declarations = new DeclarationsResource();
 
         // Add relation 'bundle' to READ the iPOJO bundle resource
