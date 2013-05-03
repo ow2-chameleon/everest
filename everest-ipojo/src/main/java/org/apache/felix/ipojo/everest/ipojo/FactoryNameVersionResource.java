@@ -118,7 +118,7 @@ public class FactoryNameVersionResource extends DefaultReadOnlyResource {
         return FactoriesResource.PATH.addElements(f.getName(), String.valueOf(f.getVersion()));
     }
 
-    private static String stateAsString(int state) {
+    public static String stateAsString(int state) {
         switch (state) {
             case Factory.VALID:
                 return "valid";

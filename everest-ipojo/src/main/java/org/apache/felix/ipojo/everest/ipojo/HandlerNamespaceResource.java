@@ -31,7 +31,7 @@ public class HandlerNamespaceResource extends DefaultReadOnlyResource {
 
     public boolean removeHandlerName(HandlerFactory handler) {
         synchronized (m_names) {
-            m_names.remove(handler.getName());
+            m_names.remove(handler.getName()).setStale();
             return m_names.isEmpty();
         }
     }
