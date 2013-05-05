@@ -31,6 +31,9 @@ public interface Relation {
      */
     String getDescription();
 
+    /**
+     * @return the formal parameters of the relation
+     */
     List<Parameter> getParameters();
 
 }

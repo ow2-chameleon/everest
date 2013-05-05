@@ -34,7 +34,7 @@ public class DefaultParameter implements Parameter {
     }
 
     public DefaultParameter description(String name) {
-        this.description = description;
+        this.description = name;
         return this;
     }
 
@@ -61,5 +61,40 @@ public class DefaultParameter implements Parameter {
             }
         }
         return this;
+    }
+
+    // To be serializable, it must be a bean, so add getters and setters:
+
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Class<?> getType() {
+        return type;
+    }
+
+    public void setType(Class<?> type) {
+        this.type = type;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public boolean isOptional() {
+        return optional;
+    }
+
+    public void setOptional(boolean optional) {
+        this.optional = optional;
     }
 }
