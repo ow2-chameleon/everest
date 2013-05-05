@@ -14,6 +14,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static org.apache.felix.ipojo.everest.servlet.HttpUtils.*;
@@ -130,7 +133,7 @@ public class EverestServlet extends HttpServlet {
        return root;
     }
 
-    private DefaultRequest translate(HttpServletRequest request) {
+    public static DefaultRequest translate(HttpServletRequest request) {
         System.out.println("Path info : " + request.getPathInfo());
         Path path = Path.from(request.getPathInfo());
 
@@ -146,6 +149,32 @@ public class EverestServlet extends HttpServlet {
         } else {
             return null; // Unsupported request.
         }
-        return new DefaultRequest(action, path, request.getParameterMap()); // TODO Detect JSON.
+
+        Map<String, ?> params = flat(request.getParameterMap());
+
+        return new DefaultRequest(action, path, params); // TODO Detect JSON.
+    }
+
+    public static Map<String, ?> flat(Map<String, String[]> params) {
+        if (params == null) {
+            return Collections.emptyMap();
+        }
+        LinkedHashMap<String, Object> map = new LinkedHashMap<String, Object>();
+        for (Map.Entry<String, String[]> entry : params.entrySet()) {
+            if (entry.getValue() == null) {
+                // No value.
+                map.put(entry.getKey(), null);
+            } else if (entry.getValue().length == 0) {
+                map.put(entry.getKey(), Boolean.TRUE.toString());
+            } else if (entry.getValue().length == 1) {
+                // Scalar parameter.
+                map.put(entry.getKey(), entry.getValue()[0]);
+            } else if (entry.getValue().length > 1) {
+                // Translate to list
+                map.put(entry.getKey(), Arrays.asList(entry.getValue()));
+            }
+        }
+        return map;
+
     }
 }
