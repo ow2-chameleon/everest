@@ -175,6 +175,5 @@ public class EverestServlet extends HttpServlet {
             }
         }
         return map;
-
     }
 }

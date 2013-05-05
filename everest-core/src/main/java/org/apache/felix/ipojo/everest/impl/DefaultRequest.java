@@ -1,5 +1,6 @@
 package org.apache.felix.ipojo.everest.impl;
 
+import org.apache.felix.ipojo.everest.internals.JSONUtils;
 import org.apache.felix.ipojo.everest.services.*;
 
 import java.util.HashMap;
@@ -45,6 +46,10 @@ public class DefaultRequest implements Request {
         if (clazz.isInstance(obj)) {
             return clazz.cast(obj);
         } else {
+            if (obj instanceof String) {
+                // Try to rebuild a bean from the String.
+                return JSONUtils.instantiate((String) obj, clazz);
+            }
             throw new IllegalArgumentException("The parameter '" + key + "' is not a '" + clazz.getName() + "' (found" +
                     " type: '" + obj.getClass().getName() + "')");
         }
