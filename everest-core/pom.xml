@@ -36,7 +36,10 @@
             <groupId>org.easytesting</groupId>
             <artifactId>fest-assert</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
         <!-- optional import of Jackson -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -75,5 +78,5 @@
         </plugins>
     </build>
 
-    
+
 </project>
