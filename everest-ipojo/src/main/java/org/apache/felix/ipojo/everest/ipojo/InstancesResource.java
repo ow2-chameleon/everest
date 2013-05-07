@@ -96,7 +96,11 @@ public class InstancesResource extends DefaultReadOnlyResource {
         try {
             String v = request.get(FACTORY_VERSION, String.class);
             if (v != null) {
-                factoryVersion = Version.parseVersion(v);
+                if (!v.trim().isEmpty()) {
+                    factoryVersion = Version.parseVersion(v);
+                } else {
+                    factoryVersion = null;
+                }
             }
         } catch (Exception e) {
             // Ignored, version set to null.
@@ -123,7 +127,7 @@ public class InstancesResource extends DefaultReadOnlyResource {
         config.put("instance.name", instanceName.getElement(0));
 
         // Get the factory
-        ServiceReference<Factory> ref = getFactory(factoryName, factoryVersion.toString());
+        ServiceReference<Factory> ref = getFactory(factoryName, factoryVersion == null ? null : factoryVersion.toString());
         Factory factory =  m_context.getService(ref);
         ComponentInstance instance;
         try {
