@@ -104,8 +104,14 @@ public class EverestServlet extends HttpServlet {
                 EVEREST_SERVLET_PATH + "/" + path.toString();
     }
 
-    protected JsonNode toJSON(HttpServletRequest request, Resource resource) throws IOException {
-        ObjectNode root = toJSON(resource);
+    protected ObjectNode toJSON(HttpServletRequest request, Resource resource) throws IOException {
+        ObjectNode root =  JsonUtils.get(request).newObject();
+
+        // Metadata
+        for (Map.Entry<String, Object> entry : resource.getMetadata().entrySet()) {
+            String k = entry.getKey();
+            root.put(k, JsonUtils.get(request).toJson(entry.getValue()));
+        }
 
         // Relations
         // Relations are indexed by their name
@@ -124,13 +130,10 @@ public class EverestServlet extends HttpServlet {
         // Metadata
         for (Map.Entry<String, Object> entry : resource.getMetadata().entrySet()) {
             String k = entry.getKey();
-            if (k == null) {
-                k = "null";
-            }
             root.put(k, JsonUtils.get().toJson(entry.getValue()));
         }
 
-       return root;
+        return root;
     }
 
     public static DefaultRequest translate(HttpServletRequest request) {
