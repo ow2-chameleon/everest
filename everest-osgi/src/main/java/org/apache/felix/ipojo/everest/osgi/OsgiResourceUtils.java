@@ -23,6 +23,11 @@ import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.PackageNames
  */
 public class OsgiResourceUtils {
 
+    public enum BundleState{
+        ACTIVE, STARTING, STOPPING, RESOLVED, INSTALLED, UNINSTALLED
+    }
+
+
     public static String bundleStateToString(int bundleState) {
         switch (bundleState) {
             case Bundle.ACTIVE:
@@ -39,6 +44,26 @@ public class OsgiResourceUtils {
                 return "UNINSTALLED";
             default:
                 return "";
+        }
+    }
+
+    public static int toBundleState(String bundleState) throws IllegalArgumentException{
+        BundleState state = BundleState.valueOf(bundleState);
+        switch (state){
+            case ACTIVE:
+                return Bundle.ACTIVE;
+            case STARTING:
+                return Bundle.STARTING;
+            case STOPPING:
+                return Bundle.STOPPING;
+            case RESOLVED:
+                return Bundle.RESOLVED;
+            case INSTALLED:
+                return Bundle.INSTALLED;
+            case UNINSTALLED:
+                return Bundle.UNINSTALLED;
+            default:
+                throw new IllegalArgumentException(bundleState+" is not a bundle state");
         }
     }
 

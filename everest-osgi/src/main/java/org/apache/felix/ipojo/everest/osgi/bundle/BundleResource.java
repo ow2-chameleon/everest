@@ -10,12 +10,15 @@ import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
 import org.osgi.framework.wiring.BundleRevision;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.BundleNamespace.*;
 import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.bundleStateToString;
+import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.toBundleState;
 
 
 /**
@@ -26,23 +29,28 @@ import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.bundleStateT
  */
 public class BundleResource extends DefaultResource {
 
-    private final static String NEW_STATE_RELATION = "new-state";
-
     private final static String NEW_STATE_RELATION_PARAMETER = "newState";
 
     private final static String UPDATE_RELATION = "update";
 
-    private final static String UPDATE_RELATION_PARAMETER = "input";
+    private final static String UPDATE_INPUT_PARAMETER = "input";
 
     private static final String UNINSTALL_RELATION = "uninstall";
+
+    private static final String UPDATE_PARAMETER = "update";
+
+    private static final String REFRESH_PARAMETER = "refresh";
 
     private final Bundle m_bundle;
 
     private final boolean isFragment;
 
-    public BundleResource(Bundle bundle) {
+    private final BundleResourceManager m_bundleResourceManager;
+
+    public BundleResource(Bundle bundle,BundleResourceManager bundleResourceManager) {
         super(BundleResourceManager.BUNDLE_PATH.addElements(Long.toString(bundle.getBundleId())));
         m_bundle = bundle;
+        m_bundleResourceManager = bundleResourceManager;
         // Check if is fragment
         BundleRevision rev = m_bundle.adapt(BundleRevision.class);
         isFragment = (rev != null && (rev.getTypes() & BundleRevision.TYPE_FRAGMENT) != 0);
@@ -50,16 +58,25 @@ public class BundleResource extends DefaultResource {
         setRelations(
                 new DefaultRelation(getPath(), Action.UPDATE, UPDATE_RELATION,
                         new DefaultParameter()
-                                .name(UPDATE_RELATION_PARAMETER)
-                                .description(UPDATE_RELATION_PARAMETER)
+                                .name(UPDATE_PARAMETER)
+                                .name(UPDATE_PARAMETER)
                                 .optional(false)
-                                .type(InputStream.class)),
-                new DefaultRelation(getPath(), Action.UPDATE, NEW_STATE_RELATION,
+                                .type(Boolean.class),
+                        new DefaultParameter()
+                                .name(UPDATE_INPUT_PARAMETER)
+                                .description(UPDATE_INPUT_PARAMETER)
+                                .optional(true)
+                                .type(ByteArrayInputStream.class),
                         new DefaultParameter()
                                 .name(NEW_STATE_RELATION_PARAMETER)
                                 .description(BUNDLE_STATE)
-                                .optional(false)
-                                .type(Integer.class)),
+                                .optional(true)
+                                .type(String.class),
+                        new DefaultParameter()
+                                .name(REFRESH_PARAMETER)
+                                .description(REFRESH_PARAMETER)
+                                .optional(true)
+                                .type(Boolean.class)),
                 new DefaultRelation(getPath(), Action.DELETE, UNINSTALL_RELATION)
         );
 
@@ -99,9 +116,11 @@ public class BundleResource extends DefaultResource {
     @Override
     public Resource update(Request request) throws IllegalActionOnResourceException {
         Resource resource = this;
-        if (request.parameters().get(UPDATE_RELATION_PARAMETER) != null) {
+        // update bundle
+        Boolean update = request.get(UPDATE_PARAMETER, Boolean.class);
+        if(update!=null && update){
+            InputStream ioStream = request.get(UPDATE_INPUT_PARAMETER, ByteArrayInputStream.class);
             try {
-                InputStream ioStream = request.get(UPDATE_RELATION_PARAMETER, InputStream.class);
                 if (ioStream != null) {
                     m_bundle.update(ioStream);
                 } else {
@@ -112,33 +131,44 @@ public class BundleResource extends DefaultResource {
             } catch (Throwable t) {
                 throw new IllegalActionOnResourceException(request, t.getMessage());
             }
-        } else if (request.parameters().get(NEW_STATE_RELATION_PARAMETER) != null) {
-            try {
-                Integer newState = request.get(NEW_STATE_RELATION_PARAMETER, Integer.class);
-                if (newState != null) {
-                    // calculate new state
-                    if (m_bundle.getState() != newState) {
-                        switch (newState) {
-                            case Bundle.ACTIVE:
-                                m_bundle.start();
-                                break;
-                            case Bundle.RESOLVED:
-                                m_bundle.stop();
-                                break;
-                            case Bundle.UNINSTALLED:
-                                m_bundle.uninstall();
-                                break;
-                            default:
-                                break;
-                        }
-                    }// else noop
-                }
-            } catch (Throwable t) {
-                throw new IllegalActionOnResourceException(request, t.getMessage());
-            }
-        } else {
-            throw new IllegalActionOnResourceException(request, "Operation not recognized");
         }
+        // Change bundle state
+        String newStateString = request.get(NEW_STATE_RELATION_PARAMETER, String.class);
+        if (newStateString != null ) {
+            try {
+                int newState = toBundleState(newStateString);
+                // calculate new state
+                if (m_bundle.getState() != newState) {
+                    switch (newState) {
+                        case Bundle.ACTIVE:
+                            m_bundle.start();
+                            break;
+                        case Bundle.RESOLVED:
+                            if(m_bundle.getState()==Bundle.INSTALLED){
+                                this.m_bundleResourceManager.resolveBundles(Collections.singletonList(m_bundle.getBundleId()));
+                            }else if (m_bundle.getState() == Bundle.ACTIVE){
+                                m_bundle.stop();
+                            }
+                            break;
+                        case Bundle.UNINSTALLED:
+                            m_bundle.uninstall();
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            } catch (BundleException e) {
+                throw new IllegalActionOnResourceException(request,e.getMessage());
+            } catch (IllegalArgumentException e){
+                throw new IllegalActionOnResourceException(request,e.getMessage());
+            }
+        }
+        // Refresh bundle
+        Boolean refresh = request.get(REFRESH_PARAMETER, Boolean.class);
+        if(refresh!=null && refresh){
+            this.m_bundleResourceManager.refreshBundles(Collections.singletonList(m_bundle.getBundleId()));
+        }
+
         return resource;
     }
 

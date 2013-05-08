@@ -27,7 +27,7 @@ public class TestBundleUninstall extends Common {
             String symbolicName = res.getMetadata().get(Constants.BUNDLE_SYMBOLICNAME_ATTRIBUTE, String.class);
             if (symbolicName.equals("test.bundle")) {
                 HashMap<String, Object> params = new HashMap<String, Object>();
-                params.put("newState", Bundle.UNINSTALLED);
+                params.put("newState", "UNINSTALLED");
                 res = update(res.getPath(), params);
                 symbolicName = res.getMetadata().get(Constants.BUNDLE_SYMBOLICNAME_ATTRIBUTE, String.class);
                 assertThat(symbolicName).isEqualTo("test.bundle");

@@ -26,15 +26,19 @@ public class TestBundleStart extends Common {
         for (Resource res : r.getResources()) {
             String symbolicName = res.getMetadata().get(Constants.BUNDLE_SYMBOLICNAME_ATTRIBUTE, String.class);
             if (symbolicName.equals("test.bundle")) {
+
                 HashMap<String, Object> params = new HashMap<String, Object>();
-                params.put("newState", Bundle.RESOLVED);
+                params.put("newState", "RESOLVED");
+
                 res = update(res.getPath(), params);
                 symbolicName = res.getMetadata().get(Constants.BUNDLE_SYMBOLICNAME_ATTRIBUTE, String.class);
                 assertThat(symbolicName).isEqualTo("test.bundle");
                 assertThat(res.getMetadata().get(OsgiResourceUtils.BundleNamespace.BUNDLE_STATE, String.class)).isEqualTo("RESOLVED");
+
+
                 // Stopped now restarting
                 params = new HashMap<String, Object>();
-                params.put("newState", Bundle.ACTIVE);
+                params.put("newState", "ACTIVE");
                 res = update(res.getPath(), params);
                 symbolicName = res.getMetadata().get(Constants.BUNDLE_SYMBOLICNAME_ATTRIBUTE, String.class);
                 assertThat(symbolicName).isEqualTo("test.bundle");

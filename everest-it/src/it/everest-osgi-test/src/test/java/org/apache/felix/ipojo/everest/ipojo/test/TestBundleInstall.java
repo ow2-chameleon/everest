@@ -133,7 +133,9 @@ public class TestBundleInstall extends Common {
         String symbolicName = res.getMetadata().get(Constants.BUNDLE_SYMBOLICNAME_ATTRIBUTE, String.class);
         assertThat(symbolicName).isEqualTo("test.bundle");
         assertThat(res.getMetadata().get("bundle-state", String.class)).isEqualTo("INSTALLED");
-        params.put("newState", Bundle.ACTIVE);
+
+        params.put("newState", "ACTIVE");
+        params.put("update",false);
         res = update(res.getPath(), params);
         assertThat(res.getMetadata().get("bundle-state", String.class)).isEqualTo("ACTIVE");
     }
