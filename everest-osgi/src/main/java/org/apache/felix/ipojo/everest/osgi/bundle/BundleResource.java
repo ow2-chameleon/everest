@@ -47,7 +47,7 @@ public class BundleResource extends DefaultResource {
 
     private final BundleResourceManager m_bundleResourceManager;
 
-    public BundleResource(Bundle bundle,BundleResourceManager bundleResourceManager) {
+    public BundleResource(Bundle bundle, BundleResourceManager bundleResourceManager) {
         super(BundleResourceManager.BUNDLE_PATH.addElements(Long.toString(bundle.getBundleId())));
         m_bundle = bundle;
         m_bundleResourceManager = bundleResourceManager;
@@ -118,7 +118,7 @@ public class BundleResource extends DefaultResource {
         Resource resource = this;
         // update bundle
         Boolean update = request.get(UPDATE_PARAMETER, Boolean.class);
-        if(update!=null && update){
+        if (update != null && update) {
             InputStream ioStream = request.get(UPDATE_INPUT_PARAMETER, ByteArrayInputStream.class);
             try {
                 if (ioStream != null) {
@@ -134,7 +134,7 @@ public class BundleResource extends DefaultResource {
         }
         // Change bundle state
         String newStateString = request.get(NEW_STATE_RELATION_PARAMETER, String.class);
-        if (newStateString != null ) {
+        if (newStateString != null) {
             try {
                 int newState = toBundleState(newStateString);
                 // calculate new state
@@ -144,12 +144,17 @@ public class BundleResource extends DefaultResource {
                             m_bundle.start();
                             break;
                         case Bundle.RESOLVED:
-                            if(m_bundle.getState()==Bundle.INSTALLED){
+                            if (m_bundle.getState() == Bundle.INSTALLED) {
                                 this.m_bundleResourceManager.resolveBundles(Collections.singletonList(m_bundle.getBundleId()));
-                            }else if (m_bundle.getState() == Bundle.ACTIVE){
+                            } else if (m_bundle.getState() == Bundle.ACTIVE) {
                                 m_bundle.stop();
                             }
                             break;
+                        case Bundle.INSTALLED:
+                            // TODO update with cached bundle
+                            // this is not a good idea.. should do m_bundle.update(cached bundle);  instead
+                            m_bundle.stop();
+                            m_bundle.update();
                         case Bundle.UNINSTALLED:
                             m_bundle.uninstall();
                             break;
@@ -158,14 +163,14 @@ public class BundleResource extends DefaultResource {
                     }
                 }
             } catch (BundleException e) {
-                throw new IllegalActionOnResourceException(request,e.getMessage());
-            } catch (IllegalArgumentException e){
-                throw new IllegalActionOnResourceException(request,e.getMessage());
+                throw new IllegalActionOnResourceException(request, e.getMessage());
+            } catch (IllegalArgumentException e) {
+                throw new IllegalActionOnResourceException(request, e.getMessage());
             }
         }
         // Refresh bundle
         Boolean refresh = request.get(REFRESH_PARAMETER, Boolean.class);
-        if(refresh!=null && refresh){
+        if (refresh != null && refresh) {
             this.m_bundleResourceManager.refreshBundles(Collections.singletonList(m_bundle.getBundleId()));
         }
 

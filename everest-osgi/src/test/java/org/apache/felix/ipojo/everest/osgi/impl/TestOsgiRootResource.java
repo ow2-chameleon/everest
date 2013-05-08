@@ -12,8 +12,7 @@ import org.osgi.framework.wiring.FrameworkWiring;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * Test the iPOJO m_everest resource.
@@ -28,8 +27,8 @@ public class TestOsgiRootResource {
         m_everest = new Everest();
 
         // Create a fake bundle context.
-        Bundle zero = mock(Bundle.class);
-        BundleContext context = mock(BundleContext.class);
+        Bundle zero = mock(Bundle.class, RETURNS_MOCKS);
+        BundleContext context = mock(BundleContext.class, RETURNS_MOCKS);
 
         when(zero.getBundleContext()).thenReturn(context);
         when(context.getBundle(0)).thenReturn(zero);

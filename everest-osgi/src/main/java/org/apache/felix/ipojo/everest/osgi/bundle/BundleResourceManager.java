@@ -82,8 +82,8 @@ public class BundleResourceManager extends DefaultResource {
 
     public void addBundle(Bundle bundle) {
         synchronized (bundleResources) {
-            if(!bundleResources.containsKey(bundle.getBundleId())){
-                BundleResource newBundle = new BundleResource(bundle,this);
+            if (!bundleResources.containsKey(bundle.getBundleId())) {
+                BundleResource newBundle = new BundleResource(bundle, this);
                 bundleResources.put(bundle.getBundleId(), newBundle);
             }
         }
@@ -122,9 +122,9 @@ public class BundleResourceManager extends DefaultResource {
             if (location != null) {
                 InputStream input = request.get(INSTALL_INPUT_PARAMETER, ByteArrayInputStream.class);
                 Bundle newBundle = fw.getBundleContext().installBundle(location, input);
-                synchronized (bundleResources){
-                    resource = new BundleResource(newBundle,this);
-                    bundleResources.put(newBundle.getBundleId(),resource);
+                synchronized (bundleResources) {
+                    resource = new BundleResource(newBundle, this);
+                    bundleResources.put(newBundle.getBundleId(), resource);
                 }
             }
         } catch (BundleException e) {
@@ -139,11 +139,11 @@ public class BundleResourceManager extends DefaultResource {
         try {
             List bundlesToResolve = request.get(RESOLVE_PARAMETER, List.class);
 
-            if(bundlesToResolve!=null){
+            if (bundlesToResolve != null) {
                 this.resolveBundles(bundlesToResolve);
             }
             List bundlesToRefresh = request.get(REFRESH_PARAMETER, List.class);
-            if(bundlesToRefresh!=null){
+            if (bundlesToRefresh != null) {
                 this.refreshBundles(bundlesToRefresh);
             }
         } catch (Throwable t) {
@@ -157,29 +157,29 @@ public class BundleResourceManager extends DefaultResource {
         return super.delete(request);    //To change body of overridden methods use File | Settings | File Templates.
     }
 
-    public void refreshBundles(List<Long> bundleIds){
+    public void refreshBundles(List<Long> bundleIds) {
         Bundle fw = bundleResources.get(0L).getBundle();
         FrameworkWiring fwiring = fw.adapt(FrameworkWiring.class);
         List<Bundle> bundlesToRefresh = new ArrayList<Bundle>();
         for (Long bundleId : bundleIds) {
             Bundle bundle = fw.getBundleContext().getBundle(bundleId);
-            if(bundle!=null){
+            if (bundle != null) {
                 bundlesToRefresh.add(bundle);
             }
         }
         fwiring.refreshBundles(bundlesToRefresh);
     }
 
-    public void resolveBundles(List<Long> bundleIds){
+    public boolean resolveBundles(List<Long> bundleIds) {
         Bundle fw = bundleResources.get(0L).getBundle();
         FrameworkWiring fwiring = fw.adapt(FrameworkWiring.class);
         List<Bundle> bundlesToResolve = new ArrayList<Bundle>();
         for (Long bundleId : bundleIds) {
             Bundle bundle = fw.getBundleContext().getBundle(bundleId);
-            if(bundle!=null){
+            if (bundle != null) {
                 bundlesToResolve.add(bundle);
             }
         }
-        fwiring.resolveBundles(bundlesToResolve);
+        return fwiring.resolveBundles(bundlesToResolve);
     }
 }
