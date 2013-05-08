@@ -23,6 +23,7 @@ import org.osgi.util.tracker.ServiceTrackerCustomizer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created with IntelliJ IDEA.
@@ -94,6 +95,15 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
         metadataBuilder.set(Constants.SUPPORTS_BOOTCLASSPATH_EXTENSION, fwContext.getProperty(Constants.SUPPORTS_BOOTCLASSPATH_EXTENSION));
         metadataBuilder.set(Constants.FRAMEWORK_BOOTDELEGATION, fwContext.getProperty(Constants.FRAMEWORK_BOOTDELEGATION));
         metadataBuilder.set(Constants.FRAMEWORK_SYSTEMPACKAGES, fwContext.getProperty(Constants.FRAMEWORK_SYSTEMPACKAGES));
+        // write environment and system properties, who cares!
+        for (Map.Entry<String, String> entry : System.getenv().entrySet()) {
+            metadataBuilder.set(entry.getKey(), entry.getValue());
+        }
+
+        for (String key : System.getProperties().stringPropertyNames()) {
+            metadataBuilder.set(key, System.getProperty(key));
+        }
+
 
         // Initialize bundle & service trackers
         int stateMask = Bundle.ACTIVE | Bundle.INSTALLED | Bundle.RESOLVED | Bundle.STARTING | Bundle.STOPPING | Bundle.UNINSTALLED;
