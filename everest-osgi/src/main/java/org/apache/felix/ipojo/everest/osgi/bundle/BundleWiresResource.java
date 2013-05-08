@@ -36,19 +36,20 @@ public class BundleWiresResource extends DefaultReadOnlyResource {
 
     private final Bundle m_bundle;
 
-    List<BundleCapability> capabilities;
+    List<BundleCapability> capabilities = new ArrayList<BundleCapability>();
 
-    List<BundleRequirement> requirements;
+    List<BundleRequirement> requirements = new ArrayList<BundleRequirement>();
 
     public BundleWiresResource(Path path, Bundle bundle) {
         super(path.addElements(WIRES_PATH));
         m_bundle = bundle;
         BundleWiring wiring = m_bundle.adapt(BundleWiring.class);
-        // get capabilities from all namespaces
-        capabilities = wiring.getCapabilities(null);
-        // get requirements from all namespaces
-        requirements = wiring.getRequirements(null);
-
+        if (wiring != null) {
+            // get capabilities from all namespaces
+            capabilities.addAll(wiring.getCapabilities(null));
+            // get requirements from all namespaces
+            requirements.addAll(wiring.getRequirements(null));
+        }
 //        // get provided wires from all namespaces
 //        List<BundleWire> providedWires = wiring.getProvidedWires(null);
 //        for (BundleWire providedWire : providedWires) {
