@@ -7,6 +7,7 @@ import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.osgi.bundle.BundleRelationsResource;
 import org.apache.felix.ipojo.everest.services.*;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.Version;
 import org.osgi.service.deploymentadmin.BundleInfo;
 import org.osgi.service.deploymentadmin.DeploymentException;
 import org.osgi.service.deploymentadmin.DeploymentPackage;
@@ -72,15 +73,10 @@ public class DeploymentPackageResource extends DefaultResource {
     public Resource delete(Request request) throws IllegalActionOnResourceException {
         boolean forced = request.get("forced", Boolean.class);
         try {
-            if (forced) {
-                this.m_deploymentPackage.uninstallForced();
-            } else {
-                this.m_deploymentPackage.uninstall();
-            }
-        } catch (DeploymentException e) {
-            throw new RuntimeException(e.getMessage());
+            this.uninstall(forced);
+        } catch (IllegalActionOnResourceException e) {
+            throw new IllegalActionOnResourceException(request, e.getMessage());
         }
-
         //TODO should return some empty resource
         return this;
     }
@@ -89,8 +85,43 @@ public class DeploymentPackageResource extends DefaultResource {
     public <A> A adaptTo(Class<A> clazz) {
         if (DeploymentPackage.class.equals(clazz)) {
             return (A) m_deploymentPackage;
+        } else if (DeploymentPackageResource.class.equals(clazz)) {
+            return (A) this;
         } else {
             return null;
         }
     }
+
+    public String getDisplayName() {
+        return m_deploymentPackage.getDisplayName();
+    }
+
+    public String getName() {
+        return m_deploymentPackage.getName();
+    }
+
+    public Version getVersion() {
+        return m_deploymentPackage.getVersion();
+    }
+
+    public String[] getPackageResources() {
+        return m_deploymentPackage.getResources();
+    }
+
+    public boolean isStale() {
+        return m_deploymentPackage.isStale();
+    }
+
+    public void uninstall(boolean forced) throws IllegalActionOnResourceException {
+        try {
+            if (forced) {
+                m_deploymentPackage.uninstallForced();
+            } else {
+                m_deploymentPackage.uninstallForced();
+            }
+        } catch (DeploymentException e) {
+            throw new IllegalActionOnResourceException(null, e.getMessage());
+        }
+    }
+
 }

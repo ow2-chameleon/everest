@@ -2,9 +2,7 @@ package org.apache.felix.ipojo.everest.osgi.config;
 
 import org.apache.felix.ipojo.everest.impl.DefaultResource;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
-import org.apache.felix.ipojo.everest.services.Path;
-import org.apache.felix.ipojo.everest.services.Resource;
-import org.apache.felix.ipojo.everest.services.ResourceMetadata;
+import org.apache.felix.ipojo.everest.services.*;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
@@ -75,5 +73,28 @@ public class ConfigAdminResourceManager extends DefaultResource {
 
     }
 
+    @Override
+    public Resource create(Request request) throws IllegalActionOnResourceException {
+        String pid = request.get("pid", String.class);
+        Configuration configuration = null;
+        if (pid != null) {
+            String location = request.get("location", String.class);
+            try {
+                if (location != null) {
+                    configuration = m_configAdmin.getConfiguration(pid, location);
+                } else {
+                    configuration = m_configAdmin.getConfiguration(pid);
+                }
+            } catch (IOException e) {
+                throw new IllegalActionOnResourceException(request, e.getMessage());
+            }
+        }
+        return this;
+    }
 
+    @Override
+    public Resource update(Request request) throws IllegalActionOnResourceException {
+
+        return this;
+    }
 }

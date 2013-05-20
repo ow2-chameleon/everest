@@ -57,8 +57,35 @@ public class LogEntryResource extends DefaultResource {
     public <A> A adaptTo(Class<A> clazz) {
         if (LogEntry.class.equals(clazz)) {
             return (A) m_logEntry;
+        } else if (LogEntryResource.class.equals(clazz)) {
+            return (A) this;
         } else {
             return null;
         }
     }
+
+    public String getLogLevel() {
+        return logLevelToString(m_logEntry.getLevel());
+    }
+
+    public long getTime() {
+        return m_logEntry.getTime();
+    }
+
+    public String getMessage() {
+        return m_logEntry.getMessage();
+    }
+
+    public long getBundleId() {
+        return m_logEntry.getBundle().getBundleId();
+    }
+
+    public long getServiceId() {
+        return (Long) m_logEntry.getServiceReference().getProperty(Constants.SERVICE_ID);
+    }
+
+    public StackTraceElement[] getStackTrace() {
+        return m_logEntry.getException().getStackTrace();
+    }
+
 }

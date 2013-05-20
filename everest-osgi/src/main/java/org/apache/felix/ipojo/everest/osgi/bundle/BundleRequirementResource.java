@@ -11,6 +11,7 @@ import org.osgi.framework.wiring.BundleWire;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.BundleNamespace.BUNDLE_NAMESPACE;
 import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.PackageNamespace.PACKAGE_NAMESPACE;
@@ -26,7 +27,7 @@ import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.uniqueRequir
  */
 public class BundleRequirementResource extends DefaultReadOnlyResource {
 
-    private final List<BundleWire> m_wires = new ArrayList<BundleWire>();
+    private final List<RequiredWireResource> m_wires = new ArrayList<RequiredWireResource>();
     private final BundleRequirement m_requirement;
     private final boolean isPackage;
     private final boolean isBundle;
@@ -39,7 +40,7 @@ public class BundleRequirementResource extends DefaultReadOnlyResource {
         List<BundleWire> allWires = m_requirement.getRevision().getWiring().getRequiredWires(m_requirement.getNamespace());
         for (BundleWire wire : allWires) {
             if (wire.getRequirement().equals(m_requirement)) {
-                m_wires.add(wire);
+                m_wires.add(new RequiredWireResource(getPath(), wire));
             }
         }
 
@@ -73,9 +74,7 @@ public class BundleRequirementResource extends DefaultReadOnlyResource {
     @Override
     public List<Resource> getResources() {
         ArrayList<Resource> resources = new ArrayList<Resource>();
-        for (BundleWire wire : m_wires) {
-            resources.add(new RequiredWireResource(getPath(), wire));
-        }
+        resources.addAll(m_wires);
         return resources;
     }
 
@@ -83,8 +82,32 @@ public class BundleRequirementResource extends DefaultReadOnlyResource {
     public <A> A adaptTo(Class<A> clazz) {
         if (BundleRequirement.class.equals(clazz)) {
             return (A) m_requirement;
+        } else if (BundleRequirementResource.class.equals(clazz)) {
+            return (A) this;
         } else {
             return null;
         }
+    }
+
+    public Map<String, String> getDirectives() {
+        return m_requirement.getDirectives();
+    }
+
+    public Map<String, Object> getAttributes() {
+        return m_requirement.getAttributes();
+    }
+
+    public boolean isPackage() {
+        return isPackage;
+    }
+
+    public boolean isBundle() {
+        return isBundle;
+    }
+
+    public List<RequiredWireResource> getWires() {
+        ArrayList<RequiredWireResource> wires = new ArrayList<RequiredWireResource>();
+        wires.addAll(m_wires);
+        return wires;
     }
 }

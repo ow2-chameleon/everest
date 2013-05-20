@@ -75,14 +75,6 @@ public class PackageResource extends DefaultReadOnlyResource {
 
     }
 
-    public String getUniquePackageId() {
-        return uniqueCapabilityId(m_bundleCapability);
-    }
-
-    public Bundle getBundle() {
-        return m_bundleCapability.getRevision().getBundle();
-    }
-
     public ResourceMetadata getSimpleMetadata() {
         ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
         metadataBuilder.set(PACKAGE_NAMESPACE, m_packageName);
@@ -112,4 +104,54 @@ public class PackageResource extends DefaultReadOnlyResource {
         resources.add(new BundleRelationsResource(getPath().addElements(IMPORTER_BUNDLE_NAME), importers.toArray(new Bundle[0])));
         return resources;
     }
+
+    @Override
+    public <A> A adaptTo(Class<A> clazz) {
+        if (PackageResource.class.equals(clazz)) {
+            return (A) this;
+        } else {
+            return null;
+        }
+    }
+
+    private Bundle getBundle() {
+        return m_bundleCapability.getRevision().getBundle();
+    }
+
+    public String getUniquePackageId() {
+        return uniqueCapabilityId(m_bundleCapability);
+    }
+
+    public String getPackageName() {
+        return m_packageName;
+    }
+
+    public Version getVersion() {
+        return m_version;
+    }
+
+    public long getBundleId() {
+        return this.getBundle().getBundleId();
+    }
+
+    public String getBundleSymbolicName() {
+        return this.getBundle().getSymbolicName();
+    }
+
+    public Version getBundleVersion() {
+        return this.getBundle().getVersion();
+    }
+
+    public boolean isUsed() {
+        return !importers.isEmpty();
+    }
+
+    public Map<String, Object> getAttributes() {
+        return m_attributes;
+    }
+
+    public Map<String, String> getDirectives() {
+        return m_directives;
+    }
+
 }

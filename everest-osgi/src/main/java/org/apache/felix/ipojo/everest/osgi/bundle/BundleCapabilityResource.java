@@ -11,6 +11,7 @@ import org.osgi.framework.wiring.BundleWire;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.metadataFrom;
 import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.uniqueCapabilityId;
@@ -25,7 +26,7 @@ public class BundleCapabilityResource extends DefaultReadOnlyResource {
 
     public final static String PACKAGE_RELATION = "package";
 
-    private final List<BundleWire> m_wires = new ArrayList<BundleWire>();
+    private final List<ProvidedWireResource> m_wires = new ArrayList<ProvidedWireResource>();
     private final BundleCapability m_capability;
     private final boolean isPackage;
 
@@ -36,7 +37,7 @@ public class BundleCapabilityResource extends DefaultReadOnlyResource {
         List<BundleWire> allWires = m_capability.getRevision().getWiring().getProvidedWires(m_capability.getNamespace());
         for (BundleWire wire : allWires) {
             if (wire.getCapability().equals(m_capability)) {
-                m_wires.add(wire);
+                m_wires.add(new ProvidedWireResource(getPath(), wire));
             }
         }
 
@@ -66,9 +67,7 @@ public class BundleCapabilityResource extends DefaultReadOnlyResource {
     @Override
     public List<Resource> getResources() {
         ArrayList<Resource> resources = new ArrayList<Resource>();
-        for (BundleWire wire : m_wires) {
-            resources.add(new ProvidedWireResource(getPath(), wire));
-        }
+        resources.addAll(m_wires);
         return resources;
     }
 
@@ -76,8 +75,29 @@ public class BundleCapabilityResource extends DefaultReadOnlyResource {
     public <A> A adaptTo(Class<A> clazz) {
         if (BundleCapability.class.equals(clazz)) {
             return (A) m_capability;
+        } else if (BundleCapabilityResource.class.equals(clazz)) {
+            return (A) this;
         } else {
             return null;
         }
     }
+
+    public Map<String, String> getDirectives() {
+        return m_capability.getDirectives();
+    }
+
+    public Map<String, Object> getAttributes() {
+        return m_capability.getAttributes();
+    }
+
+    public boolean isPackage() {
+        return isPackage;
+    }
+
+    public List<ProvidedWireResource> getWires() {
+        ArrayList<ProvidedWireResource> wires = new ArrayList<ProvidedWireResource>();
+        wires.addAll(m_wires);
+        return wires;
+    }
+
 }

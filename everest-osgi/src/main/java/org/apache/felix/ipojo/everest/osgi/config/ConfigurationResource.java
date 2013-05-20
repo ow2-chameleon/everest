@@ -68,17 +68,13 @@ public class ConfigurationResource extends DefaultResource {
     public Resource update(Request request) throws IllegalActionOnResourceException {
         try {
             Dictionary properties = request.get(CONFIG_PROPERTIES, Dictionary.class);
-            if (properties != null) {
-                m_configuration.update(properties);
-            } else {
-                m_configuration.update();
-            }
+            this.update(properties);
             String bundleLocation = request.get(SERVICE_BUNDLELOCATION, String.class);
             if (bundleLocation != null) {
                 m_configuration.setBundleLocation(bundleLocation);
             }
             return this;
-        } catch (IOException e) {
+        } catch (IllegalActionOnResourceException e) {
             throw new IllegalActionOnResourceException(request, e.getMessage());
         }
     }
@@ -98,8 +94,39 @@ public class ConfigurationResource extends DefaultResource {
     public <A> A adaptTo(Class<A> clazz) {
         if (Configuration.class.equals(clazz)) {
             return (A) m_configuration;
+        } else if (ConfigurationResource.class.equals(clazz)) {
+            return (A) this;
         } else {
             return null;
         }
     }
+
+    public Dictionary getProperties() {
+        return m_configuration.getProperties();
+    }
+
+    public String getFactoryPid() {
+        return m_configuration.getFactoryPid();
+    }
+
+    public String getBundleLocation() {
+        return m_configuration.getBundleLocation();
+    }
+
+    public void setBundleLocation(String bundleLocation) {
+        m_configuration.setBundleLocation(bundleLocation);
+    }
+
+    public void update(Dictionary properties) throws IllegalActionOnResourceException {
+        try {
+            if (properties != null) {
+                m_configuration.update(properties);
+            } else {
+                m_configuration.update();
+            }
+        } catch (IOException e) {
+            throw new IllegalActionOnResourceException(null, e.getMessage());
+        }
+    }
+
 }

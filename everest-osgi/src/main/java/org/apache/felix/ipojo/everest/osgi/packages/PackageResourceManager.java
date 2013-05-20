@@ -60,7 +60,7 @@ public class PackageResourceManager extends DefaultReadOnlyResource {
         synchronized (m_packageResourceByPackageIdMap) {
             ArrayList<String> packageIds = new ArrayList<String>();
             for (PackageResource pr : m_packageResourceByPackageIdMap.values()) {
-                if (bundle.equals(pr.getBundle())) {
+                if (bundle.getBundleId() == pr.getBundleId()) {
                     packageIds.add(pr.getUniquePackageId());
                 }
             }

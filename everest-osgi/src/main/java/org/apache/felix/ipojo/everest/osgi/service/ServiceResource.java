@@ -97,8 +97,23 @@ public class ServiceResource extends DefaultReadOnlyResource {
     public <A> A adaptTo(Class<A> clazz) {
         if (ServiceReference.class.equals(clazz)) {
             return (A) m_serviceReference;
+        } else if (ServiceResource.class.equals(clazz)) {
+            return (A) this;
         } else {
             return null;
         }
     }
+
+    public long getServiceId() {
+        return (Long) m_serviceReference.getProperty(Constants.SERVICE_ID);
+    }
+
+    public String[] getObjectClass() {
+        return (String[]) m_serviceReference.getProperty(Constants.OBJECTCLASS);
+    }
+
+    public long fromBundle() {
+        return m_serviceReference.getBundle().getBundleId();
+    }
+
 }
