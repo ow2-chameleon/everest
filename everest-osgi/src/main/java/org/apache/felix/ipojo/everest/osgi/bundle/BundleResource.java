@@ -114,6 +114,15 @@ public class BundleResource extends DefaultResource {
     }
 
     @Override
+    public <A> A adaptTo(Class<A> clazz) {
+        if (Bundle.class.equals(clazz)) {
+            return (A) m_bundle;
+        } else {
+            return null;
+        }
+    }
+
+    @Override
     public Resource update(Request request) throws IllegalActionOnResourceException {
         Resource resource = this;
         // update bundle

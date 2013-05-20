@@ -53,4 +53,12 @@ public class LogEntryResource extends DefaultResource {
         return metadataBuilder.build();
     }
 
+    @Override
+    public <A> A adaptTo(Class<A> clazz) {
+        if (LogEntry.class.equals(clazz)) {
+            return (A) m_logEntry;
+        } else {
+            return null;
+        }
+    }
 }

@@ -93,4 +93,12 @@ public class ServiceResource extends DefaultReadOnlyResource {
         return resources;
     }
 
+    @Override
+    public <A> A adaptTo(Class<A> clazz) {
+        if (ServiceReference.class.equals(clazz)) {
+            return (A) m_serviceReference;
+        } else {
+            return null;
+        }
+    }
 }

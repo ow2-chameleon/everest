@@ -78,4 +78,13 @@ public class BundleRequirementResource extends DefaultReadOnlyResource {
         }
         return resources;
     }
+
+    @Override
+    public <A> A adaptTo(Class<A> clazz) {
+        if (BundleRequirement.class.equals(clazz)) {
+            return (A) m_requirement;
+        } else {
+            return null;
+        }
+    }
 }

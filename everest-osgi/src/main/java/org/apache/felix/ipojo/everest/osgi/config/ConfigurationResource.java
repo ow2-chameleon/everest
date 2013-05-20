@@ -93,4 +93,13 @@ public class ConfigurationResource extends DefaultResource {
             throw new IllegalActionOnResourceException(request, e.getMessage());
         }
     }
+
+    @Override
+    public <A> A adaptTo(Class<A> clazz) {
+        if (Configuration.class.equals(clazz)) {
+            return (A) m_configuration;
+        } else {
+            return null;
+        }
+    }
 }

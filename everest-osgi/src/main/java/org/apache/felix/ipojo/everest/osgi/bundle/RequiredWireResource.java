@@ -49,4 +49,13 @@ public class RequiredWireResource extends DefaultReadOnlyResource {
         return metadataBuilder.build();
     }
 
+    @Override
+    public <A> A adaptTo(Class<A> clazz) {
+        if (BundleWire.class.equals(clazz)) {
+            return (A) m_wire;
+        } else {
+            return null;
+        }
+    }
+
 }

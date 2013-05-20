@@ -71,4 +71,13 @@ public class BundleCapabilityResource extends DefaultReadOnlyResource {
         }
         return resources;
     }
+
+    @Override
+    public <A> A adaptTo(Class<A> clazz) {
+        if (BundleCapability.class.equals(clazz)) {
+            return (A) m_capability;
+        } else {
+            return null;
+        }
+    }
 }

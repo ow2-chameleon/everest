@@ -85,4 +85,12 @@ public class DeploymentPackageResource extends DefaultResource {
         return this;
     }
 
+    @Override
+    public <A> A adaptTo(Class<A> clazz) {
+        if (DeploymentPackage.class.equals(clazz)) {
+            return (A) m_deploymentPackage;
+        } else {
+            return null;
+        }
+    }
 }
