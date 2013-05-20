@@ -1,7 +1,5 @@
 package org.apache.felix.ipojo.everest.services;
 
-import org.apache.felix.ipojo.everest.impl.DefaultResource;
-
 import java.util.List;
 
 /**
@@ -22,6 +20,7 @@ public interface Resource {
 
     /**
      * Retrieves the sub-resources from the current resource.
+     *
      * @return the sub-resources, empty is the resource is a leaf.
      */
     List<Resource> getResources();
@@ -38,6 +37,7 @@ public interface Resource {
 
     /**
      * Finds all resources managed by this manager matching the given filter.
+     *
      * @param filter the filter.
      * @return the set of matching resources, empty if none match.
      */
@@ -45,6 +45,7 @@ public interface Resource {
 
     /**
      * Gets a resource identified by its path.
+     *
      * @param path the path
      * @return the resource identified by the given path, {@literal null} if not found.
      */
@@ -52,11 +53,23 @@ public interface Resource {
 
     /**
      * Process a request targeting the current resource managed by this manager.
+     *
      * @param request the request.
      * @return the updated resource.
-     * @throws IllegalActionOnResourceException when the action is illegal for the target resource.
+     * @throws IllegalActionOnResourceException
+     *                                   when the action is illegal for the target resource.
      * @throws ResourceNotFoundException when the action is targeting a not available resource.
      */
     Resource process(Request request) throws IllegalActionOnResourceException, ResourceNotFoundException;
+
+
+    /**
+     * Translates this resource to the represented object. Note that some resources may not represent any object.
+     *
+     * @param clazz class of the represented object.
+     * @param <A>   type of the represented object.
+     * @return the represented object, {@literal null} if resource does not represents a particular object of the given type.
+     */
+    <A> A adaptTo(Class<A> clazz);
 
 }

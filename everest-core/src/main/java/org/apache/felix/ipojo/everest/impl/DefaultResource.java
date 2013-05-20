@@ -90,7 +90,7 @@ public class DefaultResource implements Resource {
 
     public Resource getResource(String path) {
         List<Resource> list = getResources(ResourceFilters.hasPath(path));
-        if (! list.isEmpty()) {
+        if (!list.isEmpty()) {
             return list.get(0);
         } else {
             return null;
@@ -110,6 +110,9 @@ public class DefaultResource implements Resource {
         return all;
     }
 
+    public <A> A adaptTo(Class<A> clazz) {
+        return null;
+    }
 
     /**
      * A request was emitted on the current request.
@@ -216,6 +219,7 @@ public class DefaultResource implements Resource {
 
     /**
      * Two resources are equals if and only if their canonical paths are equals
+     *
      * @param object the object
      * @return {@literal true} if the given resource has the same canonical paths as the current resource.
      */
@@ -299,7 +303,7 @@ public class DefaultResource implements Resource {
         }
 
         public DefaultResource build() throws IllegalResourceException {
-            DefaultResource res =  factory.create(path, metadata, resources);
+            DefaultResource res = factory.create(path, metadata, resources);
             if (relations != null) {
                 res.setRelations(relations);
             }

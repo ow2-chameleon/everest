@@ -21,7 +21,8 @@ public class SymbolicLinkResource implements Resource {
 
     /**
      * Create a new symbolic link resource
-     * @param path the path of this symbolic link
+     *
+     * @param path   the path of this symbolic link
      * @param target the targeted resource. May be a symbolic link too.
      */
     public SymbolicLinkResource(Path path, Resource target) {
@@ -67,4 +68,7 @@ public class SymbolicLinkResource implements Resource {
         return target.process(request);
     }
 
+    public <A> A adaptTo(Class<A> clazz) {
+        return target.adaptTo(clazz);
+    }
 }
