@@ -54,10 +54,4 @@ public class HandlerNamespaceResource extends DefaultReadOnlyResource {
         }
         return b.build();
     }
-
-    @Override
-    public List<Relation> getRelations() {
-        // TODO aggregate relations of m_names
-        return super.getRelations();
-    }
 }

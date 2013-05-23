@@ -67,10 +67,4 @@ public class HandlersResource extends DefaultReadOnlyResource {
         }
         return b.build();
     }
-
-    @Override
-    public List<Relation> getRelations() {
-        // TODO aggregate relations of m_handlers
-        return super.getRelations();
-    }
 }

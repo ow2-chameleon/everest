@@ -64,12 +64,6 @@ public class InstancesResource extends DefaultReadOnlyResource {
         return b.build();
     }
 
-    @Override
-    public List<Relation> getRelations() {
-        // TODO aggregate relations of m_instances
-        return super.getRelations();
-    }
-
     /**
      * We need to override this to handle the creation of non-existing instances, i.e. a CREATE request on an unknown resource.
      */

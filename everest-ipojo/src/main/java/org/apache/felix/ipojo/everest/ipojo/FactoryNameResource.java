@@ -78,10 +78,4 @@ public class FactoryNameResource extends DefaultReadOnlyResource {
         }
         return b.build();
     }
-
-    @Override
-    public List<Relation> getRelations() {
-        // TODO aggregate relations of m_versions
-        return super.getRelations();
-    }
 }
