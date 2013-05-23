@@ -188,4 +188,12 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
         return Collections.unmodifiableMap(new LinkedHashMap<Path, R>(m_map));
     }
 
+    @Override
+    public <A> A adaptTo(Class<A> clazz) {
+        if (clazz == Map.class) {
+            return (A) getSnapshot();
+        }
+        return null;
+    }
+
 }

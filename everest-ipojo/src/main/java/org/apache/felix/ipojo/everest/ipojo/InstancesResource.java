@@ -1,6 +1,7 @@
 package org.apache.felix.ipojo.everest.ipojo;
 
-import org.apache.felix.ipojo.*;
+import org.apache.felix.ipojo.ComponentInstance;
+import org.apache.felix.ipojo.Factory;
 import org.apache.felix.ipojo.architecture.Architecture;
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
 import org.apache.felix.ipojo.everest.impl.DefaultRequest;
@@ -128,7 +129,7 @@ public class InstancesResource extends DefaultReadOnlyResource {
 
         // Get the factory
         ServiceReference<Factory> ref = getFactory(factoryName, factoryVersion == null ? null : factoryVersion.toString());
-        Factory factory =  m_context.getService(ref);
+        Factory factory = m_context.getService(ref);
         ComponentInstance instance;
         try {
             // Create an instance with the configuration
@@ -153,7 +154,6 @@ public class InstancesResource extends DefaultReadOnlyResource {
 
         return result;
     }
-
 
 
     private ServiceReference<Factory> getFactory(String name, String version) {

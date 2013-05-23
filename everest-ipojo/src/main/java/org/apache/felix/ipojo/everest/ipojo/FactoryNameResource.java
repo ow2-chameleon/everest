@@ -72,7 +72,7 @@ public class FactoryNameResource extends DefaultReadOnlyResource {
     public ResourceMetadata getMetadata() {
         ImmutableResourceMetadata.Builder b = new ImmutableResourceMetadata.Builder();
         synchronized (m_versions) {
-            for(Version v : m_versions.keySet()) {
+            for (Version v : m_versions.keySet()) {
                 b.set(v == null ? null : v.toString(), m_versions.get(v).getMetadata());
             }
         }

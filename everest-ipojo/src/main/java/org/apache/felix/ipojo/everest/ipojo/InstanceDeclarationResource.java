@@ -38,4 +38,12 @@ public class InstanceDeclarationResource extends DefaultReadOnlyResource {
         return b.build();
     }
 
+    @Override
+    public <A> A adaptTo(Class<A> clazz) {
+        if (clazz == InstanceDeclaration.class) {
+            return (A) m_instance;
+        }
+        return null;
+    }
+
 }

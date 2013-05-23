@@ -16,6 +16,7 @@ import org.apache.felix.ipojo.extender.InstanceDeclaration;
 import org.apache.felix.ipojo.extender.TypeDeclaration;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.Version;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -179,6 +180,16 @@ public class IpojoResource extends DefaultReadOnlyResource {
     @Unbind(id = "extensionDeclarations")
     public void unbindExtensionDeclaration(ExtensionDeclaration extension) {
         m_declarations.removeExtensionDeclaration(extension);
+    }
+
+    @Override
+    public <A> A adaptTo(Class<A> clazz) {
+        if (clazz == Version.class) {
+            return (A) m_ipojo.getVersion();
+        } else if (clazz == Bundle.class) {
+            return (A) m_ipojo;
+        }
+        return null;
     }
 
 }

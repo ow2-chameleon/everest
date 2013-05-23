@@ -34,4 +34,12 @@ public class ExtensionDeclarationResource extends DefaultReadOnlyResource {
         b.set("status.throwable", s.getThrowable()); // Serializable
         return b.build();
     }
+
+    @Override
+    public <A> A adaptTo(Class<A> clazz) {
+        if (clazz == ExtensionDeclaration.class) {
+            return (A) m_extension;
+        }
+        return null;
+    }
 }

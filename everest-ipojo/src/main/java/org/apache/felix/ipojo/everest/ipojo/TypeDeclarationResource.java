@@ -38,4 +38,12 @@ public class TypeDeclarationResource extends DefaultReadOnlyResource {
         return b.build();
     }
 
+    @Override
+    public <A> A adaptTo(Class<A> clazz) {
+        if (clazz == TypeDeclaration.class) {
+            return (A) m_type;
+        }
+        return null;
+    }
+
 }
