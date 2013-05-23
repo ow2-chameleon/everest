@@ -117,7 +117,7 @@ public class DeploymentPackageResource extends DefaultResource {
             if (forced) {
                 m_deploymentPackage.uninstallForced();
             } else {
-                m_deploymentPackage.uninstallForced();
+                m_deploymentPackage.uninstall();
             }
         } catch (DeploymentException e) {
             throw new IllegalActionOnResourceException(null, e.getMessage());

@@ -1,5 +1,7 @@
 package org.apache.felix.ipojo.everest.osgi.config;
 
+import org.apache.felix.ipojo.everest.impl.DefaultParameter;
+import org.apache.felix.ipojo.everest.impl.DefaultRelation;
 import org.apache.felix.ipojo.everest.impl.DefaultResource;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.services.*;
@@ -25,11 +27,34 @@ public class ConfigAdminResourceManager extends DefaultResource {
 
     public static final Path CONFIG_PATH = OSGI_ROOT_PATH.add(Path.from(Path.SEPARATOR + CONFIG_ROOT_NAME));
 
+    public static final String BUNDLE_LOCATION = "location";
+
+    public static final String PID = "pid";
+
+    public static final String FACTORY_PID = "factoryPid";
+
     private final ConfigurationAdmin m_configAdmin;
 
     public ConfigAdminResourceManager(ConfigurationAdmin configAdmin) {
         super(CONFIG_PATH);
         this.m_configAdmin = configAdmin;
+
+        setRelations(new DefaultRelation(getPath(),Action.CREATE,"create",
+                new DefaultParameter()
+                    .name(BUNDLE_LOCATION)
+                    .description("bundle location")
+                    .type(String.class)
+                    .optional(false),
+                new DefaultParameter()
+                    .name(PID)
+                    .description("Persistent id of configuration")
+                    .type(String.class)
+                    .optional(true),
+                new DefaultParameter()
+                    .name(FACTORY_PID)
+                    .description("Persistent id of factory pid")
+                    .type(String.class)
+                    .optional(true)));
     }
 
     @Override
@@ -75,26 +100,34 @@ public class ConfigAdminResourceManager extends DefaultResource {
 
     @Override
     public Resource create(Request request) throws IllegalActionOnResourceException {
-        String pid = request.get("pid", String.class);
+        String pid = request.get(PID, String.class);
+        String factoryPid = request.get(FACTORY_PID, String.class);
         Configuration configuration = null;
-        if (pid != null) {
-            String location = request.get("location", String.class);
-            try {
-                if (location != null) {
+        String location = request.get(BUNDLE_LOCATION, String.class);
+        if (location != null) {
+            if (pid != null) {
+                try {
                     configuration = m_configAdmin.getConfiguration(pid, location);
-                } else {
-                    configuration = m_configAdmin.getConfiguration(pid);
+                } catch (IOException e) {
+                    throw new IllegalActionOnResourceException(request, e.getMessage());
                 }
-            } catch (IOException e) {
-                throw new IllegalActionOnResourceException(request, e.getMessage());
+            } else if (factoryPid!=null){
+                try {
+                     configuration = m_configAdmin.createFactoryConfiguration(factoryPid, location);
+                } catch (IOException e) {
+                    throw new IllegalActionOnResourceException(request, e.getMessage());
+                }
+            } else {
+                throw new IllegalActionOnResourceException(request, "factory pid or pid parameter is mandatory");
             }
+
+        } else {
+            throw new IllegalActionOnResourceException(request, "location parameter is mandatory");
+        }
+        if(configuration!=null){
+            return new ConfigurationResource(configuration);
         }
         return this;
     }
 
-    @Override
-    public Resource update(Request request) throws IllegalActionOnResourceException {
-
-        return this;
-    }
 }
