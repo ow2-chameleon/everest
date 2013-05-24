@@ -1,8 +1,6 @@
-package org.apache.felix.ipojo.everest.ipojo.components;
+package org.apache.felix.ipojo.everest.ipojo.test.b1;
 
 import org.apache.felix.ipojo.annotations.*;
-import org.apache.felix.ipojo.everest.ipojo.services.BarService;
-import org.apache.felix.ipojo.everest.ipojo.services.FooService;
 
 @Component
 @Provides

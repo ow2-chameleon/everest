@@ -1,4 +1,4 @@
-package org.apache.felix.ipojo.everest.ipojo.components;
+package org.apache.felix.ipojo.everest.ipojo.test.b1;
 
 import org.apache.felix.ipojo.ConfigurationException;
 import org.apache.felix.ipojo.PrimitiveHandler;

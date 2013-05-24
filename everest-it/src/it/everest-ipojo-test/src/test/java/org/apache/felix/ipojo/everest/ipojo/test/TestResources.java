@@ -1,17 +1,15 @@
 package org.apache.felix.ipojo.everest.ipojo.test;
 
-import org.apache.felix.ipojo.everest.filters.RelationFilters;
 import org.apache.felix.ipojo.everest.impl.DefaultRequest;
 import org.apache.felix.ipojo.everest.services.*;
 import org.junit.Test;
 import org.ops4j.pax.exam.MavenUtils;
-import org.osgi.framework.Bundle;
 
 import static org.apache.felix.ipojo.everest.filters.RelationFilters.*;
 import static org.apache.felix.ipojo.everest.ipojo.test.ResourceAssert.assertThatResource;
 import static org.fest.assertions.Assertions.assertThat;
 
-public class TestResources extends Common {
+public class TestResources extends EverestIpojoTestCommon {
 
     /**
      * Shortcut method to process a READ request on an everest resource.

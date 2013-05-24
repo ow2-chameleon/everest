@@ -13,7 +13,7 @@ import static org.fest.assertions.Assertions.assertThat;
 /**
  * Test for handler resources.
  */
-public class TestHandlers extends Common {
+public class TestHandlers extends EverestIpojoTestCommon {
 
     private static final String IPOJO_NS = "org.apache.felix.ipojo";
     private static final String[] CORE_HANDLERS = {"properties", "provides", "controller", "callback", "architecture", "requires"};

@@ -1,7 +1,7 @@
 package org.apache.felix.ipojo.everest.ipojo.test;
 
 import org.apache.felix.ipojo.everest.impl.DefaultRequest;
-import org.apache.felix.ipojo.everest.ipojo.services.FooService;
+import org.apache.felix.ipojo.everest.ipojo.test.b1.FooService;
 import org.apache.felix.ipojo.everest.services.*;
 import org.junit.Test;
 import org.osgi.framework.ServiceReference;
@@ -16,7 +16,7 @@ import static org.fest.assertions.Assertions.assertThat;
 /**
  * Test for instance resources.
  */
-public class TestInstances extends Common {
+public class TestInstances extends EverestIpojoTestCommon {
 
     /**
      * Check that a "good" CREATE request to the path of an non-existing instance actually creates the instance.

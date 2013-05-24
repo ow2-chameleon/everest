@@ -6,7 +6,7 @@ import org.apache.felix.ipojo.IPojoFactory;
 import org.apache.felix.ipojo.architecture.Architecture;
 import org.apache.felix.ipojo.architecture.InstanceDescription;
 import org.apache.felix.ipojo.everest.impl.DefaultRequest;
-import org.apache.felix.ipojo.everest.ipojo.services.FooService;
+import org.apache.felix.ipojo.everest.ipojo.test.b1.FooService;
 import org.apache.felix.ipojo.everest.services.*;
 import org.junit.Test;
 import org.osgi.framework.InvalidSyntaxException;
@@ -23,10 +23,10 @@ import static org.fest.assertions.Assertions.assertThat;
 /**
  * Test for factory resources.
  */
-public class TestFactories extends Common {
+public class TestFactories extends EverestIpojoTestCommon {
 
-    private static final String BAR = "org.apache.felix.ipojo.everest.ipojo.components.BarProviderImpl";
-    private static final String BAR_2 = "org.apache.felix.ipojo.everest.ipojo.components.BarProviderImpl2";
+    private static final String BAR = "org.apache.felix.ipojo.everest.ipojo.test.b1.BarProviderImpl";
+    private static final String BAR_2 = "org.apache.felix.ipojo.everest.ipojo.test.b2.BarProviderImpl";
 
     /**
      * Test that the resource representing all the factories has the expected content.
@@ -149,7 +149,7 @@ public class TestFactories extends Common {
         // Check name, version , class name
         assertThat(meta.get("name")).isEqualTo("Foo");
         assertThat(meta.get("version")).isEqualTo("1.2.3.foo");
-        assertThat(meta.get("className")).isEqualTo("org.apache.felix.ipojo.everest.ipojo.components.FooProviderImpl");
+        assertThat(meta.get("className")).isEqualTo("org.apache.felix.ipojo.everest.ipojo.test.b1.FooProviderImpl");
 
         // Check state
         assertThat(meta.get("state")).isEqualTo("valid");
