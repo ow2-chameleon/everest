@@ -71,4 +71,8 @@ public class SymbolicLinkResource implements Resource {
     public <A> A adaptTo(Class<A> clazz) {
         return target.adaptTo(clazz);
     }
+
+    public boolean isObservable() {
+        return target.isObservable();
+    }
 }

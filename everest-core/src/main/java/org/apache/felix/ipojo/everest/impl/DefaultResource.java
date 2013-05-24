@@ -114,6 +114,10 @@ public class DefaultResource implements Resource {
         return null;
     }
 
+    public boolean isObservable() {
+        return false;
+    }
+
     /**
      * A request was emitted on the current request.
      * This method handles the request.

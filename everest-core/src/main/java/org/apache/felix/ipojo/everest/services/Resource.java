@@ -62,7 +62,6 @@ public interface Resource {
      */
     Resource process(Request request) throws IllegalActionOnResourceException, ResourceNotFoundException;
 
-
     /**
      * Translates this resource to the represented object. Note that some resources may not represent any object.
      *
@@ -71,5 +70,13 @@ public interface Resource {
      * @return the represented object, {@literal null} if resource does not represents a particular object of the given type.
      */
     <A> A adaptTo(Class<A> clazz);
+
+    /**
+     * Observable resources send events through event admin about changes in the resource state.
+     * Any observers can listen events through event admin using the canonical path of the resource as the event topic.
+     *
+     * @return true if the resource is observable.
+     */
+    boolean isObservable();
 
 }
