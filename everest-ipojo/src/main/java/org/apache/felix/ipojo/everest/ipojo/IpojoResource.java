@@ -7,8 +7,13 @@ import org.apache.felix.ipojo.architecture.Architecture;
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
 import org.apache.felix.ipojo.everest.impl.DefaultRelation;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
-import org.apache.felix.ipojo.everest.services.*;
-import org.apache.felix.ipojo.extender.Declaration;
+import org.apache.felix.ipojo.everest.services.Action;
+import org.apache.felix.ipojo.everest.services.Path;
+import org.apache.felix.ipojo.everest.services.Resource;
+import org.apache.felix.ipojo.everest.services.ResourceMetadata;
+import org.apache.felix.ipojo.extender.ExtensionDeclaration;
+import org.apache.felix.ipojo.extender.InstanceDeclaration;
+import org.apache.felix.ipojo.extender.TypeDeclaration;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Version;
@@ -147,14 +152,44 @@ public class IpojoResource extends DefaultReadOnlyResource {
     // Callback for tracking iPOJO declarations.
     // Delegated to m_declarations
 
-    @Bind(id = "declarations", optional = true, aggregate = true)
-    public void bindDeclaration(Declaration instance) {
-        m_declarations.addDeclaration(instance);
+    @Bind(id = "instanceDeclarations", optional = true, aggregate = true)
+    public void bindInstanceDeclaration(InstanceDeclaration instance) {
+        m_declarations.addInstanceDeclaration(instance);
     }
 
-    @Unbind(id = "declarations")
-    public void unbindDeclaration(Declaration instance) {
-        m_declarations.removeDeclaration(instance);
+    @Unbind(id = "instanceDeclarations")
+    public void unbindInstanceDeclaration(InstanceDeclaration instance) {
+        m_declarations.removeInstanceDeclaration(instance);
+    }
+
+    @Bind(id = "typeDeclarations", optional = true, aggregate = true)
+    public void bindTypeDeclaration(TypeDeclaration type) {
+        m_declarations.addTypeDeclaration(type);
+    }
+
+    @Unbind(id = "typeDeclarations")
+    public void unbindTypeDeclaration(TypeDeclaration type) {
+        m_declarations.removeTypeDeclaration(type);
+    }
+
+    @Bind(id = "extensionDeclarations", optional = true, aggregate = true)
+    public void bindExtensionDeclaration(ExtensionDeclaration extension) {
+        m_declarations.addExtensionDeclaration(extension);
+    }
+
+    @Unbind(id = "extensionDeclarations")
+    public void unbindExtensionDeclaration(ExtensionDeclaration extension) {
+        m_declarations.removeExtensionDeclaration(extension);
+    }
+
+    @Override
+    public <A> A adaptTo(Class<A> clazz) {
+        if (clazz == Version.class) {
+            return (A) m_ipojo.getVersion();
+        } else if (clazz == Bundle.class) {
+            return (A) m_ipojo;
+        }
+        return null;
     }
 
 }

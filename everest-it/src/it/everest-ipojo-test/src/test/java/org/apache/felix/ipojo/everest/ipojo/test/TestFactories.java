@@ -6,12 +6,9 @@ import org.apache.felix.ipojo.IPojoFactory;
 import org.apache.felix.ipojo.architecture.Architecture;
 import org.apache.felix.ipojo.architecture.InstanceDescription;
 import org.apache.felix.ipojo.everest.impl.DefaultRequest;
-import org.apache.felix.ipojo.everest.ipojo.IpojoUtil;
 import org.apache.felix.ipojo.everest.ipojo.services.FooService;
 import org.apache.felix.ipojo.everest.services.*;
-import org.junit.Before;
 import org.junit.Test;
-import org.osgi.framework.Bundle;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
 

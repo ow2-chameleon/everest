@@ -53,11 +53,11 @@ public class HandlerNamespaceNameResource extends DefaultReadOnlyResource {
 
         // Add relation 'requiredHandler:$ns:$name' to READ the handlers required by this factory
         @SuppressWarnings("unchecked")
-        List <String> required = (List < String>) m_handler.getRequiredHandlers();
+        List<String> required = (List<String>) m_handler.getRequiredHandlers();
         for (String nsName : required) {
             int i = nsName.lastIndexOf(':');
             String ns = nsName.substring(0, i);
-            String name = nsName.substring(i+1);
+            String name = nsName.substring(i + 1);
             relations.add(new DefaultRelation(HandlersResource.PATH.addElements(ns, name), Action.READ, "requiredHandler:" + nsName));
         }
 
@@ -87,5 +87,13 @@ public class HandlerNamespaceNameResource extends DefaultReadOnlyResource {
         mb.set("missingHandlers", !m_isStale ? m_handler.getMissingHandlers() : Collections.emptyList()); // List<String>
 
         return mb.build();
+    }
+
+    @Override
+    public <A> A adaptTo(Class<A> clazz) {
+        if (clazz == HandlerFactory.class) {
+            return (A) m_handler;
+        }
+        return null;
     }
 }

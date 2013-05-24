@@ -73,10 +73,4 @@ public class FactoriesResource extends DefaultReadOnlyResource {
         }
         return b.build();
     }
-
-    @Override
-    public List<Relation> getRelations() {
-        // TODO aggregate relations of m_factories
-        return super.getRelations();
-    }
 }

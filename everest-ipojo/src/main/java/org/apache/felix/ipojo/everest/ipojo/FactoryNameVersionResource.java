@@ -68,11 +68,11 @@ public class FactoryNameVersionResource extends DefaultReadOnlyResource {
 
         // Add relation 'requiredHandler:$ns:$name' to READ the handlers required by this factory
         @SuppressWarnings("unchecked")
-        List <String> required = (List < String>) m_factory.getRequiredHandlers();
+        List<String> required = (List<String>) m_factory.getRequiredHandlers();
         for (String nsName : required) {
             int i = nsName.lastIndexOf(':');
             String ns = nsName.substring(0, i);
-            String name = nsName.substring(i+1);
+            String name = nsName.substring(i + 1);
             relations.add(new DefaultRelation(HandlersResource.PATH.addElements(ns, name), Action.READ, "requiredHandler:" + nsName));
         }
 
@@ -201,6 +201,14 @@ public class FactoryNameVersionResource extends DefaultReadOnlyResource {
                 weapon.setAccessible(false);
             }
         }
+    }
+
+    @Override
+    public <A> A adaptTo(Class<A> clazz) {
+        if (clazz == Factory.class) {
+            return (A) m_factory;
+        }
+        return null;
     }
 
 }
