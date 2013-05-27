@@ -2,6 +2,7 @@ package org.apache.felix.ipojo.everest.osgi;
 
 import org.apache.felix.ipojo.annotations.*;
 import org.apache.felix.ipojo.everest.impl.AbstractResourceManager;
+import org.apache.felix.ipojo.everest.impl.DefaultParameter;
 import org.apache.felix.ipojo.everest.impl.DefaultRelation;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.osgi.bundle.BundleResourceManager;
@@ -10,8 +11,10 @@ import org.apache.felix.ipojo.everest.osgi.deploy.DeploymentAdminResourceManager
 import org.apache.felix.ipojo.everest.osgi.log.LogServiceResourceManager;
 import org.apache.felix.ipojo.everest.osgi.packages.PackageResourceManager;
 import org.apache.felix.ipojo.everest.osgi.service.ServiceResourceManager;
+import org.apache.felix.ipojo.everest.osgi.system.SystemResourceManager;
 import org.apache.felix.ipojo.everest.services.*;
 import org.osgi.framework.*;
+import org.osgi.framework.startlevel.FrameworkStartLevel;
 import org.osgi.framework.wiring.FrameworkWiring;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.service.deploymentadmin.DeploymentAdmin;
@@ -23,7 +26,6 @@ import org.osgi.util.tracker.ServiceTrackerCustomizer;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created with IntelliJ IDEA.
@@ -44,6 +46,12 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
 
     public static final String FRAMEWORK_STOP_RELATION = "stop";
 
+    public static final String FRAMEWORK_UPDATE_RELATION = "update";
+
+    public static final String STARTLEVEL_PARAMETER = "startlevel";
+
+    public static final String STARTLEVEL_BUNDLE_PARAMETER = "startlevel.bundle";
+
     private final Object resourceLock = new Object();
 
     private final BundleContext m_context;
@@ -51,6 +59,8 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
     private final BundleTracker m_bundleTracker;
 
     private final ServiceTracker m_serviceTracker;
+
+    private final SystemResourceManager m_systemResourceManager;
 
     private final BundleResourceManager m_bundleResourceManager;
 
@@ -60,7 +70,7 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
 
     private final ResourceMetadata m_metadata;
 
-    private final FrameworkWiring fwiring;
+    private Bundle frameworkBundle;
 
     private ConfigAdminResourceManager m_configResourceManager;
 
@@ -73,15 +83,16 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
 
         m_context = context;
         // Initialize subresource managers
+        m_systemResourceManager = SystemResourceManager.getInstance();
         m_bundleResourceManager = BundleResourceManager.getInstance();
         m_packageResourceManager = PackageResourceManager.getInstance();
         m_serviceResourceManager = ServiceResourceManager.getInstance();
         // Construct framework metadata
         ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
-        Bundle fw = m_context.getBundle(0);
-        fwiring = fw.adapt(FrameworkWiring.class);
+        frameworkBundle = m_context.getBundle(0);
+        FrameworkWiring fwiring = frameworkBundle.adapt(FrameworkWiring.class);
         //TODO take some metadata from the framework
-        BundleContext fwContext = fw.getBundleContext();
+        BundleContext fwContext = frameworkBundle.getBundleContext();
         metadataBuilder.set(Constants.FRAMEWORK_VERSION, fwContext.getProperty(Constants.FRAMEWORK_VERSION));
         metadataBuilder.set(Constants.FRAMEWORK_VENDOR, fwContext.getProperty(Constants.FRAMEWORK_VENDOR));
         metadataBuilder.set(Constants.FRAMEWORK_LANGUAGE, fwContext.getProperty(Constants.FRAMEWORK_LANGUAGE));
@@ -95,14 +106,11 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
         metadataBuilder.set(Constants.SUPPORTS_BOOTCLASSPATH_EXTENSION, fwContext.getProperty(Constants.SUPPORTS_BOOTCLASSPATH_EXTENSION));
         metadataBuilder.set(Constants.FRAMEWORK_BOOTDELEGATION, fwContext.getProperty(Constants.FRAMEWORK_BOOTDELEGATION));
         metadataBuilder.set(Constants.FRAMEWORK_SYSTEMPACKAGES, fwContext.getProperty(Constants.FRAMEWORK_SYSTEMPACKAGES));
-        // write environment and system properties, who cares!
-        for (Map.Entry<String, String> entry : System.getenv().entrySet()) {
-            metadataBuilder.set(entry.getKey(), entry.getValue());
-        }
 
-        for (String key : System.getProperties().stringPropertyNames()) {
-            metadataBuilder.set(key, System.getProperty(key));
-        }
+        // Start Level
+        FrameworkStartLevel frameworkStartLevel = frameworkBundle.adapt(FrameworkStartLevel.class);
+        metadataBuilder.set(STARTLEVEL_BUNDLE_PARAMETER, frameworkStartLevel.getInitialBundleStartLevel());
+        metadataBuilder.set(STARTLEVEL_PARAMETER, frameworkStartLevel.getStartLevel());
 
 
         // Initialize bundle & service trackers
@@ -125,7 +133,18 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
         m_metadata = metadataBuilder.build();
 
         setRelations(
-                new DefaultRelation(getPath(), Action.DELETE, FRAMEWORK_STOP_RELATION, "Stops the osgi framework")
+                new DefaultRelation(getPath(), Action.DELETE, FRAMEWORK_STOP_RELATION, "Stops the osgi framework"),
+                new DefaultRelation(getPath(), Action.UPDATE, FRAMEWORK_UPDATE_RELATION, "updates start level",
+                        new DefaultParameter()
+                                .name(STARTLEVEL_BUNDLE_PARAMETER)
+                                .description(STARTLEVEL_BUNDLE_PARAMETER)
+                                .type(Integer.class)
+                                .optional(true),
+                        new DefaultParameter()
+                                .name(STARTLEVEL_PARAMETER)
+                                .description(STARTLEVEL_PARAMETER)
+                                .type(Integer.class)
+                                .optional(true))
         );
     }
 
@@ -152,6 +171,7 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
     public List<Resource> getResources() {
         ArrayList<Resource> resources = new ArrayList<Resource>();
         synchronized (resourceLock) {
+            resources.add(m_systemResourceManager);
             resources.add(m_bundleResourceManager);
             resources.add(m_packageResourceManager);
             resources.add(m_serviceResourceManager);
@@ -167,6 +187,33 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
         }
         return resources;
     }
+
+    @Override
+    public Resource update(Request request) throws IllegalActionOnResourceException {
+        FrameworkStartLevel frameworkStartLevel = frameworkBundle.adapt(FrameworkStartLevel.class);
+        Integer bundleStartLevel = request.get(STARTLEVEL_BUNDLE_PARAMETER, Integer.class);
+        if (bundleStartLevel != null) {
+            frameworkStartLevel.setInitialBundleStartLevel(bundleStartLevel);
+        }
+        Integer startLevel = request.get(STARTLEVEL_PARAMETER, Integer.class);
+        if (startLevel != null) {
+            frameworkStartLevel.setStartLevel(startLevel);
+        }
+
+        return this;
+    }
+
+    @Override
+    public Resource delete(Request request) throws IllegalActionOnResourceException {
+        // R.I.P :REST in PEACE
+        try {
+            frameworkBundle.stop();
+        } catch (BundleException e) {
+            throw new IllegalActionOnResourceException(request, e.getMessage());
+        }
+        return null;
+    }
+
 
     // Config Admin Bind / Unbind
 
@@ -254,23 +301,6 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
 
     public void removedService(ServiceReference serviceReference, Object o) {
         m_serviceResourceManager.removeService(serviceReference);
-    }
-
-    @Override
-    public Resource update(Request request) throws IllegalActionOnResourceException {
-
-        return this;
-    }
-
-    @Override
-    public Resource delete(Request request) throws IllegalActionOnResourceException {
-        // R.I.P :REST in PEACE
-        try {
-            fwiring.getBundle().stop();
-        } catch (BundleException e) {
-            throw new IllegalActionOnResourceException(request, e.getMessage());
-        }
-        return null;
     }
 
 }

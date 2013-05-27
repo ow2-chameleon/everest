@@ -76,9 +76,9 @@ public class TestOsgiResources extends Common {
     @Test
     public void testOsgiRootResources() throws ResourceNotFoundException, IllegalActionOnResourceException {
         Resource osgi = get("/osgi");
-        Assert.assertNotNull(osgi);
+        assertThat(osgi).isNotNull();
         List<Resource> resources = osgi.getResources();
-        Assert.assertEquals("We must have 4 resources as we added config admin in tests ", 4, resources.size());
+        assertThat(resources.size()).isGreaterThan(4).describedAs("We must have at least 4 resources as we added config admin in tests ");
         for (Resource r : resources) {
             Assert.assertEquals(r.getPath(), r.getCanonicalPath());
         }

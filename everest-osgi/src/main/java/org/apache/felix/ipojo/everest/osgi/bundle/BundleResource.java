@@ -9,6 +9,7 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
 import org.osgi.framework.Version;
+import org.osgi.framework.startlevel.BundleStartLevel;
 import org.osgi.framework.wiring.BundleRevision;
 
 import java.io.ByteArrayInputStream;
@@ -42,6 +43,8 @@ public class BundleResource extends DefaultResource {
 
     private static final String REFRESH_PARAMETER = "refresh";
 
+    private static final String START_LEVEL_PARAMETER = "startLevel";
+
     private final Bundle m_bundle;
 
     private final boolean isFragment;
@@ -59,9 +62,14 @@ public class BundleResource extends DefaultResource {
         setRelations(
                 new DefaultRelation(getPath(), Action.UPDATE, UPDATE_RELATION,
                         new DefaultParameter()
+                                .name(START_LEVEL_PARAMETER)
+                                .name(START_LEVEL_PARAMETER)
+                                .optional(true)
+                                .type(Integer.class),
+                        new DefaultParameter()
                                 .name(UPDATE_PARAMETER)
                                 .name(UPDATE_PARAMETER)
-                                .optional(false)
+                                .optional(true)
                                 .type(Boolean.class),
                         new DefaultParameter()
                                 .name(UPDATE_INPUT_PARAMETER)
@@ -128,6 +136,11 @@ public class BundleResource extends DefaultResource {
     @Override
     public Resource update(Request request) throws IllegalActionOnResourceException {
         Resource resource = this;
+        // start level update
+        Integer startLevel = request.get(START_LEVEL_PARAMETER, Integer.class);
+        if (startLevel != null) {
+            this.setStartLevel(startLevel);
+        }
         // update bundle
         Boolean update = request.get(UPDATE_PARAMETER, Boolean.class);
         if (update != null && update) {
@@ -183,6 +196,16 @@ public class BundleResource extends DefaultResource {
 
     public long getLastModified() {
         return m_bundle.getLastModified();
+    }
+
+    public int getStartLevel() {
+        BundleStartLevel bundleStartLevel = m_bundle.adapt(BundleStartLevel.class);
+        return bundleStartLevel.getStartLevel();
+    }
+
+    public void setStartLevel(int startLevel) {
+        BundleStartLevel bundleStartLevel = m_bundle.adapt(BundleStartLevel.class);
+        bundleStartLevel.setStartLevel(startLevel);
     }
 
     public void update(InputStream inputStream) throws IllegalActionOnResourceException {

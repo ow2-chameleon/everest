@@ -12,7 +12,6 @@ import org.ops4j.pax.exam.Configuration;
 import org.ops4j.pax.exam.Option;
 import org.ops4j.pax.tinybundles.core.TinyBundle;
 import org.ops4j.pax.tinybundles.core.TinyBundles;
-import org.osgi.framework.Bundle;
 import org.osgi.framework.Constants;
 import org.ow2.chameleon.testing.tinybundles.ipojo.IPOJOStrategy;
 import org.slf4j.LoggerFactory;
@@ -135,7 +134,7 @@ public class TestBundleInstall extends Common {
         assertThat(res.getMetadata().get("bundle-state", String.class)).isEqualTo("INSTALLED");
 
         params.put("newState", "ACTIVE");
-        params.put("update",false);
+        params.put("update", false);
         res = update(res.getPath(), params);
         assertThat(res.getMetadata().get("bundle-state", String.class)).isEqualTo("ACTIVE");
     }

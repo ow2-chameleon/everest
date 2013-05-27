@@ -8,9 +8,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.startlevel.FrameworkStartLevel;
 import org.osgi.framework.wiring.FrameworkWiring;
 
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 
@@ -33,7 +33,8 @@ public class TestOsgiRootResource {
         when(zero.getBundleContext()).thenReturn(context);
         when(context.getBundle(0)).thenReturn(zero);
         when(context.getProperty(anyString())).thenReturn("Some Property");
-        when(zero.adapt(any(Class.class))).thenReturn(mock(FrameworkWiring.class));
+        when(zero.adapt(FrameworkWiring.class)).thenReturn(mock(FrameworkWiring.class));
+        when(zero.adapt(FrameworkStartLevel.class)).thenReturn(mock(FrameworkStartLevel.class));
 
         m_osgi = new OsgiRootResource(context);
         m_everest.bindRootResource(m_osgi);

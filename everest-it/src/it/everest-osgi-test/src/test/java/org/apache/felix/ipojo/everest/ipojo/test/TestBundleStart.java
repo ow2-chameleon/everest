@@ -5,7 +5,6 @@ import org.apache.felix.ipojo.everest.services.IllegalActionOnResourceException;
 import org.apache.felix.ipojo.everest.services.Resource;
 import org.apache.felix.ipojo.everest.services.ResourceNotFoundException;
 import org.junit.Test;
-import org.osgi.framework.Bundle;
 import org.osgi.framework.Constants;
 
 import java.util.HashMap;
@@ -29,7 +28,6 @@ public class TestBundleStart extends Common {
 
                 HashMap<String, Object> params = new HashMap<String, Object>();
                 params.put("newState", "RESOLVED");
-
                 res = update(res.getPath(), params);
                 symbolicName = res.getMetadata().get(Constants.BUNDLE_SYMBOLICNAME_ATTRIBUTE, String.class);
                 assertThat(symbolicName).isEqualTo("test.bundle");
