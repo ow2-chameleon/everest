@@ -102,16 +102,19 @@ public class Everest extends DefaultReadOnlyResource implements EverestService {
      * <p>
      * The topic of the sent event is the complete canonical path of the resource ({@code /everest/...}).
      * </p>
-     * @param resource
-     * @return
+     *
+     * @param eventType type of posted resource event
+     * @param resource  concerned resource
+     * @return true if event is posted to event admin, else false.
      */
-    public static boolean postResource(Resource resource) {
+    public static boolean postResource(ResourceEvent eventType, Resource resource) {
         EventAdmin ea = eventAdmin;
         if (ea == null || !resource.isObservable()) {
             return false;
         }
 
         Map<String, Object> map = new LinkedHashMap<String, Object>();
+        map.put("event", eventType);
         map.put("metadata", resource.getMetadata());
         map.put("relations", resource.getRelations());
 
