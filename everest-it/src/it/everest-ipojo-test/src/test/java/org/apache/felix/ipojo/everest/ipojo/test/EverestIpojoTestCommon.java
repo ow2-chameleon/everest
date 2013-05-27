@@ -90,6 +90,8 @@ public class EverestIpojoTestCommon extends BaseTest {
                 mavenBundle("org.apache.felix.ipojo", "everest-core").versionAsInProject(),
                 mavenBundle("org.apache.felix.ipojo", "everest-ipojo").versionAsInProject(),
                 mavenBundle("org.apache.felix.ipojo", "everest-osgi").versionAsInProject(),
+                // The EventAdmin service
+                mavenBundle("org.apache.felix", "org.apache.felix.eventadmin").versionAsInProject(),
                 // Generated test bundles
                 generateBundle(TEST_BUNDLE_SYMBOLIC_NAME, "org.apache.felix.ipojo.everest.ipojo.test.b1"),
                 generateBundle(TEST_BUNDLE_2_SYMBOLIC_NAME, "org.apache.felix.ipojo.everest.ipojo.test.b2"),

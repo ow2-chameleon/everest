@@ -47,6 +47,8 @@ public class TestBundleInstall extends Common {
         input = testedBundleStream();
         file = testedBundleFile(input, file);
         return options(
+                // The EventAdmin service
+                mavenBundle("org.apache.felix", "org.apache.felix.eventadmin").versionAsInProject(),
                 ipojoBundles(),
                 everestBundles(),
                 junitBundles(),

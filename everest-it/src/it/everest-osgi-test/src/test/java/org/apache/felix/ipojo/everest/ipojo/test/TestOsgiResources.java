@@ -37,6 +37,8 @@ public class TestOsgiResources extends Common {
         root.setLevel(Level.INFO);
 
         return options(
+                // The EventAdmin service
+                mavenBundle("org.apache.felix", "org.apache.felix.eventadmin").versionAsInProject(),
                 ipojoBundles(),
                 everestBundles(),
                 junitBundles(),
