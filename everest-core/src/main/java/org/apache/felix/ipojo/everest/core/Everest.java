@@ -4,6 +4,8 @@ import org.apache.felix.ipojo.annotations.*;
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
 import org.apache.felix.ipojo.everest.managers.everest.EverestRootResource;
 import org.apache.felix.ipojo.everest.services.*;
+import org.osgi.service.event.Event;
+import org.osgi.service.event.EventAdmin;
 
 import java.util.*;
 
@@ -23,6 +25,11 @@ public class Everest extends DefaultReadOnlyResource implements EverestService {
         // Add the everest domain
         resources.put(Path.from("/everest"), new EverestRootResource(this));
     }
+
+    /**
+     * The EventAdmin service, or {@code null} if it's not present.
+     */
+    private static volatile EventAdmin eventAdmin;
 
     @Bind(optional = true, aggregate = true)
     public void bindRootResource(Resource resource) {
@@ -78,5 +85,42 @@ public class Everest extends DefaultReadOnlyResource implements EverestService {
         }
 
         return result;
+    }
+
+    @Bind(optional = true, proxy = false)
+    public void bindEventAdmin(EventAdmin ea) {
+        eventAdmin = ea;
+    }
+
+    @Unbind(optional = true, proxy = false)
+    public void unbindEventAdmin(EventAdmin ea) {
+        eventAdmin = null;
+    }
+
+    /**
+     * Post (asynchronously) the state of the given resource.
+     * <p>
+     * The topic of the sent event is the complete canonical path of the resource ({@code /everest/...}).
+     * </p>
+     * @param resource
+     * @return
+     */
+    public static boolean postResource(Resource resource) {
+        EventAdmin ea = eventAdmin;
+        if (ea == null || !resource.isObservable()) {
+            return false;
+        }
+
+        Map<String, Object> map = new LinkedHashMap<String, Object>();
+        map.put("metadata", resource.getMetadata());
+        map.put("relations", resource.getRelations());
+
+        Event e = new Event(resource.getCanonicalPath().toString(), map);
+        try {
+            ea.postEvent(e);
+        } catch (SecurityException ex) {
+            return false;
+        }
+        return true;
     }
 }
