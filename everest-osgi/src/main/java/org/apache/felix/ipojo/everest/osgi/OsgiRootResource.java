@@ -11,7 +11,6 @@ import org.apache.felix.ipojo.everest.osgi.deploy.DeploymentAdminResourceManager
 import org.apache.felix.ipojo.everest.osgi.log.LogServiceResourceManager;
 import org.apache.felix.ipojo.everest.osgi.packages.PackageResourceManager;
 import org.apache.felix.ipojo.everest.osgi.service.ServiceResourceManager;
-import org.apache.felix.ipojo.everest.osgi.system.SystemResourceManager;
 import org.apache.felix.ipojo.everest.services.*;
 import org.osgi.framework.*;
 import org.osgi.framework.startlevel.FrameworkStartLevel;
@@ -61,8 +60,6 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
 
     private final ServiceTracker m_serviceTracker;
 
-    private final SystemResourceManager m_systemResourceManager;
-
     private final BundleResourceManager m_bundleResourceManager;
 
     private final PackageResourceManager m_packageResourceManager;
@@ -86,7 +83,6 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
 
         m_context = context;
         // Initialize subresource managers
-        m_systemResourceManager = SystemResourceManager.getInstance();
         m_bundleResourceManager = BundleResourceManager.getInstance();
         m_packageResourceManager = PackageResourceManager.getInstance();
         m_serviceResourceManager = ServiceResourceManager.getInstance();
@@ -174,7 +170,6 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
     public List<Resource> getResources() {
         ArrayList<Resource> resources = new ArrayList<Resource>();
         synchronized (resourceLock) {
-            resources.add(m_systemResourceManager);
             resources.add(m_bundleResourceManager);
             resources.add(m_packageResourceManager);
             resources.add(m_serviceResourceManager);

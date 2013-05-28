@@ -1,4 +1,4 @@
-package org.apache.felix.ipojo.everest.osgi.system;
+package org.apache.felix.ipojo.everest.system;
 
 import org.apache.felix.ipojo.everest.impl.DefaultResource;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
@@ -6,7 +6,7 @@ import org.apache.felix.ipojo.everest.services.ResourceMetadata;
 
 import java.util.Map;
 
-import static org.apache.felix.ipojo.everest.osgi.system.SystemResourceManager.SYSTEM_ROOT_PATH;
+import static org.apache.felix.ipojo.everest.system.SystemRootResource.SYSTEM_ROOT_PATH;
 
 /**
  * Created with IntelliJ IDEA.
@@ -16,9 +16,9 @@ import static org.apache.felix.ipojo.everest.osgi.system.SystemResourceManager.S
  */
 public class EnvironmentPropertiesResource extends DefaultResource {
 
-    public static final String ENV_NAME = "env";
-    private ResourceMetadata metadata;
+    public static final String ENV_NAME = "environment";
 
+    private ResourceMetadata metadata;
 
     public EnvironmentPropertiesResource() {
         super(SYSTEM_ROOT_PATH.addElements(ENV_NAME));

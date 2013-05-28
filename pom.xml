@@ -16,6 +16,7 @@
         <module>everest-servlet</module>
         <module>everest-example</module>
         <module>everest-it</module>
+        <module>everest-system</module>
     </modules>
 
     <dependencyManagement>

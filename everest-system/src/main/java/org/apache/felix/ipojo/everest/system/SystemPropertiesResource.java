@@ -1,4 +1,4 @@
-package org.apache.felix.ipojo.everest.osgi.system;
+package org.apache.felix.ipojo.everest.system;
 
 import org.apache.felix.ipojo.everest.impl.DefaultParameter;
 import org.apache.felix.ipojo.everest.impl.DefaultRelation;
@@ -9,7 +9,7 @@ import org.apache.felix.ipojo.everest.services.*;
 import java.util.Dictionary;
 import java.util.Enumeration;
 
-import static org.apache.felix.ipojo.everest.osgi.system.SystemResourceManager.SYSTEM_ROOT_PATH;
+import static org.apache.felix.ipojo.everest.system.SystemRootResource.SYSTEM_ROOT_PATH;
 
 /**
  * Created with IntelliJ IDEA.
@@ -20,6 +20,7 @@ import static org.apache.felix.ipojo.everest.osgi.system.SystemResourceManager.S
 public class SystemPropertiesResource extends DefaultResource {
 
     private static final String SYSTEM_PROP_NAME = "properties";
+
     private ResourceMetadata metadata;
 
     public SystemPropertiesResource() {
