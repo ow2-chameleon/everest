@@ -114,6 +114,11 @@ public class PackageResource extends DefaultReadOnlyResource {
         }
     }
 
+    @Override
+    public boolean isObservable() {
+        return true;
+    }
+
     private Bundle getBundle() {
         return m_bundleCapability.getRevision().getBundle();
     }

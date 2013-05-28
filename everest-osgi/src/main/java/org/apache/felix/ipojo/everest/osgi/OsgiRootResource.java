@@ -17,6 +17,7 @@ import org.osgi.framework.*;
 import org.osgi.framework.startlevel.FrameworkStartLevel;
 import org.osgi.framework.wiring.FrameworkWiring;
 import org.osgi.service.cm.ConfigurationAdmin;
+import org.osgi.service.cm.ConfigurationListener;
 import org.osgi.service.deploymentadmin.DeploymentAdmin;
 import org.osgi.service.log.LogReaderService;
 import org.osgi.util.tracker.BundleTracker;
@@ -73,6 +74,8 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
     private Bundle frameworkBundle;
 
     private ConfigAdminResourceManager m_configResourceManager;
+
+    private ServiceRegistration<ConfigurationListener> configurationListenerServiceRegistration;
 
     private DeploymentAdminResourceManager m_deploymentResourceManager;
 
@@ -199,7 +202,15 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
         if (startLevel != null) {
             frameworkStartLevel.setStartLevel(startLevel);
         }
-
+        Boolean restart = request.get("restart", Boolean.class);
+        if (restart != null && restart) {
+            try {
+                //restarting framework
+                frameworkBundle.update();
+            } catch (BundleException e) {
+                throw new IllegalActionOnResourceException(request, e.getMessage());
+            }
+        }
         return this;
     }
 
@@ -214,19 +225,20 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
         return null;
     }
 
-
     // Config Admin Bind / Unbind
 
     @Bind(id = "configadmin", optional = true, aggregate = false)
     public void bindConfigAdmin(ConfigurationAdmin configAdmin) {
         synchronized (resourceLock) {
             m_configResourceManager = new ConfigAdminResourceManager(configAdmin);
+            configurationListenerServiceRegistration = m_context.registerService(ConfigurationListener.class, m_configResourceManager, null);
         }
     }
 
     @Unbind(id = "configadmin")
     public void unbindConfigAdmin(ConfigurationAdmin configAdmin) {
         synchronized (resourceLock) {
+            configurationListenerServiceRegistration.unregister();
             //TODO do something to close configadminresourcemanager
         }
     }
@@ -275,6 +287,7 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
 
     public void modifiedBundle(Bundle bundle, BundleEvent bundleEvent, Object o) {
         // TODO think of sending some event
+        m_bundleResourceManager.modifyBundle(bundle);
         if (bundleEvent.getType() == BundleEvent.RESOLVED) {
             m_packageResourceManager.addPackagesFrom(bundle);
         }
@@ -297,6 +310,7 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
 
     public void modifiedService(ServiceReference serviceReference, Object o) {
         // TODO think of sending some event
+        m_serviceResourceManager.modifyService(serviceReference);
     }
 
     public void removedService(ServiceReference serviceReference, Object o) {

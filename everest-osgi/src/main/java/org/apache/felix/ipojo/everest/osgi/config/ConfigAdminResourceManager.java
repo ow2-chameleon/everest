@@ -1,5 +1,6 @@
 package org.apache.felix.ipojo.everest.osgi.config;
 
+import org.apache.felix.ipojo.everest.core.Everest;
 import org.apache.felix.ipojo.everest.impl.DefaultParameter;
 import org.apache.felix.ipojo.everest.impl.DefaultRelation;
 import org.apache.felix.ipojo.everest.impl.DefaultResource;
@@ -8,6 +9,8 @@ import org.apache.felix.ipojo.everest.services.*;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
+import org.osgi.service.cm.ConfigurationEvent;
+import org.osgi.service.cm.ConfigurationListener;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,7 +24,7 @@ import static org.apache.felix.ipojo.everest.osgi.OsgiRootResource.OSGI_ROOT_PAT
  * Date: 4/19/13
  * Time: 10:56 AM
  */
-public class ConfigAdminResourceManager extends DefaultResource {
+public class ConfigAdminResourceManager extends DefaultResource implements ConfigurationListener {
 
     public static final String CONFIG_ROOT_NAME = "configurations";
 
@@ -39,22 +42,22 @@ public class ConfigAdminResourceManager extends DefaultResource {
         super(CONFIG_PATH);
         this.m_configAdmin = configAdmin;
 
-        setRelations(new DefaultRelation(getPath(),Action.CREATE,"create",
+        setRelations(new DefaultRelation(getPath(), Action.CREATE, "create",
                 new DefaultParameter()
-                    .name(BUNDLE_LOCATION)
-                    .description("bundle location")
-                    .type(String.class)
-                    .optional(false),
+                        .name(BUNDLE_LOCATION)
+                        .description("bundle location")
+                        .type(String.class)
+                        .optional(false),
                 new DefaultParameter()
-                    .name(PID)
-                    .description("Persistent id of configuration")
-                    .type(String.class)
-                    .optional(true),
+                        .name(PID)
+                        .description("Persistent id of configuration")
+                        .type(String.class)
+                        .optional(true),
                 new DefaultParameter()
-                    .name(FACTORY_PID)
-                    .description("Persistent id of factory pid")
-                    .type(String.class)
-                    .optional(true)));
+                        .name(FACTORY_PID)
+                        .description("Persistent id of factory pid")
+                        .type(String.class)
+                        .optional(true)));
     }
 
     @Override
@@ -111,9 +114,9 @@ public class ConfigAdminResourceManager extends DefaultResource {
                 } catch (IOException e) {
                     throw new IllegalActionOnResourceException(request, e.getMessage());
                 }
-            } else if (factoryPid!=null){
+            } else if (factoryPid != null) {
                 try {
-                     configuration = m_configAdmin.createFactoryConfiguration(factoryPid, location);
+                    configuration = m_configAdmin.createFactoryConfiguration(factoryPid, location);
                 } catch (IOException e) {
                     throw new IllegalActionOnResourceException(request, e.getMessage());
                 }
@@ -124,10 +127,27 @@ public class ConfigAdminResourceManager extends DefaultResource {
         } else {
             throw new IllegalActionOnResourceException(request, "location parameter is mandatory");
         }
-        if(configuration!=null){
+        if (configuration != null) {
             return new ConfigurationResource(configuration);
         }
         return this;
     }
 
+    public void configurationEvent(ConfigurationEvent event) {
+        String pid = event.getPid();
+        try {
+            Configuration configuration = m_configAdmin.getConfiguration(pid);
+            ConfigurationResource configurationResource = new ConfigurationResource(configuration);
+            if (event.getType() == ConfigurationEvent.CM_UPDATED || event.getType() == ConfigurationEvent.CM_LOCATION_CHANGED) {
+                Everest.postResource(ResourceEvent.UPDATED, configurationResource);
+            } else if (event.getType() == ConfigurationEvent.CM_DELETED) {
+                ;
+                Everest.postResource(ResourceEvent.DELETED, configurationResource);
+            }
+        } catch (IOException e) {
+            // something gone wrong
+            //TODO
+        }
+
+    }
 }

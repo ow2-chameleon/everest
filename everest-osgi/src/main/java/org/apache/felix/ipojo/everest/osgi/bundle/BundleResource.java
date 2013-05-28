@@ -88,7 +88,6 @@ public class BundleResource extends DefaultResource {
                                 .type(Boolean.class)),
                 new DefaultRelation(getPath(), Action.DELETE, UNINSTALL_RELATION)
         );
-
     }
 
     public Bundle getBundle() {
@@ -131,6 +130,11 @@ public class BundleResource extends DefaultResource {
         } else {
             return null;
         }
+    }
+
+    @Override
+    public boolean isObservable() {
+        return true;
     }
 
     @Override

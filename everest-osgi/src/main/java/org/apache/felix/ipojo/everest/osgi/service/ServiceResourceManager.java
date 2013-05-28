@@ -1,9 +1,11 @@
 package org.apache.felix.ipojo.everest.osgi.service;
 
+import org.apache.felix.ipojo.everest.core.Everest;
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.services.Path;
 import org.apache.felix.ipojo.everest.services.Resource;
+import org.apache.felix.ipojo.everest.services.ResourceEvent;
 import org.apache.felix.ipojo.everest.services.ResourceMetadata;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
@@ -41,14 +43,29 @@ public class ServiceResourceManager extends DefaultReadOnlyResource {
     }
 
     public void addService(ServiceReference serviceReference) {
+        Object serviceId = serviceReference.getProperty(Constants.SERVICE_ID);
         synchronized (m_serviceResourceMap) {
-            m_serviceResourceMap.put(serviceReference.getProperty(Constants.SERVICE_ID), new ServiceResource(serviceReference));
+            if (!m_serviceResourceMap.containsKey(serviceId)) {
+                ServiceResource createdService = new ServiceResource(serviceReference);
+                m_serviceResourceMap.put(serviceId, createdService);
+                Everest.postResource(ResourceEvent.CREATED, createdService);
+            }
+        }
+    }
+
+    public void modifyService(ServiceReference serviceReference) {
+        Object serviceId = serviceReference.getProperty(Constants.SERVICE_ID);
+        synchronized (m_serviceResourceMap) {
+            ServiceResource updatedService = new ServiceResource(serviceReference);
+            m_serviceResourceMap.put(serviceId, updatedService);
+            Everest.postResource(ResourceEvent.UPDATED, updatedService);
         }
     }
 
     public void removeService(ServiceReference serviceReference) {
         synchronized (m_serviceResourceMap) {
-            m_serviceResourceMap.remove(serviceReference.getProperty(Constants.SERVICE_ID));
+            ServiceResource removedService = m_serviceResourceMap.remove(serviceReference.getProperty(Constants.SERVICE_ID));
+            Everest.postResource(ResourceEvent.DELETED, removedService);
         }
     }
 
@@ -71,4 +88,6 @@ public class ServiceResourceManager extends DefaultReadOnlyResource {
         }
         return resources;
     }
+
+
 }

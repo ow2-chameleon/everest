@@ -1,9 +1,11 @@
 package org.apache.felix.ipojo.everest.osgi.packages;
 
+import org.apache.felix.ipojo.everest.core.Everest;
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.services.Path;
 import org.apache.felix.ipojo.everest.services.Resource;
+import org.apache.felix.ipojo.everest.services.ResourceEvent;
 import org.apache.felix.ipojo.everest.services.ResourceMetadata;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.wiring.BundleCapability;
@@ -46,12 +48,20 @@ public class PackageResourceManager extends DefaultReadOnlyResource {
             BundleRevision revision = bundle.adapt(BundleRevision.class);
             if (revision != null) {
                 List<BundleCapability> bundleCapabilities = revision.getDeclaredCapabilities(BundleRevision.PACKAGE_NAMESPACE);
-                for (BundleCapability bc : bundleCapabilities) {
-                    PackageResource packageResource = new PackageResource(bc);
-                    String uniquePackageId = packageResource.getUniquePackageId();
-                    m_packageResourceByPackageIdMap.put(uniquePackageId, packageResource);
+                if (!bundleCapabilities.isEmpty()) {
+                    for (BundleCapability bc : bundleCapabilities) {
+                        PackageResource packageResource = new PackageResource(bc);
+                        String uniquePackageId = packageResource.getUniquePackageId();
+                        PackageResource oldPackage = m_packageResourceByPackageIdMap.put(uniquePackageId, packageResource);
+                        if (oldPackage != null) {
+                            Everest.postResource(ResourceEvent.UPDATED, packageResource);
+                        } else {
+                            Everest.postResource(ResourceEvent.CREATED, packageResource);
+                        }
+                    }
+                    // post event for this resource manager as there are changes
+                    Everest.postResource(ResourceEvent.UPDATED, this);
                 }
-
             }
         }
     }
@@ -64,8 +74,13 @@ public class PackageResourceManager extends DefaultReadOnlyResource {
                     packageIds.add(pr.getUniquePackageId());
                 }
             }
-            for (String s : packageIds) {
-                m_packageResourceByPackageIdMap.remove(s);
+            if (!packageIds.isEmpty()) {
+                for (String s : packageIds) {
+                    PackageResource removedPackage = m_packageResourceByPackageIdMap.remove(s);
+                    Everest.postResource(ResourceEvent.DELETED, removedPackage);
+                }
+                // post event for this resource manager as there are changes
+                Everest.postResource(ResourceEvent.UPDATED, this);
             }
         }
     }

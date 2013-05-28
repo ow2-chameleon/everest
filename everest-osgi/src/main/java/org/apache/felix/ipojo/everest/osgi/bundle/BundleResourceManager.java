@@ -1,5 +1,6 @@
 package org.apache.felix.ipojo.everest.osgi.bundle;
 
+import org.apache.felix.ipojo.everest.core.Everest;
 import org.apache.felix.ipojo.everest.impl.DefaultParameter;
 import org.apache.felix.ipojo.everest.impl.DefaultRelation;
 import org.apache.felix.ipojo.everest.impl.DefaultResource;
@@ -11,10 +12,7 @@ import org.osgi.framework.wiring.FrameworkWiring;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 import static org.apache.felix.ipojo.everest.osgi.OsgiRootResource.OSGI_ROOT_PATH;
@@ -85,14 +83,21 @@ public class BundleResourceManager extends DefaultResource {
             if (!bundleResources.containsKey(bundle.getBundleId())) {
                 BundleResource newBundle = new BundleResource(bundle, this);
                 bundleResources.put(bundle.getBundleId(), newBundle);
+                Everest.postResource(ResourceEvent.CREATED, newBundle);
             }
         }
     }
 
     public void removeBundle(Bundle bundle) {
         synchronized (bundleResources) {
-            bundleResources.remove(bundle.getBundleId());
+            BundleResource removedResource = bundleResources.remove(bundle.getBundleId());
+            Everest.postResource(ResourceEvent.DELETED, removedResource);
         }
+    }
+
+    public void modifyBundle(Bundle bundle) {
+        BundleResource bundleResource = new BundleResource(bundle, this);
+        Everest.postResource(ResourceEvent.UPDATED, bundleResource);
     }
 
     @Override
@@ -111,8 +116,6 @@ public class BundleResourceManager extends DefaultResource {
         return resources;
     }
 
-    // TODO add relations install uninstall
-
     @Override
     public Resource create(Request request) throws IllegalActionOnResourceException {
         BundleResource resource = null;
@@ -125,6 +128,7 @@ public class BundleResourceManager extends DefaultResource {
                 synchronized (bundleResources) {
                     resource = new BundleResource(newBundle, this);
                     bundleResources.put(newBundle.getBundleId(), resource);
+                    Everest.postResource(ResourceEvent.CREATED, resource);
                 }
             }
         } catch (BundleException e) {
@@ -152,11 +156,6 @@ public class BundleResourceManager extends DefaultResource {
         return resource;
     }
 
-    @Override
-    public Resource delete(Request request) throws IllegalActionOnResourceException {
-        return super.delete(request);    //To change body of overridden methods use File | Settings | File Templates.
-    }
-
     public void refreshBundles(List<Long> bundleIds) {
         Bundle fw = bundleResources.get(0L).getBundle();
         FrameworkWiring fwiring = fw.adapt(FrameworkWiring.class);
@@ -181,5 +180,23 @@ public class BundleResourceManager extends DefaultResource {
             }
         }
         return fwiring.resolveBundles(bundlesToResolve);
+    }
+
+    public List<Long> getDependencyClosure(List<Long> bundleIds) {
+        Bundle fw = bundleResources.get(0L).getBundle();
+        FrameworkWiring fwiring = fw.adapt(FrameworkWiring.class);
+        List<Bundle> bundles = new ArrayList<Bundle>();
+        for (long bundleId : bundleIds) {
+            Bundle bundle = bundleResources.get(bundleId).getBundle();
+            if (bundle != null) {
+                bundles.add(bundle);
+            }
+        }
+        Collection<Bundle> dependencyClosure = fwiring.getDependencyClosure(bundles);
+        List<Long> dependencyClosureBundles = new ArrayList<Long>();
+        for (Bundle b : dependencyClosure) {
+            dependencyClosureBundles.add(b.getBundleId());
+        }
+        return dependencyClosureBundles;
     }
 }

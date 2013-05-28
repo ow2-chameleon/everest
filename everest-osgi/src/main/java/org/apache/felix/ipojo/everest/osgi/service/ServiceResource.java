@@ -60,7 +60,7 @@ public class ServiceResource extends DefaultReadOnlyResource {
         }
         if (capability != null) {
             Path packagePath = PackageResourceManager.getInstance().getPath().add(Path.from(Path.SEPARATOR + uniqueCapabilityId(capability)));
-            new DefaultRelation(packagePath, Action.READ, FROM_PACKAGE_NAME);
+            relations.add(new DefaultRelation(packagePath, Action.READ, FROM_PACKAGE_NAME));
         }
 
         // Create relations
@@ -102,6 +102,11 @@ public class ServiceResource extends DefaultReadOnlyResource {
         } else {
             return null;
         }
+    }
+
+    @Override
+    public boolean isObservable() {
+        return true;
     }
 
     public long getServiceId() {
