@@ -1,43 +1,125 @@
 package org.apache.felix.ipojo.everest.ipojo;
 
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
-import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
+import org.apache.felix.ipojo.everest.impl.DefaultRelation;
+import org.apache.felix.ipojo.everest.services.Action;
 import org.apache.felix.ipojo.everest.services.Path;
+import org.apache.felix.ipojo.everest.services.Relation;
 import org.apache.felix.ipojo.everest.services.Resource;
-import org.apache.felix.ipojo.everest.services.ResourceMetadata;
 
 import java.util.*;
-
-import static java.util.Map.Entry;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
- * A builder for resources that just holds for sub-resources.
+ * A resource that is an holder for sub-resources.
  * <p/>
  * <p>
  * By default, it has :
  * <ul>
  * <li>no metadata</li>
- * <li>no relation</li>
+ * <li>relations to its direct child resources, built by a customizable {@link ChildRelationFactory}</li>
  * </ul>
  * </p>
  *
  * @param <R> the type of sub resources
- * @NotThreadSafe Concurrent accesses must be synchronized externally
+ * @ThreadSafe
  */
 public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
 
     /**
-     * The underlying map of resources.
+     * Construct relations from a parent resource to its children.
+     * <p>
+     * A resource map may call its ChildRelationFactory concurrently.
+     * </p>
+     *
+     * @param <T> the type of the children resources
      */
-    private final Map<Path, R> m_map = new LinkedHashMap<Path, R>();
+    public static interface ChildRelationFactory<T extends Resource> {
+
+        /**
+         * Build a relation from the parent to the child.
+         * <p>
+         * The returned relation must :
+         * <ul>
+         * <li><em>not</em> be {@code null},</li>
+         * <li>have its action set to{@link Action#READ},</li>
+         * <li>have its "href" set to {@code child.getPath()}.</li>
+         * </ul>
+         * </p>
+         *
+         * @param parent    the parent resource
+         * @param child     the child resource
+         * @param childName the last element of the child's path
+         * @return the built relation
+         */
+        Relation createRelation(ResourceMap<T> parent, T child, String childName);
+
+    }
 
     /**
-     * Creates a new resource map with the given path.
+     * The lock regulating concurrent accesses to this resource map.
+     */
+    protected final ReadWriteLock m_lock = new ReentrantReadWriteLock(true);
+
+    /**
+     * The underlying map of resources.
+     *
+     * @GuardedBy m_lock
+     */
+    private final Map<Path, R> m_resources = new LinkedHashMap<Path, R>();
+
+    /**
+     * The relations to the children.
+     *
+     * @GuardedBy m_lock
+     */
+    private final Map<Path, Relation> m_relations = new LinkedHashMap<Path, Relation>();
+
+    /**
+     * The flag indicating if this resource map is observable.
+     * @see #isObservable()
+     */
+    private final boolean m_isObservable;
+
+    /**
+     * The child relation factory for this resource map.
+     */
+    private final ChildRelationFactory<R> m_relationFactory;
+
+    /**
+     * Creates a new resource map with the given path, with a default child relation factory, and that is not observable.
      *
      * @param path path of this resource m_map
+     * @deprecated relationFactory and isObservable should be set explicitly in {@link #ResourceMap(Path, ChildRelationFactory, boolean)}
      */
+    @Deprecated
     public ResourceMap(Path path) {
+        this(path, null, false);
+    }
+
+    /**
+     * Creates a new resource map with the given path and child relation factory.
+     *
+     * @param path            path of this resource m_map
+     * @param relationFactory the factory for parent to child relations, may be {@code null}
+     * @param isObservable    the flag that indicates if the resource map to be created is observable.
+     */
+    public ResourceMap(Path path, ChildRelationFactory<R> relationFactory, boolean isObservable) {
         super(path);
+        if (relationFactory != null) {
+            m_relationFactory = relationFactory;
+        } else {
+            // The default child relation factory.
+            m_relationFactory = new ChildRelationFactory<R>() {
+                public Relation createRelation(ResourceMap<R> parent, R child, String childName) {
+                    String name = parent.getPath().getLast() + '[' + childName + ']';
+                    String description = "Child resource '" + childName + '\'';
+                    return new DefaultRelation(child.getPath(), Action.READ, name, description, null);
+                }
+            };
+        }
+        m_isObservable = isObservable;
     }
 
     /**
@@ -47,20 +129,42 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
      * @throws NullPointerException     if {@code resource} is {@code null}
      * @throws IllegalArgumentException if {@code resource}'s path is not a direct child of this resource map's path, or
      *                                  if this resource map already contains a resource with the same path.
+     * @throws IllegalStateException    if the relation generated by the child relation factory is not compliant with
+     *                                  the {@link ChildRelationFactory} specification.
      */
     public void addResource(R resource) {
         if (resource == null) {
             throw new NullPointerException("resource is null");
         }
+
         // Checks path of the resource is a direct sub-path of this resource map
         Path path = resource.getPath();
         if (path.subtract(getPath()).getCount() != 1) {
             throw new IllegalArgumentException("resource is not a direct child: " + path);
         }
-        if (m_map.containsKey(path)) {
-            throw new IllegalArgumentException("resource with same path already present: " + path);
+
+        // Generate the relation to the child, and check it.
+        Relation relation = m_relationFactory.createRelation(this, resource, resource.getPath().getLast());
+        if (relation == null) {
+            throw new IllegalStateException("null returned by child relation factory");
+        } else if (relation.getAction() != Action.READ) {
+            throw new IllegalStateException("invalid action returned by child relation factory: " + relation.getAction());
+        } else if (!resource.getPath().equals(relation.getHref())) {
+            throw new IllegalStateException("invalid href returned by child relation factory: " + relation.getHref());
         }
-        m_map.put(resource.getPath(), resource);
+
+        // Do add the resource, and the relation.
+        m_lock.writeLock().lock();
+        try {
+            if (m_resources.containsKey(path)) {
+                throw new IllegalArgumentException("resource with same path already present: " + path);
+            }
+            m_resources.put(resource.getPath(), resource);
+            m_relations.put(resource.getPath(), relation);
+        } finally {
+            m_lock.writeLock().unlock();
+        }
+
     }
 
     /**
@@ -70,11 +174,18 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
      * @throws IllegalArgumentException if this resource map does not contain {@code resource}
      */
     public void removeResource(R resource) {
-        // Checks the resource is contained in the map
-        if (!m_map.containsValue(resource)) {
-            throw new IllegalArgumentException("resource not present");
+        m_lock.writeLock().lock();
+        try {
+            // Checks the resource is contained in the map
+            if (!m_resources.containsValue(resource)) {
+                throw new IllegalArgumentException("resource not present");
+            }
+            m_resources.remove(resource.getPath());
+            m_relations.remove(resource.getPath());
+        } finally {
+            m_lock.writeLock().unlock();
         }
-        m_map.remove(resource.getPath());
+
     }
 
     /**
@@ -84,11 +195,18 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
      * @throws IllegalArgumentException if this resource map does not contain a resource with the given path
      */
     public void removePath(Path path) {
-        // Checks the resource map contains the given path
-        if (!m_map.containsKey(path)) {
-            throw new IllegalArgumentException("path not present");
+        m_lock.writeLock().lock();
+        try {
+            // Checks the resource map contains the given path
+            if (!m_resources.containsKey(path)) {
+                throw new IllegalArgumentException("path not present");
+            }
+            m_resources.remove(path);
+            m_relations.remove(path);
+        } finally {
+            m_lock.writeLock().unlock();
         }
-        m_map.remove(path);
+
     }
 
     /**
@@ -100,35 +218,13 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
      *         path.
      */
     public R getResource(Path path) {
-        return m_map.get(path);
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * We need to override this method because we bypass the DefaultResource's sub-resources.
-     * </p>
-     */
-    @Override
-    public List<Resource> getResources() {
-        return new ArrayList<Resource>(m_map.values());
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Here we build an aggregation of the sub-resources' metadata, prefixed by their last path element.
-     * </p>
-     *
-     * @return
-     */
-    @Override
-    public ResourceMetadata getMetadata() {
-        ImmutableResourceMetadata.Builder b = new ImmutableResourceMetadata.Builder();
-        for (Entry<Path, R> entry : m_map.entrySet()) {
-            b.set(entry.getKey().getLast(), entry.getValue().getMetadata());
+        m_lock.readLock().lock();
+        try {
+            return m_resources.get(path);
+        } finally {
+            m_lock.readLock().unlock();
         }
-        return b.build();
+
     }
 
     /**
@@ -137,7 +233,13 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
      * @return the number of resources contained in this resource map.
      */
     public int size() {
-        return m_map.size();
+        m_lock.readLock().lock();
+        try {
+            return m_resources.size();
+        } finally {
+            m_lock.readLock().unlock();
+        }
+
     }
 
     /**
@@ -146,7 +248,13 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
      * @return {@code true} if this resource map contains no resource, {@code false} otherwise
      */
     public boolean isEmpty() {
-        return m_map.isEmpty();
+        m_lock.readLock().lock();
+        try {
+            return m_resources.isEmpty();
+        } finally {
+            m_lock.readLock().unlock();
+        }
+
     }
 
     /**
@@ -156,7 +264,13 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
      * @return {@code true} if this resource map contains a resource with the specified path, {@code false} otherwise
      */
     public boolean containsPath(Path path) {
-        return m_map.containsKey(path);
+        m_lock.readLock().lock();
+        try {
+            return m_resources.containsKey(path);
+        } finally {
+            m_lock.readLock().unlock();
+        }
+
     }
 
     /**
@@ -166,7 +280,13 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
      * @return {@code true} if this resource map contains the specified resource, {@code false} otherwise
      */
     public boolean containsResource(R resource) {
-        return m_map.containsValue(resource);
+        m_lock.readLock().lock();
+        try {
+            return m_resources.containsValue(resource);
+        } finally {
+            m_lock.readLock().unlock();
+        }
+
     }
 
     /**
@@ -180,20 +300,78 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
+     * We need to override this method because we bypass the DefaultResource's sub-resources.
+     * </p>
+     */
+    @Override
+    public List<Resource> getResources() {
+        m_lock.readLock().lock();
+        try {
+            if (m_resources.isEmpty()) {
+                return Collections.emptyList();
+            } else {
+                return Collections.unmodifiableList(new ArrayList<Resource>(m_resources.values()));
+            }
+        } finally {
+            m_lock.readLock().unlock();
+        }
+
+    }
+
+    /**
      * Get an <em>unmodifiable snapshot</em> of the current path-to-resource mappings.
      *
      * @return an unmodifiable snapshot of the current path-to-resource mappings
      */
     public Map<Path, R> getSnapshot() {
-        return Collections.unmodifiableMap(new LinkedHashMap<Path, R>(m_map));
+        m_lock.readLock().lock();
+        try {
+            return Collections.unmodifiableMap(new LinkedHashMap<Path, R>(m_resources));
+        } finally {
+            m_lock.readLock().unlock();
+        }
+
     }
 
     @Override
     public <A> A adaptTo(Class<A> clazz) {
         if (clazz == Map.class) {
-            return (A) getSnapshot();
+            // Map => snapshot of the current <path, resource> mapping
+            return clazz.cast(getSnapshot());
+        } else if (clazz == Collection.class) {
+            // Collection => snapshot of the current contained resources
+            return clazz.cast(getSnapshot().values());
         }
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * We return here the relations to the children.
+     * </p>
+     */
+    @Override
+    public List<Relation> getRelations() {
+        // Get the relations that has been explicitly set.
+        List<Relation> relations = new ArrayList<Relation>(super.getRelations());
+
+        // Add the relations to the children.
+        m_lock.readLock().lock();
+        try {
+            if (!m_relations.isEmpty()) {
+                relations.addAll(m_relations.values());
+            }
+        } finally {
+            m_lock.readLock().unlock();
+        }
+        return Collections.unmodifiableList(relations);
+    }
+
+    @Override
+    public boolean isObservable() {
+        return m_isObservable;
+    }
 }
