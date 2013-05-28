@@ -89,10 +89,16 @@ public class IpojoResource extends DefaultReadOnlyResource {
         m_declarations = new DeclarationsResource();
 
         // Add relation 'bundle' to READ the iPOJO bundle resource
-        DefaultRelation bundle = new DefaultRelation(PATH_TO_BUNDLES.addElements(String.valueOf(m_ipojo.getBundleId())), Action.READ, "bundle");
-        setRelations(bundle);
-    }
+        DefaultRelation rBundle = new DefaultRelation(PATH_TO_BUNDLES.addElements(String.valueOf(m_ipojo.getBundleId())), Action.READ, "bundle", "The iPOJO bundle");
 
+        // Relations to sub-resources
+        DefaultRelation rFactories = new DefaultRelation(FactoriesResource.PATH, Action.READ, "factories", "The iPOJO component factories");
+        DefaultRelation rInstances = new DefaultRelation(InstancesResource.PATH, Action.READ, "instances", "The iPOJO component instances");
+        DefaultRelation rHandlers = new DefaultRelation(HandlersResource.PATH, Action.READ, "handlers", "The iPOJO handlers");
+        DefaultRelation rDeclarations = new DefaultRelation(DeclarationsResource.PATH, Action.READ, "declarations", "The iPOJO declarations");
+
+        setRelations(rBundle, rFactories, rInstances, rHandlers, rDeclarations);
+    }
 
     @Override
     public ResourceMetadata getMetadata() {
@@ -108,6 +114,24 @@ public class IpojoResource extends DefaultReadOnlyResource {
         l.add(m_instances);
         l.add(m_declarations);
         return l;
+    }
+
+    @Override
+    public boolean isObservable() {
+        // Nothing can change in the root iPOJO resource!
+        return false;
+    }
+
+    @Override
+    public <A> A adaptTo(Class<A> clazz) {
+        if (clazz == Version.class) {
+            // Version => used version of iPOJO
+            return clazz.cast(m_ipojo.getVersion());
+        } else if (clazz == Bundle.class) {
+            // Bundle  => the iPOJO bundle
+            return clazz.cast(m_ipojo);
+        }
+        return null;
     }
 
     // Callback for tracking iPOJO factories.
@@ -180,16 +204,6 @@ public class IpojoResource extends DefaultReadOnlyResource {
     @Unbind(id = "extensionDeclarations")
     public void unbindExtensionDeclaration(ExtensionDeclaration extension) {
         m_declarations.removeExtensionDeclaration(extension);
-    }
-
-    @Override
-    public <A> A adaptTo(Class<A> clazz) {
-        if (clazz == Version.class) {
-            return (A) m_ipojo.getVersion();
-        } else if (clazz == Bundle.class) {
-            return (A) m_ipojo;
-        }
-        return null;
     }
 
 }

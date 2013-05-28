@@ -121,6 +121,7 @@ public class EverestServlet extends HttpServlet {
         }
 
         root.put("__relations", relations);
+        root.put("__observable", resource.isObservable());
         return root;
     }
 
