@@ -80,7 +80,7 @@ public class TestOsgiResources extends Common {
         Resource osgi = get("/osgi");
         assertThat(osgi).isNotNull();
         List<Resource> resources = osgi.getResources();
-        assertThat(resources.size()).isGreaterThan(4).describedAs("We must have at least 4 resources as we added config admin in tests ");
+        assertThat(resources.size()).isGreaterThanOrEqualTo(4).describedAs("We must have at least 4 resources as we added config admin in tests ");
         for (Resource r : resources) {
             Assert.assertEquals(r.getPath(), r.getCanonicalPath());
         }

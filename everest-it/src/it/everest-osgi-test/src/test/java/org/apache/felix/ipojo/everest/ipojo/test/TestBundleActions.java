@@ -4,6 +4,7 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
+import org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils;
 import org.apache.felix.ipojo.everest.services.IllegalActionOnResourceException;
 import org.apache.felix.ipojo.everest.services.Resource;
 import org.apache.felix.ipojo.everest.services.ResourceNotFoundException;
@@ -34,7 +35,7 @@ import static org.ops4j.pax.exam.CoreOptions.*;
  * Date: 4/28/13
  * Time: 7:20 PM
  */
-public class TestBundleInstall extends Common {
+public class TestBundleActions extends Common {
 
     InputStream input = null;
 
@@ -139,6 +140,64 @@ public class TestBundleInstall extends Common {
         params.put("update", false);
         res = update(res.getPath(), params);
         assertThat(res.getMetadata().get("bundle-state", String.class)).isEqualTo("ACTIVE");
+    }
+
+    @Test
+    public void testBundleStart() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        Resource r = get("/osgi/bundles");
+        for (Resource res : r.getResources()) {
+            String symbolicName = res.getMetadata().get(Constants.BUNDLE_SYMBOLICNAME_ATTRIBUTE, String.class);
+            if (symbolicName.equals("test.bundle")) {
+
+                HashMap<String, Object> params = new HashMap<String, Object>();
+                params.put("newState", "RESOLVED");
+                res = update(res.getPath(), params);
+                symbolicName = res.getMetadata().get(Constants.BUNDLE_SYMBOLICNAME_ATTRIBUTE, String.class);
+                assertThat(symbolicName).isEqualTo("test.bundle");
+                assertThat(res.getMetadata().get(OsgiResourceUtils.BundleNamespace.BUNDLE_STATE, String.class)).isEqualTo("RESOLVED");
+
+
+                // Stopped now restarting
+                params = new HashMap<String, Object>();
+                params.put("newState", "ACTIVE");
+                res = update(res.getPath(), params);
+                symbolicName = res.getMetadata().get(Constants.BUNDLE_SYMBOLICNAME_ATTRIBUTE, String.class);
+                assertThat(symbolicName).isEqualTo("test.bundle");
+                assertThat(res.getMetadata().get(OsgiResourceUtils.BundleNamespace.BUNDLE_STATE, String.class)).isEqualTo("ACTIVE");
+            }
+        }
+    }
+
+    @Test
+    public void testBundleStop() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        Resource r = get("/osgi/bundles");
+        for (Resource res : r.getResources()) {
+            String symbolicName = res.getMetadata().get(Constants.BUNDLE_SYMBOLICNAME_ATTRIBUTE, String.class);
+            if (symbolicName.equals("test.bundle")) {
+                HashMap<String, Object> params = new HashMap<String, Object>();
+                params.put("newState", "RESOLVED");
+                res = update(res.getPath(), params);
+                symbolicName = res.getMetadata().get(Constants.BUNDLE_SYMBOLICNAME_ATTRIBUTE, String.class);
+                assertThat(symbolicName).isEqualTo("test.bundle");
+                assertThat(res.getMetadata().get(OsgiResourceUtils.BundleNamespace.BUNDLE_STATE, String.class)).isEqualTo("RESOLVED");
+            }
+        }
+    }
+
+    @Test
+    public void testBundleUninstall() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        Resource r = get("/osgi/bundles");
+        for (Resource res : r.getResources()) {
+            String symbolicName = res.getMetadata().get(Constants.BUNDLE_SYMBOLICNAME_ATTRIBUTE, String.class);
+            if (symbolicName.equals("test.bundle")) {
+                HashMap<String, Object> params = new HashMap<String, Object>();
+                params.put("newState", "UNINSTALLED");
+                res = update(res.getPath(), params);
+                symbolicName = res.getMetadata().get(Constants.BUNDLE_SYMBOLICNAME_ATTRIBUTE, String.class);
+                assertThat(symbolicName).isEqualTo("test.bundle");
+                assertThat(res.getMetadata().get(OsgiResourceUtils.BundleNamespace.BUNDLE_STATE, String.class)).isEqualTo("UNINSTALLED");
+            }
+        }
     }
 
 
