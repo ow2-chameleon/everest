@@ -56,15 +56,6 @@
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
-                <configuration>
-                    <instructions>
-                        <Import-Package>
-                            org.apache.felix.ipojo.extender; version=1.8.4,
-                            *
-                        </Import-Package>
-                    </instructions>
-
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.felix</groupId>
