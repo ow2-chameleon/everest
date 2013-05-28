@@ -114,16 +114,30 @@ public class Everest extends DefaultReadOnlyResource implements EverestService {
         }
 
         Map<String, Object> map = new LinkedHashMap<String, Object>();
-        map.put("event", eventType);
+        map.put("eventType", eventType);
+        map.put("canonicalPath", resource.getCanonicalPath().toString());
         map.put("metadata", resource.getMetadata());
         map.put("relations", resource.getRelations());
 
-        Event e = new Event(resource.getCanonicalPath().toString(), map);
+        Event e = new Event(topicFromPath(resource.getCanonicalPath()), map);
         try {
             ea.postEvent(e);
         } catch (SecurityException ex) {
             return false;
         }
         return true;
+    }
+
+    /**
+     * Transforms a path to event admin topic
+     *
+     * @param path resource path
+     * @return topic string
+     */
+    public static String topicFromPath(Path path) {
+        String pathString = path.toString();
+        pathString = "everest".concat(pathString);
+        pathString = pathString.replaceAll(".", "-");
+        return pathString;
     }
 }
