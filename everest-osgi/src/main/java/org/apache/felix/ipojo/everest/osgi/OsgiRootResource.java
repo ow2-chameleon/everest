@@ -1,6 +1,7 @@
 package org.apache.felix.ipojo.everest.osgi;
 
 import org.apache.felix.ipojo.annotations.*;
+import org.apache.felix.ipojo.everest.core.Everest;
 import org.apache.felix.ipojo.everest.impl.AbstractResourceManager;
 import org.apache.felix.ipojo.everest.impl.DefaultParameter;
 import org.apache.felix.ipojo.everest.impl.DefaultRelation;
@@ -247,14 +248,17 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
             m_configResourceManager = new ConfigAdminResourceManager(configAdmin);
             configurationListenerServiceRegistration = m_context.registerService(ConfigurationListener.class, m_configResourceManager, null);
         }
+        Everest.postResource(ResourceEvent.UPDATED, this);
     }
 
     @Unbind(id = "configadmin")
     public void unbindConfigAdmin(ConfigurationAdmin configAdmin) {
         synchronized (resourceLock) {
             configurationListenerServiceRegistration.unregister();
+            m_configResourceManager = null;
             //TODO do something to close configadminresourcemanager
         }
+        Everest.postResource(ResourceEvent.UPDATED, this);
     }
 
     // Deploy Admin Bind / Unbind
@@ -264,13 +268,16 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
         synchronized (resourceLock) {
             m_deploymentResourceManager = new DeploymentAdminResourceManager(deploymentAdmin);
         }
+        Everest.postResource(ResourceEvent.UPDATED, this);
     }
 
     @Unbind(id = "deploymentadmin")
     public void unbindDeploymentAdmin(DeploymentAdmin deploymentAdmin) {
         synchronized (resourceLock) {
+            m_deploymentResourceManager = null;
             //TODO do something to close deploymentadminresourcemanager
         }
+        Everest.postResource(ResourceEvent.UPDATED, this);
     }
 
     // Log Service Bind / Unbind
@@ -280,13 +287,16 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
         synchronized (resourceLock) {
             m_logResourceManager = new LogServiceResourceManager(logService);
         }
+        Everest.postResource(ResourceEvent.UPDATED, this);
     }
 
     @Unbind(id = "logservice")
     public void unbindLogService(LogReaderService logService) {
         synchronized (resourceLock) {
+            m_logResourceManager = null;
             //TODO do something to close logresourcemanager
         }
+        Everest.postResource(ResourceEvent.UPDATED, this);
     }
 
     // Bundle Tracker Methods
