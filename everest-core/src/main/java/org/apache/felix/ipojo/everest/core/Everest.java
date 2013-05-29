@@ -17,6 +17,11 @@ import java.util.*;
 @Provides(specifications = EverestService.class)
 public class Everest extends DefaultReadOnlyResource implements EverestService {
 
+    /**
+     * The system property used to send events synchronously.
+     */
+    public static final String SYNCHRONOUS_PROCESSING = "everest.processing.synchronous";
+
     private Map<Path, Resource> resources = new LinkedHashMap<Path, Resource>();
     private List<ResourceExtender> extenders = new ArrayList<ResourceExtender>();
 
@@ -120,8 +125,16 @@ public class Everest extends DefaultReadOnlyResource implements EverestService {
         map.put("relations", resource.getRelations());
 
         Event e = new Event(topicFromPath(resource.getCanonicalPath()), map);
+
+        String mode = System.getProperty(SYNCHRONOUS_PROCESSING);
         try {
-            ea.postEvent(e);
+            if (mode != null && mode.equalsIgnoreCase("true")) {
+                // Sync mode
+                ea.sendEvent(e);
+            } else {
+                // Async mode (default)
+                ea.postEvent(e);
+            }
         } catch (SecurityException ex) {
             return false;
         }
