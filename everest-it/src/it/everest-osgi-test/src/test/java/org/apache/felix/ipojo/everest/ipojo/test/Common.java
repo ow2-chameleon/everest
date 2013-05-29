@@ -23,6 +23,7 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
+import org.osgi.service.event.EventAdmin;
 import org.ow2.chameleon.testing.helpers.IPOJOHelper;
 import org.ow2.chameleon.testing.helpers.OSGiHelper;
 import org.ow2.chameleon.testing.tinybundles.ipojo.IPOJOStrategy;
@@ -54,6 +55,9 @@ public class Common {
     @Inject
     EverestService everest;
 
+    @Inject
+    EventAdmin eventAdmin;
+
     OSGiHelper osgiHelper;
     IPOJOHelper ipojoHelper;
 
@@ -75,7 +79,6 @@ public class Common {
         root.setLevel(Level.INFO);
 
         return options(
-                systemProperty("ipojo.processing.synchronous").value("true"),
                 // The EventAdmin service
                 mavenBundle("org.apache.felix", "org.apache.felix.eventadmin").versionAsInProject(),
                 ipojoBundles(),

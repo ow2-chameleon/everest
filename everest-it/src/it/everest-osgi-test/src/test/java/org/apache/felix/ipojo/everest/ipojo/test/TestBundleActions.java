@@ -5,6 +5,7 @@ import ch.qos.logback.classic.Logger;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils;
+import org.apache.felix.ipojo.everest.osgi.bundle.BundleResource;
 import org.apache.felix.ipojo.everest.services.IllegalActionOnResourceException;
 import org.apache.felix.ipojo.everest.services.Resource;
 import org.apache.felix.ipojo.everest.services.ResourceNotFoundException;
@@ -13,6 +14,7 @@ import org.ops4j.pax.exam.Configuration;
 import org.ops4j.pax.exam.Option;
 import org.ops4j.pax.tinybundles.core.TinyBundle;
 import org.ops4j.pax.tinybundles.core.TinyBundles;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.Constants;
 import org.ow2.chameleon.testing.tinybundles.ipojo.IPOJOStrategy;
 import org.slf4j.LoggerFactory;
@@ -187,6 +189,7 @@ public class TestBundleActions extends Common {
 
     @Test
     public void testBundleUninstall() throws ResourceNotFoundException, IllegalActionOnResourceException {
+
         Resource r = get("/osgi/bundles");
         for (Resource res : r.getResources()) {
             String symbolicName = res.getMetadata().get(Constants.BUNDLE_SYMBOLICNAME_ATTRIBUTE, String.class);
@@ -201,5 +204,32 @@ public class TestBundleActions extends Common {
         }
     }
 
+    @Test
+    public void testBundleRefresh() {
+
+    }
+
+    @Test
+    public void testBundleUpdate() {
+
+    }
+
+    @Test
+    public void testBundleStartLevel() {
+
+    }
+
+    @Test
+    public void testBundleAdapt() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        Resource r = get("/osgi/bundles");
+        for (Resource res : r.getResources()) {
+            Bundle bundle = res.adaptTo(Bundle.class);
+            assertThat(bundle.getBundleId()).isEqualTo(res.getMetadata().get(OsgiResourceUtils.BundleNamespace.BUNDLE_ID, Long.class));
+        }
+        for (Resource res : r.getResources()) {
+            BundleResource bundleResource = res.adaptTo(BundleResource.class);
+            assertThat(bundleResource.getBundleId()).isEqualTo(res.getMetadata().get(OsgiResourceUtils.BundleNamespace.BUNDLE_ID, Long.class));
+        }
+    }
 
 }
