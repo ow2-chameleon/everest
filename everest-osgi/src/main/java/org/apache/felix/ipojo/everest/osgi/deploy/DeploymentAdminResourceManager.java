@@ -2,8 +2,8 @@ package org.apache.felix.ipojo.everest.osgi.deploy;
 
 import org.apache.felix.ipojo.everest.impl.DefaultParameter;
 import org.apache.felix.ipojo.everest.impl.DefaultRelation;
-import org.apache.felix.ipojo.everest.impl.DefaultResource;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
+import org.apache.felix.ipojo.everest.osgi.AbstractResourceCollection;
 import org.apache.felix.ipojo.everest.services.*;
 import org.osgi.service.deploymentadmin.DeploymentAdmin;
 import org.osgi.service.deploymentadmin.DeploymentException;
@@ -21,7 +21,7 @@ import static org.apache.felix.ipojo.everest.osgi.OsgiRootResource.OSGI_ROOT_PAT
  * Date: 4/19/13
  * Time: 10:56 AM
  */
-public class DeploymentAdminResourceManager extends DefaultResource {
+public class DeploymentAdminResourceManager extends AbstractResourceCollection {
 
     public static final String DEPLOY_ROOT_NAME = "deployments";
 

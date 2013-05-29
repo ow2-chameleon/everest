@@ -1,8 +1,8 @@
 package org.apache.felix.ipojo.everest.osgi.bundle;
 
-import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
 import org.apache.felix.ipojo.everest.impl.DefaultRelation;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
+import org.apache.felix.ipojo.everest.osgi.AbstractResourceCollection;
 import org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils;
 import org.apache.felix.ipojo.everest.osgi.packages.PackageResourceManager;
 import org.apache.felix.ipojo.everest.services.*;
@@ -22,7 +22,7 @@ import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.uniqueCapabi
  * Date: 4/22/13
  * Time: 12:43 PM
  */
-public class BundleCapabilityResource extends DefaultReadOnlyResource {
+public class BundleCapabilityResource extends AbstractResourceCollection {
 
     public final static String PACKAGE_RELATION = "package";
 

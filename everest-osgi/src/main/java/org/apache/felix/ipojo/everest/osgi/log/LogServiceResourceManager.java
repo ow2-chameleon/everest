@@ -1,6 +1,6 @@
 package org.apache.felix.ipojo.everest.osgi.log;
 
-import org.apache.felix.ipojo.everest.impl.DefaultResource;
+import org.apache.felix.ipojo.everest.osgi.AbstractResourceCollection;
 import org.apache.felix.ipojo.everest.services.Path;
 import org.apache.felix.ipojo.everest.services.Resource;
 import org.osgi.service.log.LogEntry;
@@ -18,7 +18,7 @@ import static org.apache.felix.ipojo.everest.osgi.OsgiRootResource.OSGI_ROOT_PAT
  * Date: 4/20/13
  * Time: 11:45 AM
  */
-public class LogServiceResourceManager extends DefaultResource {
+public class LogServiceResourceManager extends AbstractResourceCollection {
 
     public static final String LOG_ROOT_NAME = "logs";
 

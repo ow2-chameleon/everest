@@ -1,6 +1,6 @@
 package org.apache.felix.ipojo.everest.osgi.bundle;
 
-import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
+import org.apache.felix.ipojo.everest.osgi.AbstractResourceCollection;
 import org.apache.felix.ipojo.everest.osgi.service.ServiceRelationsResource;
 import org.apache.felix.ipojo.everest.services.Path;
 import org.apache.felix.ipojo.everest.services.Resource;
@@ -16,7 +16,7 @@ import java.util.List;
  * Date: 4/21/13
  * Time: 4:13 PM
  */
-public class BundleServicesResource extends DefaultReadOnlyResource {
+public class BundleServicesResource extends AbstractResourceCollection {
 
     public static final String BUNDLE_SERVICES_NAME = "services";
 
@@ -25,7 +25,6 @@ public class BundleServicesResource extends DefaultReadOnlyResource {
     public static final String BUNDLE_USE_SERVICES_NAME = "uses";
 
     private final Bundle m_bundle;
-
 
     public BundleServicesResource(Path path, Bundle bundle) {
         super(path.addElements(BUNDLE_SERVICES_NAME));

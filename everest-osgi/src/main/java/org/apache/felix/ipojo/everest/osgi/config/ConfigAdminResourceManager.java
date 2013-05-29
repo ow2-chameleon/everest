@@ -3,8 +3,8 @@ package org.apache.felix.ipojo.everest.osgi.config;
 import org.apache.felix.ipojo.everest.core.Everest;
 import org.apache.felix.ipojo.everest.impl.DefaultParameter;
 import org.apache.felix.ipojo.everest.impl.DefaultRelation;
-import org.apache.felix.ipojo.everest.impl.DefaultResource;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
+import org.apache.felix.ipojo.everest.osgi.AbstractResourceCollection;
 import org.apache.felix.ipojo.everest.services.*;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.service.cm.Configuration;
@@ -24,7 +24,7 @@ import static org.apache.felix.ipojo.everest.osgi.OsgiRootResource.OSGI_ROOT_PAT
  * Date: 4/19/13
  * Time: 10:56 AM
  */
-public class ConfigAdminResourceManager extends DefaultResource implements ConfigurationListener {
+public class ConfigAdminResourceManager extends AbstractResourceCollection implements ConfigurationListener {
 
     public static final String CONFIG_ROOT_NAME = "configurations";
 

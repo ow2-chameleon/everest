@@ -1,12 +1,10 @@
 package org.apache.felix.ipojo.everest.osgi.service;
 
 import org.apache.felix.ipojo.everest.core.Everest;
-import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
-import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
+import org.apache.felix.ipojo.everest.osgi.AbstractResourceCollection;
 import org.apache.felix.ipojo.everest.services.Path;
 import org.apache.felix.ipojo.everest.services.Resource;
 import org.apache.felix.ipojo.everest.services.ResourceEvent;
-import org.apache.felix.ipojo.everest.services.ResourceMetadata;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
 
@@ -14,7 +12,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import static org.apache.felix.ipojo.everest.osgi.OsgiRootResource.OSGI_ROOT_PATH;
 
@@ -24,7 +21,7 @@ import static org.apache.felix.ipojo.everest.osgi.OsgiRootResource.OSGI_ROOT_PAT
  * Date: 4/19/13
  * Time: 10:55 AM
  */
-public class ServiceResourceManager extends DefaultReadOnlyResource {
+public class ServiceResourceManager extends AbstractResourceCollection {
 
     public static final String SERVICE_ROOT_NAME = "services";
 
@@ -44,41 +41,42 @@ public class ServiceResourceManager extends DefaultReadOnlyResource {
 
     public void addService(ServiceReference serviceReference) {
         Object serviceId = serviceReference.getProperty(Constants.SERVICE_ID);
+        ServiceResource createdService;
         synchronized (m_serviceResourceMap) {
-            if (!m_serviceResourceMap.containsKey(serviceId)) {
-                ServiceResource createdService = new ServiceResource(serviceReference);
-                m_serviceResourceMap.put(serviceId, createdService);
-                Everest.postResource(ResourceEvent.CREATED, createdService);
-            }
+            createdService = new ServiceResource(serviceReference);
+            m_serviceResourceMap.put(serviceId, createdService);
         }
+        Everest.postResource(ResourceEvent.CREATED, createdService);
     }
 
     public void modifyService(ServiceReference serviceReference) {
         Object serviceId = serviceReference.getProperty(Constants.SERVICE_ID);
+        ServiceResource updatedService;
         synchronized (m_serviceResourceMap) {
-            ServiceResource updatedService = new ServiceResource(serviceReference);
+            updatedService = new ServiceResource(serviceReference);
             m_serviceResourceMap.put(serviceId, updatedService);
-            Everest.postResource(ResourceEvent.UPDATED, updatedService);
         }
+        Everest.postResource(ResourceEvent.UPDATED, updatedService);
     }
 
     public void removeService(ServiceReference serviceReference) {
+        ServiceResource removedService;
         synchronized (m_serviceResourceMap) {
-            ServiceResource removedService = m_serviceResourceMap.remove(serviceReference.getProperty(Constants.SERVICE_ID));
-            Everest.postResource(ResourceEvent.DELETED, removedService);
+            removedService = m_serviceResourceMap.remove(serviceReference.getProperty(Constants.SERVICE_ID));
         }
+        Everest.postResource(ResourceEvent.DELETED, removedService);
     }
 
-    @Override
-    public ResourceMetadata getMetadata() {
-        ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
-        synchronized (m_serviceResourceMap) {
-            for (Entry<Object, ServiceResource> e : m_serviceResourceMap.entrySet()) {
-                metadataBuilder.set(e.getKey().toString(), e.getValue().getSimpleMetadata());
-            }
-        }
-        return metadataBuilder.build();
-    }
+//    @Override
+//    public ResourceMetadata getMetadata() {
+//        ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
+//        synchronized (m_serviceResourceMap) {
+//            for (Entry<Object, ServiceResource> e : m_serviceResourceMap.entrySet()) {
+//                metadataBuilder.set(e.getKey().toString(), e.getValue().getSimpleMetadata());
+//            }
+//        }
+//        return metadataBuilder.build();
+//    }
 
     @Override
     public List<Resource> getResources() {

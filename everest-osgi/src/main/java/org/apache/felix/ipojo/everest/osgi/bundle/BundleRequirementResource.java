@@ -1,8 +1,8 @@
 package org.apache.felix.ipojo.everest.osgi.bundle;
 
-import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
 import org.apache.felix.ipojo.everest.impl.DefaultRelation;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
+import org.apache.felix.ipojo.everest.osgi.AbstractResourceCollection;
 import org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils;
 import org.apache.felix.ipojo.everest.services.*;
 import org.osgi.framework.Constants;
@@ -25,7 +25,7 @@ import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.uniqueRequir
  * Date: 4/22/13
  * Time: 12:52 PM
  */
-public class BundleRequirementResource extends DefaultReadOnlyResource {
+public class BundleRequirementResource extends AbstractResourceCollection {
 
     private final List<RequiredWireResource> m_wires = new ArrayList<RequiredWireResource>();
     private final BundleRequirement m_requirement;

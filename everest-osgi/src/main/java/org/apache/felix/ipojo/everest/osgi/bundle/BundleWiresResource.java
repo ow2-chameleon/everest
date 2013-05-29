@@ -1,10 +1,10 @@
 package org.apache.felix.ipojo.everest.osgi.bundle;
 
-import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
+import org.apache.felix.ipojo.everest.impl.DefaultRelation;
+import org.apache.felix.ipojo.everest.impl.DefaultResource;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
-import org.apache.felix.ipojo.everest.services.Path;
-import org.apache.felix.ipojo.everest.services.Resource;
-import org.apache.felix.ipojo.everest.services.ResourceMetadata;
+import org.apache.felix.ipojo.everest.osgi.AbstractResourceCollection;
+import org.apache.felix.ipojo.everest.services.*;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.wiring.BundleCapability;
 import org.osgi.framework.wiring.BundleRequirement;
@@ -22,7 +22,7 @@ import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.*;
  * Date: 4/21/13
  * Time: 3:52 PM
  */
-public class BundleWiresResource extends DefaultReadOnlyResource {
+public class BundleWiresResource extends AbstractResourceCollection {
 
     public static final String WIRES_PATH = "wires";
 
@@ -50,32 +50,6 @@ public class BundleWiresResource extends DefaultReadOnlyResource {
             // get requirements from all namespaces
             requirements.addAll(wiring.getRequirements(null));
         }
-//        // get provided wires from all namespaces
-//        List<BundleWire> providedWires = wiring.getProvidedWires(null);
-//        for (BundleWire providedWire : providedWires) {
-//            BundleCapability capability = providedWire.getCapability();
-//            if (capabilities.containsKey(providedWire.getCapability())) {
-//                capabilities.get(capability).add(providedWire);
-//            } else {
-//                Set<BundleWire> newWireSet = new HashSet<BundleWire>();
-//                newWireSet.add(providedWire);
-//                capabilities.put(capability, newWireSet);
-//            }
-//        }
-//
-//        // get required wires from all namespaces
-//        List<BundleWire> requiredWires = wiring.getRequiredWires(null);
-//        for (BundleWire requiredWire : requiredWires) {
-//            BundleRequirement requirement = requiredWire.getRequirement();
-//            if (requirements.containsKey(requirement)) {
-//                requirements.get(requirement).add(requiredWire);
-//            } else {
-//                Set<BundleWire> newWireSet = new HashSet<BundleWire>();
-//                newWireSet.add(requiredWire);
-//                requirements.put(requirement, newWireSet);
-//            }
-//        }
-
     }
 
     @Override
@@ -93,11 +67,30 @@ public class BundleWiresResource extends DefaultReadOnlyResource {
     @Override
     public List<Resource> getResources() {
         ArrayList<Resource> resources = new ArrayList<Resource>();
+        Path capabilitiesPath = getPath().addElements(CAPABILITIES_PATH);
+        DefaultResource.Builder capabilitiesBuilder = new Builder().fromPath(capabilitiesPath);
         for (BundleCapability capability : capabilities) {
-            resources.add(new BundleCapabilityResource(getPath().addElements(CAPABILITIES_PATH), capability));
+            BundleCapabilityResource bundleCapabilityResource = new BundleCapabilityResource(capabilitiesPath, capability);
+            capabilitiesBuilder.with(bundleCapabilityResource);
+            capabilitiesBuilder.with(new DefaultRelation(bundleCapabilityResource.getPath(), Action.READ, capabilitiesPath.getLast() + ":" + bundleCapabilityResource.getPath().getLast()));
         }
+        try {
+            resources.add(capabilitiesBuilder.build());
+        } catch (IllegalResourceException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+
+        Path requirementsPath = getPath().addElements(REQUIREMENTS_PATH);
+        DefaultResource.Builder requirementsBuilder = new Builder().fromPath(requirementsPath);
         for (BundleRequirement requirement : requirements) {
-            resources.add(new BundleRequirementResource(getPath().addElements(REQUIREMENTS_PATH), requirement));
+            BundleRequirementResource bundleRequirementResource = new BundleRequirementResource(requirementsPath, requirement);
+            requirementsBuilder.with(bundleRequirementResource);
+            requirementsBuilder.with(new DefaultRelation(bundleRequirementResource.getPath(), Action.READ, requirementsPath.getLast() + ":" + bundleRequirementResource.getPath()));
+        }
+        try {
+            resources.add(requirementsBuilder.build());
+        } catch (IllegalResourceException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
         return resources;
     }

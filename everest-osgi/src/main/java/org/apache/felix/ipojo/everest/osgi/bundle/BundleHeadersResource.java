@@ -1,7 +1,7 @@
 package org.apache.felix.ipojo.everest.osgi.bundle;
 
-import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
+import org.apache.felix.ipojo.everest.osgi.AbstractResourceCollection;
 import org.apache.felix.ipojo.everest.osgi.ReadOnlyLeafCollectionResource;
 import org.apache.felix.ipojo.everest.osgi.packages.PackageRelationsResource;
 import org.apache.felix.ipojo.everest.services.Path;
@@ -26,7 +26,7 @@ import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.uniqueRequir
  * Date: 4/21/13
  * Time: 3:51 PM
  */
-public class BundleHeadersResource extends DefaultReadOnlyResource {
+public class BundleHeadersResource extends AbstractResourceCollection {
 
     public static final String HEADERS_PATH = "headers";
 

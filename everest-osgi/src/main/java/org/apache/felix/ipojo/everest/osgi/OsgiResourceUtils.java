@@ -183,6 +183,8 @@ public class OsgiResourceUtils {
 
         public static final String BUNDLE_STATE = "bundle-state";
 
+        public static final String BUNDLE_ID = "bundle-id";
+
         public static final String BUNDLE_FRAGMENT = "bundle-fragment";
 
         public static final String BUNDLE_LOCATION = "bundle-location";

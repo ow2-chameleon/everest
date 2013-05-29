@@ -2,8 +2,8 @@ package org.apache.felix.ipojo.everest.osgi.bundle;
 
 import org.apache.felix.ipojo.everest.impl.DefaultParameter;
 import org.apache.felix.ipojo.everest.impl.DefaultRelation;
-import org.apache.felix.ipojo.everest.impl.DefaultResource;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
+import org.apache.felix.ipojo.everest.osgi.AbstractResourceCollection;
 import org.apache.felix.ipojo.everest.services.*;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
@@ -29,7 +29,7 @@ import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.toBundleStat
  * Date: 4/19/13
  * Time: 4:56 PM
  */
-public class BundleResource extends DefaultResource {
+public class BundleResource extends AbstractResourceCollection {
 
     private final static String NEW_STATE_RELATION_PARAMETER = "newState";
 
@@ -96,6 +96,7 @@ public class BundleResource extends DefaultResource {
 
     public ResourceMetadata getSimpleMetadata() {
         ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
+        metadataBuilder.set(BUNDLE_ID, m_bundle.getBundleId());
         metadataBuilder.set(BUNDLE_STATE, bundleStateToString(m_bundle.getState()));
         metadataBuilder.set(Constants.BUNDLE_SYMBOLICNAME_ATTRIBUTE, m_bundle.getSymbolicName());
         metadataBuilder.set(Constants.BUNDLE_VERSION_ATTRIBUTE, m_bundle.getVersion());
@@ -157,10 +158,12 @@ public class BundleResource extends DefaultResource {
         }
         // Change bundle state
         String newStateString = request.get(NEW_STATE_RELATION_PARAMETER, String.class);
-        try {
-            this.changeState(newStateString);
-        } catch (IllegalActionOnResourceException e) {
-            throw new IllegalActionOnResourceException(request, e.getMessage());
+        if (newStateString != null) {
+            try {
+                this.changeState(newStateString);
+            } catch (IllegalActionOnResourceException e) {
+                throw new IllegalActionOnResourceException(request, e.getMessage());
+            }
         }
         // Refresh bundle
         Boolean refresh = request.get(REFRESH_PARAMETER, Boolean.class);
@@ -184,6 +187,10 @@ public class BundleResource extends DefaultResource {
 
     public String getState() {
         return bundleStateToString(m_bundle.getState());
+    }
+
+    public long getBundleId() {
+        return m_bundle.getBundleId();
     }
 
     public String getSymbolicName() {

@@ -1,12 +1,10 @@
 package org.apache.felix.ipojo.everest.osgi.packages;
 
 import org.apache.felix.ipojo.everest.core.Everest;
-import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
-import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
+import org.apache.felix.ipojo.everest.osgi.AbstractResourceCollection;
 import org.apache.felix.ipojo.everest.services.Path;
 import org.apache.felix.ipojo.everest.services.Resource;
 import org.apache.felix.ipojo.everest.services.ResourceEvent;
-import org.apache.felix.ipojo.everest.services.ResourceMetadata;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.wiring.BundleCapability;
 import org.osgi.framework.wiring.BundleRevision;
@@ -24,7 +22,7 @@ import static org.apache.felix.ipojo.everest.osgi.OsgiRootResource.OSGI_ROOT_PAT
  * Date: 4/19/13
  * Time: 10:54 AM
  */
-public class PackageResourceManager extends DefaultReadOnlyResource {
+public class PackageResourceManager extends AbstractResourceCollection {
 
     public static final String PACKAGE_ROOT_NAME = "packages";
 
@@ -41,7 +39,6 @@ public class PackageResourceManager extends DefaultReadOnlyResource {
     public PackageResourceManager() {
         super(PACKAGE_PATH);
     }
-
 
     public void addPackagesFrom(Bundle bundle) {
         synchronized (m_packageResourceByPackageIdMap) {
@@ -85,16 +82,16 @@ public class PackageResourceManager extends DefaultReadOnlyResource {
         }
     }
 
-    @Override
-    public ResourceMetadata getMetadata() {
-        ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
-        synchronized (m_packageResourceByPackageIdMap) {
-            for (Map.Entry<String, PackageResource> e : m_packageResourceByPackageIdMap.entrySet()) {
-                metadataBuilder.set(e.getKey(), e.getValue().getSimpleMetadata());
-            }
-        }
-        return metadataBuilder.build();
-    }
+//    @Override
+//    public ResourceMetadata getMetadata() {
+//        ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
+//        synchronized (m_packageResourceByPackageIdMap) {
+//            for (Map.Entry<String, PackageResource> e : m_packageResourceByPackageIdMap.entrySet()) {
+//                metadataBuilder.set(e.getKey(), e.getValue().getSimpleMetadata());
+//            }
+//        }
+//        return metadataBuilder.build();
+//    }
 
     @Override
     public List<Resource> getResources() {

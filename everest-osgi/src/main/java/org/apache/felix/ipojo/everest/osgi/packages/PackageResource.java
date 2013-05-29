@@ -1,8 +1,8 @@
 package org.apache.felix.ipojo.everest.osgi.packages;
 
-import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
 import org.apache.felix.ipojo.everest.impl.DefaultRelation;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
+import org.apache.felix.ipojo.everest.osgi.AbstractResourceCollection;
 import org.apache.felix.ipojo.everest.osgi.bundle.BundleRelationsResource;
 import org.apache.felix.ipojo.everest.osgi.bundle.BundleResourceManager;
 import org.apache.felix.ipojo.everest.services.Action;
@@ -30,7 +30,7 @@ import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.uniqueCapabi
  * Date: 4/20/13
  * Time: 9:06 AM
  */
-public class PackageResource extends DefaultReadOnlyResource {
+public class PackageResource extends AbstractResourceCollection {
 
     public static final String PROVIDER_BUNDLE_NAME = "provider-bundle";
 

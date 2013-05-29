@@ -1,8 +1,8 @@
 package org.apache.felix.ipojo.everest.osgi.service;
 
-import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
 import org.apache.felix.ipojo.everest.impl.DefaultRelation;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
+import org.apache.felix.ipojo.everest.osgi.AbstractResourceCollection;
 import org.apache.felix.ipojo.everest.osgi.bundle.BundleRelationsResource;
 import org.apache.felix.ipojo.everest.osgi.bundle.BundleResourceManager;
 import org.apache.felix.ipojo.everest.osgi.packages.PackageResourceManager;
@@ -19,6 +19,7 @@ import java.util.List;
 import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.PackageNamespace.PACKAGE_NAMESPACE;
 import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.packageNamesFromService;
 import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.uniqueCapabilityId;
+import static org.apache.felix.ipojo.everest.osgi.service.ServiceResourceManager.SERVICES_PATH;
 
 /**
  * Created with IntelliJ IDEA.
@@ -26,7 +27,7 @@ import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.uniqueCapabi
  * Date: 4/20/13
  * Time: 11:39 AM
  */
-public class ServiceResource extends DefaultReadOnlyResource {
+public class ServiceResource extends AbstractResourceCollection {
 
     public static final String FROM_BUNDLE_NAME = "from-bundle";
 
@@ -37,7 +38,7 @@ public class ServiceResource extends DefaultReadOnlyResource {
     private ServiceReference m_serviceReference;
 
     public ServiceResource(ServiceReference serviceReference) {
-        super(ServiceResourceManager.SERVICES_PATH.add(Path.from(Path.SEPARATOR + Long.toString((Long) serviceReference.getProperty(Constants.SERVICE_ID)))));
+        super(SERVICES_PATH.addElements(Long.toString((Long) serviceReference.getProperty(Constants.SERVICE_ID))));
         m_serviceReference = serviceReference;
         List<Relation> relations = new ArrayList<Relation>();
         // Bundle from which this service is registered

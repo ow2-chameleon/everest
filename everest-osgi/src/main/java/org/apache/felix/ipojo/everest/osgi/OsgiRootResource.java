@@ -52,6 +52,10 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
 
     public static final String STARTLEVEL_BUNDLE_PARAMETER = "startlevel.bundle";
 
+    private static final String FRAMEWORK_RESTART_RELATION = "restart";
+
+    private static final String RESTART_PARAMETER = "restart";
+
     private final Object resourceLock = new Object();
 
     private final BundleContext m_context;
@@ -68,6 +72,8 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
 
     private final ResourceMetadata m_metadata;
 
+    private final ArrayList<Relation> m_relations;
+
     private Bundle frameworkBundle;
 
     private ConfigAdminResourceManager m_configResourceManager;
@@ -80,16 +86,18 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
 
     public OsgiRootResource(BundleContext context) {
         super(OSGI_ROOT, OSGI_DESCRIPTION);
-
         m_context = context;
+
         // Initialize subresource managers
         m_bundleResourceManager = BundleResourceManager.getInstance();
         m_packageResourceManager = PackageResourceManager.getInstance();
         m_serviceResourceManager = ServiceResourceManager.getInstance();
-        // Construct framework metadata
-        ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
+
         frameworkBundle = m_context.getBundle(0);
         FrameworkWiring fwiring = frameworkBundle.adapt(FrameworkWiring.class);
+
+        // Construct static framework metadata
+        ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder(super.getMetadata());
         //TODO take some metadata from the framework
         BundleContext fwContext = frameworkBundle.getBundleContext();
         metadataBuilder.set(Constants.FRAMEWORK_VERSION, fwContext.getProperty(Constants.FRAMEWORK_VERSION));
@@ -105,12 +113,7 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
         metadataBuilder.set(Constants.SUPPORTS_BOOTCLASSPATH_EXTENSION, fwContext.getProperty(Constants.SUPPORTS_BOOTCLASSPATH_EXTENSION));
         metadataBuilder.set(Constants.FRAMEWORK_BOOTDELEGATION, fwContext.getProperty(Constants.FRAMEWORK_BOOTDELEGATION));
         metadataBuilder.set(Constants.FRAMEWORK_SYSTEMPACKAGES, fwContext.getProperty(Constants.FRAMEWORK_SYSTEMPACKAGES));
-
-        // Start Level
-        FrameworkStartLevel frameworkStartLevel = frameworkBundle.adapt(FrameworkStartLevel.class);
-        metadataBuilder.set(STARTLEVEL_BUNDLE_PARAMETER, frameworkStartLevel.getInitialBundleStartLevel());
-        metadataBuilder.set(STARTLEVEL_PARAMETER, frameworkStartLevel.getStartLevel());
-
+        m_metadata = metadataBuilder.build();
 
         // Initialize bundle & service trackers
         int stateMask = Bundle.ACTIVE | Bundle.INSTALLED | Bundle.RESOLVED | Bundle.STARTING | Bundle.STOPPING | Bundle.UNINSTALLED;
@@ -129,22 +132,25 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
         m_bundleTracker = new BundleTracker(m_context, stateMask, this);
         m_serviceTracker = new ServiceTracker(m_context, allServicesFilter, this);
 
-        m_metadata = metadataBuilder.build();
-
-        setRelations(
-                new DefaultRelation(getPath(), Action.DELETE, FRAMEWORK_STOP_RELATION, "Stops the osgi framework"),
-                new DefaultRelation(getPath(), Action.UPDATE, FRAMEWORK_UPDATE_RELATION, "updates start level",
-                        new DefaultParameter()
-                                .name(STARTLEVEL_BUNDLE_PARAMETER)
-                                .description(STARTLEVEL_BUNDLE_PARAMETER)
-                                .type(Integer.class)
-                                .optional(true),
-                        new DefaultParameter()
-                                .name(STARTLEVEL_PARAMETER)
-                                .description(STARTLEVEL_PARAMETER)
-                                .type(Integer.class)
-                                .optional(true))
-        );
+        m_relations = new ArrayList<Relation>();
+        m_relations.add(new DefaultRelation(getPath(), Action.DELETE, FRAMEWORK_STOP_RELATION, "Stops the osgi framework"));
+        m_relations.add(new DefaultRelation(getPath(), Action.UPDATE, FRAMEWORK_UPDATE_RELATION, "updates start level",
+                new DefaultParameter()
+                        .name(STARTLEVEL_BUNDLE_PARAMETER)
+                        .description(STARTLEVEL_BUNDLE_PARAMETER)
+                        .type(Integer.class)
+                        .optional(true),
+                new DefaultParameter()
+                        .name(STARTLEVEL_PARAMETER)
+                        .description(STARTLEVEL_PARAMETER)
+                        .type(Integer.class)
+                        .optional(true)));
+        m_relations.add(new DefaultRelation(getPath(), Action.UPDATE, FRAMEWORK_RESTART_RELATION, "Restarts the osgi framework",
+                new DefaultParameter()
+                        .name(RESTART_PARAMETER)
+                        .description(RESTART_PARAMETER)
+                        .type(Boolean.class)
+                        .optional(true)));
     }
 
     @Validate
@@ -163,7 +169,12 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
 
     @Override
     public ResourceMetadata getMetadata() {
-        return m_metadata;
+        ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder(m_metadata);
+        // add Start Level metadata
+        FrameworkStartLevel frameworkStartLevel = frameworkBundle.adapt(FrameworkStartLevel.class);
+        metadataBuilder.set(STARTLEVEL_BUNDLE_PARAMETER, frameworkStartLevel.getInitialBundleStartLevel());
+        metadataBuilder.set(STARTLEVEL_PARAMETER, frameworkStartLevel.getStartLevel());
+        return metadataBuilder.build();
     }
 
     @Override
@@ -184,6 +195,14 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
             }
         }
         return resources;
+    }
+
+    @Override
+    public List<Relation> getRelations() {
+        ArrayList<Relation> relations = new ArrayList<Relation>();
+        relations.addAll(super.getRelations());
+        relations.addAll(m_relations);
+        return relations;
     }
 
     @Override
