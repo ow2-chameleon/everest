@@ -86,6 +86,7 @@ public class EverestIpojoTestCommon extends BaseTest {
     @Override
     protected Option[] getCustomOptions() {
         return options(
+                systemProperty("ipojo.processing.synchronous").value("true"),
                 // everest bundles
                 mavenBundle("org.apache.felix.ipojo", "everest-core").versionAsInProject(),
                 mavenBundle("org.apache.felix.ipojo", "everest-ipojo").versionAsInProject(),

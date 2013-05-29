@@ -48,6 +48,7 @@ public class TestBundleActions extends Common {
         input = testedBundleStream();
         file = testedBundleFile(input, file);
         return options(
+                systemProperty("ipojo.processing.synchronous").value("true"),
                 // The EventAdmin service
                 mavenBundle("org.apache.felix", "org.apache.felix.eventadmin").versionAsInProject(),
                 ipojoBundles(),
