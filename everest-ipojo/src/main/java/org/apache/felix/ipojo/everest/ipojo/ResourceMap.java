@@ -18,7 +18,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * By default, it has :
  * <ul>
  * <li>no metadata</li>
- * <li>relations to its direct child resources, built by a customizable {@link ChildRelationFactory}</li>
+ * <li>customizable relations to its direct child resources</li>
  * </ul>
  * </p>
  *
@@ -28,46 +28,16 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
 
     /**
-     * Construct relations from a parent resource to its children.
-     * <p>
-     * A resource map may call its ChildRelationFactory concurrently.
-     * </p>
-     *
-     * @param <T> the type of the children resources
-     */
-    public static interface ChildRelationFactory<T extends Resource> {
-
-        /**
-         * Build a relation from the parent to the child.
-         * <p>
-         * The returned relation must :
-         * <ul>
-         * <li><em>not</em> be {@code null},</li>
-         * <li>have its action set to{@link Action#READ},</li>
-         * <li>have its "href" set to {@code child.getPath()}.</li>
-         * </ul>
-         * </p>
-         *
-         * @param parent    the parent resource
-         * @param child     the child resource
-         * @param childName the last element of the child's path
-         * @return the built relation
-         */
-        Relation createRelation(ResourceMap<T> parent, T child, String childName);
-
-    }
-
-    /**
      * The lock regulating concurrent accesses to this resource map.
      */
     protected final ReadWriteLock m_lock = new ReentrantReadWriteLock(true);
 
     /**
-     * The underlying map of resources.
+     * The underlying map of children resources.
      *
      * @GuardedBy m_lock
      */
-    private final Map<Path, R> m_resources = new LinkedHashMap<Path, R>();
+    private final Map<Path, R> m_children = new LinkedHashMap<Path, R>();
 
     /**
      * The relations to the children.
@@ -77,90 +47,66 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
     private final Map<Path, Relation> m_relations = new LinkedHashMap<Path, Relation>();
 
     /**
+     * The names of the relations to the children.
+     *
+     * @GuardedBy m_lock
+     */
+    private final Set<String> m_relationNames = new LinkedHashSet<String>();
+
+    /**
      * The flag indicating if this resource map is observable.
+     *
      * @see #isObservable()
      */
     private final boolean m_isObservable;
 
     /**
-     * The child relation factory for this resource map.
-     */
-    private final ChildRelationFactory<R> m_relationFactory;
-
-    /**
-     * Creates a new resource map with the given path, with a default child relation factory, and that is not observable.
-     *
-     * @param path path of this resource m_map
-     * @deprecated relationFactory and isObservable should be set explicitly in {@link #ResourceMap(Path, ChildRelationFactory, boolean)}
-     */
-    @Deprecated
-    public ResourceMap(Path path) {
-        this(path, null, false);
-    }
-
-    /**
      * Creates a new resource map with the given path and child relation factory.
      *
-     * @param path            path of this resource m_map
-     * @param relationFactory the factory for parent to child relations, may be {@code null}
-     * @param isObservable    the flag that indicates if the resource map to be created is observable.
+     * @param path         path of this resource m_map
+     * @param isObservable the flag that indicates if the resource map to be created is observable.
      */
-    public ResourceMap(Path path, ChildRelationFactory<R> relationFactory, boolean isObservable) {
+    public ResourceMap(Path path, boolean isObservable) {
         super(path);
-        if (relationFactory != null) {
-            m_relationFactory = relationFactory;
-        } else {
-            // The default child relation factory.
-            m_relationFactory = new ChildRelationFactory<R>() {
-                public Relation createRelation(ResourceMap<R> parent, R child, String childName) {
-                    String name = parent.getPath().getLast() + '[' + childName + ']';
-                    String description = "Child resource '" + childName + '\'';
-                    return new DefaultRelation(child.getPath(), Action.READ, name, description, null);
-                }
-            };
-        }
         m_isObservable = isObservable;
     }
 
     /**
      * Adds the given resource to this resource map.
      *
-     * @param resource resource to add
-     * @throws NullPointerException     if {@code resource} is {@code null}
+     * @param child resource to add
+     * @throws NullPointerException     if {@code resource} is {@code null}, or if the generated relation name is {@code null}
      * @throws IllegalArgumentException if {@code resource}'s path is not a direct child of this resource map's path, or
      *                                  if this resource map already contains a resource with the same path.
-     * @throws IllegalStateException    if the relation generated by the child relation factory is not compliant with
-     *                                  the {@link ChildRelationFactory} specification.
+     * @throws IllegalStateException    if the generated relation name is not unique..
      */
-    public void addResource(R resource) {
-        if (resource == null) {
+    public void addResource(R child, String relationName, String relationDescription) {
+        if (child == null) {
             throw new NullPointerException("resource is null");
+        } else if (relationName == null) {
+            throw new NullPointerException("relationName is null");
         }
 
         // Checks path of the resource is a direct sub-path of this resource map
-        Path path = resource.getPath();
+        Path path = child.getPath();
         if (path.subtract(getPath()).getCount() != 1) {
             throw new IllegalArgumentException("resource is not a direct child: " + path);
         }
 
-        // Generate the relation to the child, and check it.
-        Relation relation = m_relationFactory.createRelation(this, resource, resource.getPath().getLast());
-        if (relation == null) {
-            throw new IllegalStateException("null returned by child relation factory");
-        } else if (relation.getAction() != Action.READ) {
-            throw new IllegalStateException("invalid action returned by child relation factory: " + relation.getAction());
-        } else if (!resource.getPath().equals(relation.getHref())) {
-            throw new IllegalStateException("invalid href returned by child relation factory: " + relation.getHref());
-        }
+        // Create the relation  to the child
+        Relation relation = new DefaultRelation(child.getPath(), Action.READ, relationName, relationDescription, null);
 
         // Do add the resource, and the relation.
         m_lock.writeLock().lock();
         try {
-            if (m_resources.containsKey(path)) {
+            if (m_children.containsKey(path)) {
                 throw new IllegalArgumentException("resource with same path already present: " + path);
+            } else if (m_relationNames.contains(relationName)) {
+                throw new IllegalStateException("relation name is not unique: " + relationName);
             }
-            m_resources.put(resource.getPath(), resource);
-            m_relations.put(resource.getPath(), relation);
+            m_children.put(child.getPath(), child);
+            m_relations.put(child.getPath(), relation);
+            m_relationNames.add(relationName);
         } finally {
             m_lock.writeLock().unlock();
         }
@@ -177,11 +123,12 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
         m_lock.writeLock().lock();
         try {
             // Checks the resource is contained in the map
-            if (!m_resources.containsValue(resource)) {
+            if (!m_children.containsValue(resource)) {
                 throw new IllegalArgumentException("resource not present");
             }
-            m_resources.remove(resource.getPath());
-            m_relations.remove(resource.getPath());
+            m_children.remove(resource.getPath());
+            m_relationNames.remove(m_relations.remove(resource.getPath()).getName());
+
         } finally {
             m_lock.writeLock().unlock();
         }
@@ -198,11 +145,11 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
         m_lock.writeLock().lock();
         try {
             // Checks the resource map contains the given path
-            if (!m_resources.containsKey(path)) {
+            if (!m_children.containsKey(path)) {
                 throw new IllegalArgumentException("path not present");
             }
-            m_resources.remove(path);
-            m_relations.remove(path);
+            m_children.remove(path);
+            m_relationNames.remove(m_relations.remove(path).getName());
         } finally {
             m_lock.writeLock().unlock();
         }
@@ -220,7 +167,7 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
     public R getResource(Path path) {
         m_lock.readLock().lock();
         try {
-            return m_resources.get(path);
+            return m_children.get(path);
         } finally {
             m_lock.readLock().unlock();
         }
@@ -235,7 +182,7 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
     public int size() {
         m_lock.readLock().lock();
         try {
-            return m_resources.size();
+            return m_children.size();
         } finally {
             m_lock.readLock().unlock();
         }
@@ -250,7 +197,7 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
     public boolean isEmpty() {
         m_lock.readLock().lock();
         try {
-            return m_resources.isEmpty();
+            return m_children.isEmpty();
         } finally {
             m_lock.readLock().unlock();
         }
@@ -266,7 +213,7 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
     public boolean containsPath(Path path) {
         m_lock.readLock().lock();
         try {
-            return m_resources.containsKey(path);
+            return m_children.containsKey(path);
         } finally {
             m_lock.readLock().unlock();
         }
@@ -282,7 +229,7 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
     public boolean containsResource(R resource) {
         m_lock.readLock().lock();
         try {
-            return m_resources.containsValue(resource);
+            return m_children.containsValue(resource);
         } finally {
             m_lock.readLock().unlock();
         }
@@ -309,10 +256,10 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
     public List<Resource> getResources() {
         m_lock.readLock().lock();
         try {
-            if (m_resources.isEmpty()) {
+            if (m_children.isEmpty()) {
                 return Collections.emptyList();
             } else {
-                return Collections.unmodifiableList(new ArrayList<Resource>(m_resources.values()));
+                return Collections.unmodifiableList(new ArrayList<Resource>(m_children.values()));
             }
         } finally {
             m_lock.readLock().unlock();
@@ -328,7 +275,7 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
     public Map<Path, R> getSnapshot() {
         m_lock.readLock().lock();
         try {
-            return Collections.unmodifiableMap(new LinkedHashMap<Path, R>(m_resources));
+            return Collections.unmodifiableMap(new LinkedHashMap<Path, R>(m_children));
         } finally {
             m_lock.readLock().unlock();
         }
@@ -350,7 +297,7 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
     /**
      * {@inheritDoc}
      * <p>
-     * We return here the relations to the children.
+     * We append here the relations to the children.
      * </p>
      */
     @Override
