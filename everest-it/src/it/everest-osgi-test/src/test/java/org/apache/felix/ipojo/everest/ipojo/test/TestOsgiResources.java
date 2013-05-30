@@ -2,6 +2,8 @@ package org.apache.felix.ipojo.everest.ipojo.test;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
+import org.apache.felix.ipojo.everest.osgi.bundle.BundleResource;
+import org.apache.felix.ipojo.everest.osgi.packages.PackageResource;
 import org.apache.felix.ipojo.everest.services.IllegalActionOnResourceException;
 import org.apache.felix.ipojo.everest.services.Relation;
 import org.apache.felix.ipojo.everest.services.Resource;
@@ -13,10 +15,14 @@ import org.ops4j.pax.exam.Option;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.framework.Version;
+import org.osgi.service.event.Event;
+import org.osgi.service.event.EventConstants;
+import org.osgi.service.event.EventHandler;
 import org.osgi.service.packageadmin.ExportedPackage;
 import org.slf4j.LoggerFactory;
 
 import java.net.MalformedURLException;
+import java.util.Hashtable;
 import java.util.List;
 
 import static org.fest.assertions.Assertions.assertThat;
@@ -38,6 +44,7 @@ public class TestOsgiResources extends Common {
 
         return options(
                 systemProperty("ipojo.processing.synchronous").value("true"),
+                systemProperty("everest.processing.synchronous").value("true"),
                 // The EventAdmin service
                 mavenBundle("org.apache.felix", "org.apache.felix.eventadmin").versionAsInProject(),
                 ipojoBundles(),
@@ -90,28 +97,29 @@ public class TestOsgiResources extends Common {
     @Test
     public void testBundles() throws ResourceNotFoundException, IllegalActionOnResourceException {
         Resource bundles = get("/osgi/bundles");
-        for (Resource bundle : bundles.getResources()) {
-            Bundle b = osgiHelper.getBundle(Long.parseLong(bundle.getPath().getLast()));
-            Assert.assertNotNull(b);
-            //System.out.println(b.getSymbolicName()+" - "+b.getVersion());
+        for (Resource resource : bundles.getResources()) {
+            Bundle bundle = resource.adaptTo(Bundle.class);
+            BundleResource bundleResource = resource.adaptTo(BundleResource.class);
+            assertThat(bundle).isNotNull();
+            assertThat(bundleResource).isNotNull();
+            assertThat(bundleResource.getBundle()).isEqualTo(bundle);
         }
     }
 
     @Test
     public void testUsedPackages() throws ResourceNotFoundException, IllegalActionOnResourceException {
         Resource packages = get("/osgi/packages");
-        Assert.assertNotNull(osgiHelper.getPackageAdmin());
-        for (Resource pack : packages.getResources()) {
-            String packageName = pack.getMetadata().get("osgi.wiring.package", String.class);
-            boolean used = pack.getMetadata().get("in-use", Boolean.class);
+        assertThat(osgiHelper.getPackageAdmin()).isNotNull();
+        for (Resource pkg : packages.getResources()) {
+            PackageResource packageResource = pkg.adaptTo(PackageResource.class);
+            String packageName = packageResource.getPackageName();
+            boolean used = pkg.getMetadata().get("in-use", Boolean.class);
+            assertThat(used).isEqualTo(packageResource.isUsed());
             ExportedPackage exportedPackage = osgiHelper.getPackageAdmin().getExportedPackage(packageName);
-            Assert.assertNotNull(exportedPackage);
+            assertThat(exportedPackage).isNotNull();
             if (used) {
-                Assert.assertEquals(pack.getMetadata().get("version", Version.class), exportedPackage.getVersion());
-                Assert.assertTrue(exportedPackage.getImportingBundles().length > 0);
-//            }else{
-//                System.out.println(pack.getMetadata());
-//                Assert.assertEquals(0,exportedPackage.getImportingBundles().length);
+                assertThat(pkg.getMetadata().get("version", Version.class)).isEqualTo(exportedPackage.getVersion());
+                assertThat(exportedPackage.getImportingBundles()).isNotEmpty();
             }
         }
     }
@@ -120,9 +128,17 @@ public class TestOsgiResources extends Common {
     public void testServicesList() throws ResourceNotFoundException, IllegalActionOnResourceException {
         Resource r = get("/osgi/services");
         int size = r.getResources().size();
+        Hashtable<String, Object> props = new Hashtable<String, Object>();
+        props.put(EventConstants.EVENT_TOPIC, new String[]{"everest/osgi/services/*"});
+        props.put(EventConstants.EVENT_FILTER, "(eventType=CREATED)");
+        osgiHelper.getContext().registerService(EventHandler.class.getName(), new EventHandler() {
+            public void handleEvent(Event event) {
+                System.out.println("EVENT: " + event.toString());
+            }
+        }, props);
         ServiceRegistration reg = osgiHelper.getContext().registerService(this.getClass().getName(), this, null);
-        r = get("/osgi/services");
-        Assert.assertEquals("Services should have incremented", size + 1, r.getResources().size());
+
+        Assert.assertEquals("Services should have incremented", size + 2, r.getResources().size());
     }
 
     @Test

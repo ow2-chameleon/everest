@@ -73,14 +73,21 @@ public class Common {
         return everest.process(new DefaultRequest(Action.CREATE, path, params));
     }
 
+    public Resource delete(Path path) throws ResourceNotFoundException, IllegalActionOnResourceException {
+        return everest.process(new DefaultRequest(Action.DELETE, path, null));
+    }
+
     @Configuration
     public Option[] config() throws MalformedURLException {
         Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
         root.setLevel(Level.INFO);
 
         return options(
+                systemProperty("ipojo.processing.synchronous").value("true"),
+                systemProperty("everest.processing.synchronous").value("true"),
                 // The EventAdmin service
                 mavenBundle("org.apache.felix", "org.apache.felix.eventadmin").versionAsInProject(),
+                mavenBundle("org.apache.felix", "org.apache.felix.log").versionAsInProject(),
                 ipojoBundles(),
                 everestBundles(),
                 junitBundles(),

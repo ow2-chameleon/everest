@@ -205,17 +205,84 @@ public class TestBundleActions extends Common {
     }
 
     @Test
-    public void testBundleRefresh() {
+    public void testBundleRefresh() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        Resource r = get("/osgi/bundles");
+        for (Resource res : r.getResources()) {
+            String symbolicName = res.getMetadata().get(Constants.BUNDLE_SYMBOLICNAME_ATTRIBUTE, String.class);
+            if (symbolicName.equals("test.bundle")) {
+                HashMap<String, Object> params = new HashMap<String, Object>();
+                params.put("refresh", true);
+                update(res.getPath(), params);
+            }
+        }
+    }
+
+    @Test
+    public void testBundleUpdate() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        // install test bundle
+        Resource osgi = get("/osgi/bundles");
+        HashMap<String, Object> params = new HashMap<String, Object>();
+        params.put("location", file.toURI().toString());
+        params.put("input", input);
+        Resource res = create(osgi.getPath(), params);
+        String symbolicName = res.getMetadata().get(Constants.BUNDLE_SYMBOLICNAME_ATTRIBUTE, String.class);
+        BundleResource bundleResource = res.adaptTo(BundleResource.class);
+        assertThat(symbolicName).isEqualTo("test.bundle");
+        assertThat(res.getMetadata().get("bundle-state", String.class)).isEqualTo("INSTALLED");
+        // resolve test bundle
+        params = new HashMap<String, Object>();
+        params.put("newState", OsgiResourceUtils.bundleStateToString(Bundle.RESOLVED));
+        update(res.getPath(), params);
+        assertThat(bundleResource.getState()).isEqualTo(OsgiResourceUtils.bundleStateToString(Bundle.RESOLVED));
+
+        long bundleId = bundleResource.getBundleId();
+        // update test bundle
+        params = new HashMap<String, Object>();
+        params.put("update", true);
+        update(bundleResource.getPath(), params);
+        assertThat(bundleResource.getState()).isEqualTo(OsgiResourceUtils.bundleStateToString(Bundle.INSTALLED));
 
     }
 
     @Test
-    public void testBundleUpdate() {
+    public void testBundleStartLevel() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        // set initial bundle start level to 6
+        Resource osgi = get("/osgi");
+        HashMap<String, Object> params = new HashMap<String, Object>();
+        params.put("startlevel.bundle", 6);
+        update(osgi.getPath(), params);
+        assertThat(osgi.getMetadata().get("startlevel.bundle", Integer.class)).isEqualTo(6);
 
-    }
+        // install test bundle
+        Resource bundles = get("/osgi/bundles");
+        params = new HashMap<String, Object>();
+        params.put("location", file.toURI().toString());
+        params.put("input", input);
+        Resource res = create(bundles.getPath(), params);
+        String symbolicName = res.getMetadata().get(Constants.BUNDLE_SYMBOLICNAME_ATTRIBUTE, String.class);
+        BundleResource bundleResource = res.adaptTo(BundleResource.class);
+        assertThat(symbolicName).isEqualTo("test.bundle");
+        assertThat(res.getMetadata().get("bundle-state", String.class)).isEqualTo("INSTALLED");
+        assertThat(bundleResource.getStartLevel()).isEqualTo(6);
 
-    @Test
-    public void testBundleStartLevel() {
+        // start bundle, it should not start
+        bundleResource.changeState("ACTIVE");
+        assertThat(bundleResource.getState()).isEqualTo("INSTALLED");
+
+        // set bundle start level to 3
+        params = new HashMap<String, Object>();
+        params.put("startLevel", 3);
+        update(bundleResource.getPath(), params);
+        //bundleResource.setStartLevel(3);
+        assertThat(bundleResource.getStartLevel()).isEqualTo(3);
+        // wait for start level passage
+        System.out.println("Waiting for start level passage");
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            // Interrupted
+        }
+        assertThat(bundleResource.getState()).isEqualTo("ACTIVE");
 
     }
 
