@@ -51,6 +51,12 @@ public class BundleResource extends AbstractResourceCollection {
 
     private final BundleResourceManager m_bundleResourceManager;
 
+    private final BundleHeadersResource m_bundleHeadersResource;
+
+    private final BundleWiresResource m_bundleWiresResource;
+
+    private final BundleServicesResource m_bundleServicesResource;
+
     public BundleResource(Bundle bundle, BundleResourceManager bundleResourceManager) {
         super(BundleResourceManager.BUNDLE_PATH.addElements(Long.toString(bundle.getBundleId())));
         m_bundle = bundle;
@@ -58,6 +64,10 @@ public class BundleResource extends AbstractResourceCollection {
         // Check if is fragment
         BundleRevision rev = m_bundle.adapt(BundleRevision.class);
         isFragment = (rev != null && (rev.getTypes() & BundleRevision.TYPE_FRAGMENT) != 0);
+
+        m_bundleHeadersResource = new BundleHeadersResource(getPath(), m_bundle);
+        m_bundleWiresResource = new BundleWiresResource(getPath(), m_bundle);
+        m_bundleServicesResource = new BundleServicesResource(getPath(), m_bundle);
 
         setRelations(
                 new DefaultRelation(getPath(), Action.UPDATE, UPDATE_RELATION,
@@ -116,9 +126,9 @@ public class BundleResource extends AbstractResourceCollection {
     @Override
     public List<Resource> getResources() {
         ArrayList<Resource> resources = new ArrayList<Resource>();
-        resources.add(new BundleHeadersResource(getPath(), m_bundle));
-        resources.add(new BundleWiresResource(getPath(), m_bundle));
-        resources.add(new BundleServicesResource(getPath(), m_bundle));
+        resources.add(m_bundleHeadersResource);
+        resources.add(m_bundleWiresResource);
+        resources.add(m_bundleServicesResource);
         return resources;
     }
 

@@ -4,7 +4,7 @@ import org.apache.felix.ipojo.everest.impl.DefaultParameter;
 import org.apache.felix.ipojo.everest.impl.DefaultRelation;
 import org.apache.felix.ipojo.everest.impl.DefaultResource;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
-import org.apache.felix.ipojo.everest.osgi.bundle.BundleRelationsResource;
+import org.apache.felix.ipojo.everest.osgi.bundle.BundleResourceManager;
 import org.apache.felix.ipojo.everest.services.*;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Version;
@@ -57,13 +57,16 @@ public class DeploymentPackageResource extends DefaultResource {
     public List<Resource> getResources() {
         ArrayList<Resource> resources = new ArrayList<Resource>();
         if (m_bundleInfos != null) {
-            Bundle[] bundles = new Bundle[m_bundleInfos.length];
+            ArrayList<Bundle> bundles = new ArrayList<Bundle>();
             for (BundleInfo bundleInfo : m_bundleInfos) {
-                String symbolicName = bundleInfo.getSymbolicName();
-                Bundle bundle = m_deploymentPackage.getBundle(symbolicName);
-                if (bundle != null) {
-                    resources.add(new BundleRelationsResource(getPath().addElements("bundles"), bundles));
-                }
+                Bundle bundle = m_deploymentPackage.getBundle(bundleInfo.getSymbolicName());
+                bundles.add(bundle);
+            }
+            Builder builder = BundleResourceManager.relationsBuilder(getPath().addElements("bundles"), bundles);
+            try {
+                resources.add(builder.build());
+            } catch (IllegalResourceException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
         }
         return resources;

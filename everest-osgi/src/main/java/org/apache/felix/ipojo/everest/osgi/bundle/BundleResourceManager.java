@@ -3,6 +3,8 @@ package org.apache.felix.ipojo.everest.osgi.bundle;
 import org.apache.felix.ipojo.everest.core.Everest;
 import org.apache.felix.ipojo.everest.impl.DefaultParameter;
 import org.apache.felix.ipojo.everest.impl.DefaultRelation;
+import org.apache.felix.ipojo.everest.impl.DefaultResource;
+import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.osgi.AbstractResourceCollection;
 import org.apache.felix.ipojo.everest.services.*;
 import org.osgi.framework.Bundle;
@@ -39,7 +41,7 @@ public class BundleResourceManager extends AbstractResourceCollection {
 
     public static final String RESOLVE_PARAMETER = "resolve";
 
-    private Map<Long, BundleResource> m_bundleResources = new HashMap<Long, BundleResource>();
+    private Map<Long, BundleResource> m_bundleResourcesMap = new HashMap<Long, BundleResource>();
 
     private static final BundleResourceManager instance = new BundleResourceManager();
 
@@ -76,19 +78,21 @@ public class BundleResourceManager extends AbstractResourceCollection {
                                 .type(List.class)));
     }
 
-//    @Override
-//    public ResourceMetadata getMetadata() {
-//        ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
-//        for (Entry<Long, BundleResource> entry : m_bundleResources.entrySet()) {
-//            metadataBuilder.set(entry.getKey().toString(), entry.getValue().getSimpleMetadata());
-//        }
-//        return metadataBuilder.build();
-//    }
+    @Override
+    public ResourceMetadata getMetadata() {
+        ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
+        for (Map.Entry<Long, BundleResource> entry : m_bundleResourcesMap.entrySet()) {
+            metadataBuilder.set(entry.getKey().toString(), entry.getValue().getSimpleMetadata());
+        }
+        return metadataBuilder.build();
+    }
 
     @Override
     public List<Resource> getResources() {
         ArrayList<Resource> resources = new ArrayList<Resource>();
-        resources.addAll(m_bundleResources.values());
+        synchronized (m_bundleResourcesMap) {
+            resources.addAll(m_bundleResourcesMap.values());
+        }
         return resources;
     }
 
@@ -96,14 +100,14 @@ public class BundleResourceManager extends AbstractResourceCollection {
     public Resource create(Request request) throws IllegalActionOnResourceException {
         BundleResource resource = null;
         try {
-            Bundle fw = m_bundleResources.get(0L).getBundle();
+            Bundle fw = m_bundleResourcesMap.get(0L).getBundle();
             String location = request.get(INSTALL_LOCATION_PARAMETER, String.class);
             if (location != null) {
                 InputStream input = request.get(INSTALL_INPUT_PARAMETER, ByteArrayInputStream.class);
                 Bundle newBundle = fw.getBundleContext().installBundle(location, input);
-                synchronized (m_bundleResources) {
+                synchronized (m_bundleResourcesMap) {
                     resource = new BundleResource(newBundle, this);
-                    m_bundleResources.put(newBundle.getBundleId(), resource);
+                    m_bundleResourcesMap.put(newBundle.getBundleId(), resource);
                 }
                 Everest.postResource(ResourceEvent.CREATED, resource);
             }
@@ -136,30 +140,35 @@ public class BundleResourceManager extends AbstractResourceCollection {
 
     public void addBundle(Bundle bundle) {
         BundleResource newBundle = new BundleResource(bundle, this);
-        synchronized (m_bundleResources) {
-            m_bundleResources.put(bundle.getBundleId(), newBundle);
+        synchronized (m_bundleResourcesMap) {
+            m_bundleResourcesMap.put(bundle.getBundleId(), newBundle);
         }
         Everest.postResource(ResourceEvent.CREATED, newBundle);
     }
 
     public void removeBundle(Bundle bundle) {
         BundleResource removedResource;
-        synchronized (m_bundleResources) {
-            removedResource = m_bundleResources.remove(bundle.getBundleId());
+        synchronized (m_bundleResourcesMap) {
+            removedResource = m_bundleResourcesMap.remove(bundle.getBundleId());
         }
         Everest.postResource(ResourceEvent.DELETED, removedResource);
     }
 
     public void modifyBundle(Bundle bundle) {
-        BundleResource bundleResource = new BundleResource(bundle, this);
-        synchronized (m_bundleResources) {
-            m_bundleResources.put(bundle.getBundleId(), bundleResource);
+        BundleResource bundleResource;
+        synchronized (m_bundleResourcesMap) {
+            if (!m_bundleResourcesMap.containsKey(bundle.getBundleId())) {
+                bundleResource = new BundleResource(bundle, this);
+                m_bundleResourcesMap.put(bundle.getBundleId(), bundleResource);
+            } else {
+                bundleResource = m_bundleResourcesMap.get(bundle.getBundleId());
+            }
         }
         Everest.postResource(ResourceEvent.UPDATED, bundleResource);
     }
 
     public void refreshBundles(List<Long> bundleIds) {
-        Bundle fw = m_bundleResources.get(0L).getBundle();
+        Bundle fw = m_bundleResourcesMap.get(0L).getBundle();
         FrameworkWiring fwiring = fw.adapt(FrameworkWiring.class);
         List<Bundle> bundlesToRefresh = new ArrayList<Bundle>();
         for (Long bundleId : bundleIds) {
@@ -172,7 +181,7 @@ public class BundleResourceManager extends AbstractResourceCollection {
     }
 
     public boolean resolveBundles(List<Long> bundleIds) {
-        Bundle fw = m_bundleResources.get(0L).getBundle();
+        Bundle fw = m_bundleResourcesMap.get(0L).getBundle();
         FrameworkWiring fwiring = fw.adapt(FrameworkWiring.class);
         List<Bundle> bundlesToResolve = new ArrayList<Bundle>();
         for (Long bundleId : bundleIds) {
@@ -185,11 +194,11 @@ public class BundleResourceManager extends AbstractResourceCollection {
     }
 
     public List<Long> getDependencyClosure(List<Long> bundleIds) {
-        Bundle fw = m_bundleResources.get(0L).getBundle();
+        Bundle fw = m_bundleResourcesMap.get(0L).getBundle();
         FrameworkWiring fwiring = fw.adapt(FrameworkWiring.class);
         List<Bundle> bundles = new ArrayList<Bundle>();
         for (long bundleId : bundleIds) {
-            Bundle bundle = m_bundleResources.get(bundleId).getBundle();
+            Bundle bundle = m_bundleResourcesMap.get(bundleId).getBundle();
             if (bundle != null) {
                 bundles.add(bundle);
             }
@@ -200,5 +209,17 @@ public class BundleResourceManager extends AbstractResourceCollection {
             dependencyClosureBundles.add(b.getBundleId());
         }
         return dependencyClosureBundles;
+    }
+
+    public static Builder relationsBuilder(Path path, List<Bundle> bundles) {
+        DefaultResource.Builder builder = new Builder().fromPath(path);
+        for (Bundle bundle : bundles) {
+            if (bundle != null) {
+                String bundleId = Long.toString(bundle.getBundleId());
+                Path bundlePath = BundleResourceManager.getInstance().getPath().addElements(bundleId);
+                builder.with(new DefaultRelation(bundlePath, Action.READ, bundleId));
+            }
+        }
+        return builder;
     }
 }

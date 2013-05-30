@@ -1,9 +1,9 @@
 package org.apache.felix.ipojo.everest.osgi.service;
 
 import org.apache.felix.ipojo.everest.impl.DefaultRelation;
+import org.apache.felix.ipojo.everest.impl.DefaultResource;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.osgi.AbstractResourceCollection;
-import org.apache.felix.ipojo.everest.osgi.bundle.BundleRelationsResource;
 import org.apache.felix.ipojo.everest.osgi.bundle.BundleResourceManager;
 import org.apache.felix.ipojo.everest.osgi.packages.PackageResourceManager;
 import org.apache.felix.ipojo.everest.services.*;
@@ -14,6 +14,7 @@ import org.osgi.framework.wiring.BundleCapability;
 import org.osgi.framework.wiring.BundleRevision;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.PackageNamespace.PACKAGE_NAMESPACE;
@@ -43,7 +44,7 @@ public class ServiceResource extends AbstractResourceCollection {
         List<Relation> relations = new ArrayList<Relation>();
         // Bundle from which this service is registered
         Bundle bundle = m_serviceReference.getBundle();
-        Path bundlePath = BundleResourceManager.getInstance().getPath().add(Path.from(Path.SEPARATOR + bundle.getBundleId()));
+        Path bundlePath = BundleResourceManager.getInstance().getPath().addElements(Long.toString(bundle.getBundleId()));
         relations.add(new DefaultRelation(bundlePath, Action.READ, FROM_BUNDLE_NAME));
         //Package of the bundle that is exposed for this service
         String[] packageNames = packageNamesFromService(m_serviceReference);
@@ -90,7 +91,14 @@ public class ServiceResource extends AbstractResourceCollection {
         ArrayList<Resource> resources = new ArrayList<Resource>();
         // Uses Bundles
         Bundle[] uses = m_serviceReference.getUsingBundles();
-        resources.add(new BundleRelationsResource(getPath().addElements(USES_BUNDLES_NAME), uses));
+        if (uses != null) {
+            DefaultResource.Builder builder = BundleResourceManager.relationsBuilder(getPath().addElements(USES_BUNDLES_NAME), Arrays.asList(uses));
+            try {
+                resources.add(builder.build());
+            } catch (IllegalResourceException e) {
+                // should never happen
+            }
+        }
         return resources;
     }
 

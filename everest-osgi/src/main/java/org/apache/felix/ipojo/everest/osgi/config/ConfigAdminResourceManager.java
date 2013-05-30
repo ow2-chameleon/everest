@@ -3,7 +3,6 @@ package org.apache.felix.ipojo.everest.osgi.config;
 import org.apache.felix.ipojo.everest.core.Everest;
 import org.apache.felix.ipojo.everest.impl.DefaultParameter;
 import org.apache.felix.ipojo.everest.impl.DefaultRelation;
-import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.osgi.AbstractResourceCollection;
 import org.apache.felix.ipojo.everest.services.*;
 import org.osgi.framework.InvalidSyntaxException;
@@ -14,7 +13,9 @@ import org.osgi.service.cm.ConfigurationListener;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.apache.felix.ipojo.everest.osgi.OsgiRootResource.OSGI_ROOT_PATH;
 
@@ -38,6 +39,8 @@ public class ConfigAdminResourceManager extends AbstractResourceCollection imple
 
     private final ConfigurationAdmin m_configAdmin;
 
+    private Map<String, ConfigurationResource> m_configurationResourceMap = new HashMap<String, ConfigurationResource>();
+
     public ConfigAdminResourceManager(ConfigurationAdmin configAdmin) {
         super(CONFIG_PATH);
         this.m_configAdmin = configAdmin;
@@ -58,16 +61,12 @@ public class ConfigAdminResourceManager extends AbstractResourceCollection imple
                         .description("Persistent id of factory pid")
                         .type(String.class)
                         .optional(true)));
-    }
 
-    @Override
-    public ResourceMetadata getMetadata() {
-        ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
         try {
             Configuration[] configs = m_configAdmin.listConfigurations(null);
             if (configs != null) {
                 for (Configuration cfg : configs) {
-                    metadataBuilder.set(cfg.getPid(), null);
+                    m_configurationResourceMap.put(cfg.getPid(), new ConfigurationResource(cfg));
                 }
             }
         } catch (IOException e) {
@@ -77,25 +76,22 @@ public class ConfigAdminResourceManager extends AbstractResourceCollection imple
             // should never happen..
             throw new RuntimeException(e.getMessage());
         }
-        return metadataBuilder.build();
     }
+
+//    @Override
+//    public ResourceMetadata getMetadata() {
+//        ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
+//        for (ConfigurationResource configurationResource : m_configurationResourceMap.values()) {
+//            metadataBuilder.set(configurationResource.getPid(),null);
+//        }
+//        return metadataBuilder.build();
+//    }
 
     @Override
     public List<Resource> getResources() {
         ArrayList<Resource> resources = new ArrayList<Resource>();
-        try {
-            Configuration[] configs = m_configAdmin.listConfigurations(null);
-            if (configs != null) {
-                for (Configuration cfg : configs) {
-                    resources.add(new ConfigurationResource(cfg));
-                }
-            }
-        } catch (IOException e) {
-            // well, this may happen..
-            throw new RuntimeException(e.getMessage());
-        } catch (InvalidSyntaxException e) {
-            // should never happen..
-            throw new RuntimeException(e.getMessage());
+        synchronized (m_configurationResourceMap) {
+            resources.addAll(m_configurationResourceMap.values());
         }
         return resources;
 
@@ -127,23 +123,36 @@ public class ConfigAdminResourceManager extends AbstractResourceCollection imple
         } else {
             throw new IllegalActionOnResourceException(request, "location parameter is mandatory");
         }
-        if (configuration != null) {
-            return new ConfigurationResource(configuration);
+        ConfigurationResource configurationResource = new ConfigurationResource(configuration);
+        synchronized (m_configurationResourceMap) {
+            m_configurationResourceMap.put(pid, configurationResource);
         }
-        return this;
+        return configurationResource;
     }
 
     public void configurationEvent(ConfigurationEvent event) {
         String pid = event.getPid();
+        ResourceEvent resourceEvent;
+        ConfigurationResource configurationResource;
         try {
             Configuration configuration = m_configAdmin.getConfiguration(pid);
-            ConfigurationResource configurationResource = new ConfigurationResource(configuration);
-            if (event.getType() == ConfigurationEvent.CM_UPDATED || event.getType() == ConfigurationEvent.CM_LOCATION_CHANGED) {
-                Everest.postResource(ResourceEvent.UPDATED, configurationResource);
-            } else if (event.getType() == ConfigurationEvent.CM_DELETED) {
-                ;
-                Everest.postResource(ResourceEvent.DELETED, configurationResource);
+            if (!m_configurationResourceMap.containsKey(pid)) {
+                configurationResource = new ConfigurationResource(configuration);
+                synchronized (m_configurationResourceMap) {
+                    m_configurationResourceMap.put(pid, configurationResource);
+                }
+                resourceEvent = ResourceEvent.CREATED;
+            } else {
+                synchronized (m_configurationResourceMap) {
+                    configurationResource = m_configurationResourceMap.get(pid);
+                }
+                if (event.getType() != ConfigurationEvent.CM_DELETED) {
+                    resourceEvent = ResourceEvent.UPDATED;
+                } else {
+                    resourceEvent = ResourceEvent.DELETED;
+                }
             }
+            Everest.postResource(ResourceEvent.UPDATED, configurationResource);
         } catch (IOException e) {
             // something gone wrong
             //TODO

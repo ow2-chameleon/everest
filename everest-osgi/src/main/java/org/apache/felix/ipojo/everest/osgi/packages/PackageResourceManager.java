@@ -1,7 +1,10 @@
 package org.apache.felix.ipojo.everest.osgi.packages;
 
 import org.apache.felix.ipojo.everest.core.Everest;
+import org.apache.felix.ipojo.everest.impl.DefaultRelation;
+import org.apache.felix.ipojo.everest.impl.DefaultResource;
 import org.apache.felix.ipojo.everest.osgi.AbstractResourceCollection;
+import org.apache.felix.ipojo.everest.services.Action;
 import org.apache.felix.ipojo.everest.services.Path;
 import org.apache.felix.ipojo.everest.services.Resource;
 import org.apache.felix.ipojo.everest.services.ResourceEvent;
@@ -14,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.uniqueCapabilityId;
 import static org.apache.felix.ipojo.everest.osgi.OsgiRootResource.OSGI_ROOT_PATH;
 
 /**
@@ -56,8 +60,6 @@ public class PackageResourceManager extends AbstractResourceCollection {
                             Everest.postResource(ResourceEvent.CREATED, packageResource);
                         }
                     }
-                    // post event for this resource manager as there are changes
-                    Everest.postResource(ResourceEvent.UPDATED, this);
                 }
             }
         }
@@ -76,8 +78,6 @@ public class PackageResourceManager extends AbstractResourceCollection {
                     PackageResource removedPackage = m_packageResourceByPackageIdMap.remove(s);
                     Everest.postResource(ResourceEvent.DELETED, removedPackage);
                 }
-                // post event for this resource manager as there are changes
-                Everest.postResource(ResourceEvent.UPDATED, this);
             }
         }
     }
@@ -101,4 +101,17 @@ public class PackageResourceManager extends AbstractResourceCollection {
         }
         return resources;
     }
+
+    public static Builder relationsBuilder(Path path, List<BundleCapability> capabilities) {
+        DefaultResource.Builder builder = new Builder().fromPath(path);
+        for (BundleCapability capability : capabilities) {
+            if (capability != null) {
+                String packageId = uniqueCapabilityId(capability);
+                Path packagePath = PackageResourceManager.getInstance().getPath().addElements(packageId);
+                builder.with(new DefaultRelation(packagePath, Action.READ, packageId));
+            }
+        }
+        return builder;
+    }
+
 }

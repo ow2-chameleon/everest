@@ -3,12 +3,8 @@ package org.apache.felix.ipojo.everest.osgi.packages;
 import org.apache.felix.ipojo.everest.impl.DefaultRelation;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.osgi.AbstractResourceCollection;
-import org.apache.felix.ipojo.everest.osgi.bundle.BundleRelationsResource;
 import org.apache.felix.ipojo.everest.osgi.bundle.BundleResourceManager;
-import org.apache.felix.ipojo.everest.services.Action;
-import org.apache.felix.ipojo.everest.services.Path;
-import org.apache.felix.ipojo.everest.services.Resource;
-import org.apache.felix.ipojo.everest.services.ResourceMetadata;
+import org.apache.felix.ipojo.everest.services.*;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Version;
 import org.osgi.framework.wiring.BundleCapability;
@@ -101,7 +97,12 @@ public class PackageResource extends AbstractResourceCollection {
     public List<Resource> getResources() {
         ArrayList<Resource> resources = new ArrayList<Resource>();
         // create links to importer bundles
-        resources.add(new BundleRelationsResource(getPath().addElements(IMPORTER_BUNDLE_NAME), importers.toArray(new Bundle[0])));
+        Builder builder = BundleResourceManager.relationsBuilder(getPath().addElements(IMPORTER_BUNDLE_NAME), importers);
+        try {
+            resources.add(builder.build());
+        } catch (IllegalResourceException e) {
+            // should never happen
+        }
         return resources;
     }
 

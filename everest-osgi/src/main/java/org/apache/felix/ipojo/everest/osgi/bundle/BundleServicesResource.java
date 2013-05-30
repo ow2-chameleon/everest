@@ -1,13 +1,16 @@
 package org.apache.felix.ipojo.everest.osgi.bundle;
 
+import org.apache.felix.ipojo.everest.impl.DefaultResource;
 import org.apache.felix.ipojo.everest.osgi.AbstractResourceCollection;
-import org.apache.felix.ipojo.everest.osgi.service.ServiceRelationsResource;
+import org.apache.felix.ipojo.everest.osgi.service.ServiceResourceManager;
+import org.apache.felix.ipojo.everest.services.IllegalResourceException;
 import org.apache.felix.ipojo.everest.services.Path;
 import org.apache.felix.ipojo.everest.services.Resource;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.ServiceReference;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -34,12 +37,29 @@ public class BundleServicesResource extends AbstractResourceCollection {
     @Override
     public List<Resource> getResources() {
         ArrayList<Resource> resources = new ArrayList<Resource>();
+        DefaultResource.Builder builder;
         // bundle registered services
         ServiceReference[] registered = m_bundle.getRegisteredServices();
-        resources.add(new ServiceRelationsResource(getPath().addElements(BUNDLE_REGISTERED_SERVICES_NAME), registered));
+        if (registered != null) {
+            builder = ServiceResourceManager.relationsBuilder(getPath().addElements(BUNDLE_REGISTERED_SERVICES_NAME), Arrays.asList(registered));
+            try {
+                resources.add(builder.build());
+            } catch (IllegalResourceException e) {
+                // should never happen
+            }
+        }
+
         // bundle used services
         ServiceReference[] uses = m_bundle.getServicesInUse();
-        resources.add(new ServiceRelationsResource(getPath().addElements(BUNDLE_USE_SERVICES_NAME), uses));
+        if (uses != null) {
+            builder = ServiceResourceManager.relationsBuilder(getPath().addElements(BUNDLE_USE_SERVICES_NAME), Arrays.asList(uses));
+            try {
+                resources.add(builder.build());
+            } catch (IllegalResourceException e) {
+                // should never happen
+            }
+        }
         return resources;
     }
+
 }

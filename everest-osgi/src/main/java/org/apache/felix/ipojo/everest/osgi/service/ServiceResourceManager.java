@@ -1,7 +1,10 @@
 package org.apache.felix.ipojo.everest.osgi.service;
 
 import org.apache.felix.ipojo.everest.core.Everest;
+import org.apache.felix.ipojo.everest.impl.DefaultRelation;
+import org.apache.felix.ipojo.everest.impl.DefaultResource;
 import org.apache.felix.ipojo.everest.osgi.AbstractResourceCollection;
+import org.apache.felix.ipojo.everest.services.Action;
 import org.apache.felix.ipojo.everest.services.Path;
 import org.apache.felix.ipojo.everest.services.Resource;
 import org.apache.felix.ipojo.everest.services.ResourceEvent;
@@ -53,8 +56,12 @@ public class ServiceResourceManager extends AbstractResourceCollection {
         Object serviceId = serviceReference.getProperty(Constants.SERVICE_ID);
         ServiceResource updatedService;
         synchronized (m_serviceResourceMap) {
-            updatedService = new ServiceResource(serviceReference);
-            m_serviceResourceMap.put(serviceId, updatedService);
+            if (!m_serviceResourceMap.containsKey(serviceId)) {
+                updatedService = new ServiceResource(serviceReference);
+                m_serviceResourceMap.put(serviceId, updatedService);
+            } else {
+                updatedService = m_serviceResourceMap.get(serviceId);
+            }
         }
         Everest.postResource(ResourceEvent.UPDATED, updatedService);
     }
@@ -87,5 +94,16 @@ public class ServiceResourceManager extends AbstractResourceCollection {
         return resources;
     }
 
+    public static Builder relationsBuilder(Path path, List<ServiceReference> services) {
+        DefaultResource.Builder builder = new Builder().fromPath(path);
+        for (ServiceReference service : services) {
+            if (service != null) {
+                String serviceId = service.getProperty(Constants.SERVICE_ID).toString();
+                Path servicePath = ServiceResourceManager.getInstance().getPath().addElements(serviceId);
+                builder.with(new DefaultRelation(servicePath, Action.READ, serviceId));
+            }
+        }
+        return builder;
+    }
 
 }

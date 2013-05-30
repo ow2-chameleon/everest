@@ -3,7 +3,8 @@ package org.apache.felix.ipojo.everest.osgi.bundle;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.osgi.AbstractResourceCollection;
 import org.apache.felix.ipojo.everest.osgi.ReadOnlyLeafCollectionResource;
-import org.apache.felix.ipojo.everest.osgi.packages.PackageRelationsResource;
+import org.apache.felix.ipojo.everest.osgi.packages.PackageResourceManager;
+import org.apache.felix.ipojo.everest.services.IllegalResourceException;
 import org.apache.felix.ipojo.everest.services.Path;
 import org.apache.felix.ipojo.everest.services.Resource;
 import org.apache.felix.ipojo.everest.services.ResourceMetadata;
@@ -74,7 +75,12 @@ public class BundleHeadersResource extends AbstractResourceCollection {
         BundleRevision rev = m_bundle.adapt(BundleRevision.class);
         // package export
         List<BundleCapability> capabilities = rev.getDeclaredCapabilities(BundleRevision.PACKAGE_NAMESPACE);
-        resources.add(new PackageRelationsResource(getPath().addElements(EXPORT_PACKAGE), capabilities.toArray(new BundleCapability[0])));
+        Builder builder = PackageResourceManager.relationsBuilder(getPath().addElements(EXPORT_PACKAGE), capabilities);
+        try {
+            resources.add(builder.build());
+        } catch (IllegalResourceException e) {
+            // should never happen
+        }
 
         // package import / dynamic import
         List<BundleRequirement> requirements = rev.getDeclaredRequirements(BundleRevision.PACKAGE_NAMESPACE);
@@ -95,7 +101,7 @@ public class BundleHeadersResource extends AbstractResourceCollection {
         // Import package leaf resource collection
         resources.add(new ReadOnlyLeafCollectionResource(getPath().addElements(IMPORT_PACKAGE), imports));
 
-        // bundle requirements
+        // Bundle requirements
         List<BundleRequirement> bundleRequirements = rev.getDeclaredRequirements(BundleRevision.BUNDLE_NAMESPACE);
         Map<String, ResourceMetadata> bundleRequires = new HashMap<String, ResourceMetadata>();
         for (BundleRequirement req : bundleRequirements) {

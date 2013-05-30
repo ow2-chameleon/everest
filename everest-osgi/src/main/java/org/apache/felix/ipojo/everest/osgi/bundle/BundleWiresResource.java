@@ -68,29 +68,29 @@ public class BundleWiresResource extends AbstractResourceCollection {
     public List<Resource> getResources() {
         ArrayList<Resource> resources = new ArrayList<Resource>();
         Path capabilitiesPath = getPath().addElements(CAPABILITIES_PATH);
-        DefaultResource.Builder capabilitiesBuilder = new Builder().fromPath(capabilitiesPath);
+        DefaultResource.Builder builder = new Builder().fromPath(capabilitiesPath);
         for (BundleCapability capability : capabilities) {
             BundleCapabilityResource bundleCapabilityResource = new BundleCapabilityResource(capabilitiesPath, capability);
-            capabilitiesBuilder.with(bundleCapabilityResource);
-            capabilitiesBuilder.with(new DefaultRelation(bundleCapabilityResource.getPath(), Action.READ, capabilitiesPath.getLast() + ":" + bundleCapabilityResource.getPath().getLast()));
+            builder.with(bundleCapabilityResource);
+            builder.with(new DefaultRelation(bundleCapabilityResource.getPath(), Action.READ, capabilitiesPath.getLast() + ":" + bundleCapabilityResource.getPath().getLast()));
         }
         try {
-            resources.add(capabilitiesBuilder.build());
+            resources.add(builder.build());
         } catch (IllegalResourceException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            // should never happen
         }
 
         Path requirementsPath = getPath().addElements(REQUIREMENTS_PATH);
-        DefaultResource.Builder requirementsBuilder = new Builder().fromPath(requirementsPath);
+        builder = new Builder().fromPath(requirementsPath);
         for (BundleRequirement requirement : requirements) {
             BundleRequirementResource bundleRequirementResource = new BundleRequirementResource(requirementsPath, requirement);
-            requirementsBuilder.with(bundleRequirementResource);
-            requirementsBuilder.with(new DefaultRelation(bundleRequirementResource.getPath(), Action.READ, requirementsPath.getLast() + ":" + bundleRequirementResource.getPath()));
+            builder.with(bundleRequirementResource);
+            builder.with(new DefaultRelation(bundleRequirementResource.getPath(), Action.READ, requirementsPath.getLast() + ":" + bundleRequirementResource.getPath()));
         }
         try {
-            resources.add(requirementsBuilder.build());
+            resources.add(builder.build());
         } catch (IllegalResourceException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            // should never happen
         }
         return resources;
     }

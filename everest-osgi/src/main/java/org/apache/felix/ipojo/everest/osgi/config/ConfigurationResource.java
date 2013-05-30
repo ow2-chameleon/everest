@@ -56,10 +56,12 @@ public class ConfigurationResource extends DefaultResource {
             metadataBuilder.set(SERVICE_FACTORYPID, m_configuration.getFactoryPid());
         }
         Dictionary<String, Object> properties = m_configuration.getProperties();
-        Enumeration<String> keys = properties.keys();
-        while (keys.hasMoreElements()) {
-            String key = keys.nextElement();
-            metadataBuilder.set(key, properties.get(key));
+        if (properties != null) {
+            Enumeration<String> keys = properties.keys();
+            while (keys.hasMoreElements()) {
+                String key = keys.nextElement();
+                metadataBuilder.set(key, properties.get(key));
+            }
         }
         return metadataBuilder.build();
     }
@@ -103,6 +105,10 @@ public class ConfigurationResource extends DefaultResource {
 
     public Dictionary getProperties() {
         return m_configuration.getProperties();
+    }
+
+    public String getPid() {
+        return m_configuration.getPid();
     }
 
     public String getFactoryPid() {

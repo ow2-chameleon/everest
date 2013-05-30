@@ -35,7 +35,9 @@ import java.util.List;
  * Time: 9:50 AM
  */
 @Component
-@Provides(specifications = Resource.class)
+@Provides(
+        specifications = Resource.class,
+        properties = {@StaticServiceProperty(type = "String", name = "type", value = "osgi")})
 @Instantiate
 public class OsgiRootResource extends AbstractResourceManager implements BundleTrackerCustomizer, ServiceTrackerCustomizer {
 
