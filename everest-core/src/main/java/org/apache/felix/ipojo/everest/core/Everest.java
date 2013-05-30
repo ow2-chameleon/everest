@@ -119,7 +119,7 @@ public class Everest extends DefaultReadOnlyResource implements EverestService {
         }
 
         Map<String, Object> map = new LinkedHashMap<String, Object>();
-        map.put("eventType", eventType);
+        map.put("eventType", eventType.toString());
         map.put("canonicalPath", resource.getCanonicalPath().toString());
         map.put("metadata", resource.getMetadata());
         map.put("relations", resource.getRelations());
@@ -150,7 +150,7 @@ public class Everest extends DefaultReadOnlyResource implements EverestService {
     public static String topicFromPath(Path path) {
         String pathString = path.toString();
         pathString = "everest".concat(pathString);
-        pathString = pathString.replaceAll(".", "-");
+        pathString = pathString.replaceAll("\\.", "-");
         return pathString;
     }
 }
