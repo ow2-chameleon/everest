@@ -2,7 +2,6 @@ package org.apache.felix.ipojo.everest.ipojo;
 
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
-import org.apache.felix.ipojo.everest.services.Path;
 import org.apache.felix.ipojo.everest.services.ResourceMetadata;
 import org.apache.felix.ipojo.extender.InstanceDeclaration;
 import org.apache.felix.ipojo.extender.Status;
@@ -15,8 +14,8 @@ public class InstanceDeclarationResource extends DefaultReadOnlyResource {
     final InstanceDeclaration m_instance;
     private final ResourceMetadata m_baseMetadata;
 
-    public InstanceDeclarationResource(Path path, InstanceDeclaration declaration) {
-        super(path);
+    public InstanceDeclarationResource(String index, InstanceDeclaration declaration) {
+        super(IpojoRootResource.INSTANCE_DECLARATIONS.addElements(declaration.getInstanceName(), index));
         m_instance = declaration;
 
         // Build the immutable metadata.

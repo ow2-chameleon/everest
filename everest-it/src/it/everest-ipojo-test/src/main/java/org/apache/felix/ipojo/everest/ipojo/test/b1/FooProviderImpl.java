@@ -1,6 +1,9 @@
 package org.apache.felix.ipojo.everest.ipojo.test.b1;
 
-import org.apache.felix.ipojo.annotations.*;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Property;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.ServiceProperty;
 
 @Component(name = "Foo", version = "1.2.3.foo")
 @Provides
@@ -15,5 +18,5 @@ public class FooProviderImpl implements FooService {
     public String getFoo() {
         return fooPrefix + Integer.toString(fooCounter++);
     }
-    
+
 }

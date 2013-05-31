@@ -20,5 +20,5 @@ public class BarProviderImpl implements BarService {
     public String getBar() {
         return barPrefix + m_foo.getFoo() + barSuffix + "-v2.0.0";
     }
-    
+
 }

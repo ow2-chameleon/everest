@@ -2,7 +2,6 @@ package org.apache.felix.ipojo.everest.ipojo;
 
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
-import org.apache.felix.ipojo.everest.services.Path;
 import org.apache.felix.ipojo.everest.services.ResourceMetadata;
 import org.apache.felix.ipojo.extender.Status;
 import org.apache.felix.ipojo.extender.TypeDeclaration;
@@ -15,8 +14,10 @@ public class TypeDeclarationResource extends DefaultReadOnlyResource {
     private final TypeDeclaration m_type;
     private final ResourceMetadata m_baseMetadata;
 
-    public TypeDeclarationResource(Path path, TypeDeclaration declaration) {
-        super(path);
+    public TypeDeclarationResource(TypeDeclaration declaration) {
+        super(IpojoRootResource.TYPE_DECLARATIONS.addElements(
+                declaration.getComponentName(),
+                String.valueOf(declaration.getComponentVersion())));
         m_type = declaration;
 
         // Build the immutable metadata of this type.

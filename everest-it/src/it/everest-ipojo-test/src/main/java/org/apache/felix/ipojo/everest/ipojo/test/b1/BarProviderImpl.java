@@ -18,5 +18,15 @@ public class BarProviderImpl implements BarService {
     public String getBar() {
         return barPrefix + m_foo.getFoo() + barSuffix;
     }
-    
+
+    @Validate
+    public void start() {
+        System.out.println("BarProviderImpl started");
+    }
+
+    @Invalidate
+    public void stop() {
+        System.out.println("BarProviderImpl stopped");
+    }
+
 }

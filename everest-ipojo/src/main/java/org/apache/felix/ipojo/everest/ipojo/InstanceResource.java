@@ -17,7 +17,7 @@ import java.util.List;
 /**
  * '/ipojo/instance/$name' resource, where $name stands for the name of an instance.
  */
-public class InstanceNameResource extends DefaultReadOnlyResource {
+public class InstanceResource extends DefaultReadOnlyResource {
 
     /**
      * The represented instance.
@@ -40,8 +40,8 @@ public class InstanceNameResource extends DefaultReadOnlyResource {
     /**
      * @param instance the instance represented by this resource
      */
-    public InstanceNameResource(Architecture instance) {
-        super(InstancesResource.PATH.addElements(instance.getInstanceDescription().getName()));
+    public InstanceResource(Architecture instance) {
+        super(IpojoRootResource.INSTANCES.addElements(instance.getInstanceDescription().getName()));
         m_instance = instance;
 
         // Build the immutable metadata of this instance.
@@ -57,7 +57,7 @@ public class InstanceNameResource extends DefaultReadOnlyResource {
         List<Relation> relations = new ArrayList<Relation>();
 
         // Add relation 'factory' to READ the factory of this instance
-        relations.add(new DefaultRelation(FactoriesResource.PATH.addElements(factory.getName(), String.valueOf(factory.getVersion())), Action.READ, "factory"));
+        relations.add(new DefaultRelation(IpojoRootResource.FACTORIES.addElements(factory.getName(), String.valueOf(factory.getVersion())), Action.READ, "factory"));
 
         setRelations(relations);
     }
@@ -75,6 +75,11 @@ public class InstanceNameResource extends DefaultReadOnlyResource {
         ImmutableResourceMetadata.Builder mb = new ImmutableResourceMetadata.Builder(m_baseMetadata);
         mb.set("state", stateAsString(m_instance.getInstanceDescription().getState())); // String
         return mb.build();
+    }
+
+    @Override
+    public boolean isObservable() {
+        return true;
     }
 
     private static String stateAsString(int state) {

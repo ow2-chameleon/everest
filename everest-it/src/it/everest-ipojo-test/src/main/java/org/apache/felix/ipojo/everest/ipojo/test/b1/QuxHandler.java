@@ -16,7 +16,7 @@ import java.util.Dictionary;
 public class QuxHandler extends PrimitiveHandler implements Runnable {
 
     // Just to have a dependency on the "required" handler
-    @Requires(id = "useless1", optional =  true)
+    @Requires(id = "useless1", optional = true)
     private Runnable m_useless1;
 
     // Just to have a dependency on the "property" handler
@@ -47,6 +47,7 @@ public class QuxHandler extends PrimitiveHandler implements Runnable {
     @Validate
     public void validate() {
     }
+
     @Invalidate
     public void invalidate() {
     }

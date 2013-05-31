@@ -13,17 +13,17 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
 
-import static org.apache.felix.ipojo.everest.ipojo.IpojoResource.PATH_TO_BUNDLES;
+import static org.apache.felix.ipojo.everest.ipojo.IpojoRootResource.PATH_TO_OSGI_BUNDLES;
 
 /**
  * '/ipojo/factory/$name/$version' resource, where $name stands for the name of a factory, and $version for its version.
  */
-public class FactoryNameVersionResource extends DefaultReadOnlyResource {
+public class FactoryResource extends DefaultReadOnlyResource {
 
     /**
      * The enclosing iPOJO resource.
      */
-    private final IpojoResource m_ipojo;
+    private final IpojoRootResource m_ipojo;
 
     /**
      * The represented factory.
@@ -49,7 +49,7 @@ public class FactoryNameVersionResource extends DefaultReadOnlyResource {
      * @param factory the factory represented by this resource
      */
     @SuppressWarnings("deprecation")
-    public FactoryNameVersionResource(IpojoResource ipojo, Factory factory) {
+    public FactoryResource(IpojoRootResource ipojo, Factory factory) {
         super(canonicalPathOf(factory));
         m_ipojo = ipojo;
         m_factory = factory;
@@ -64,16 +64,19 @@ public class FactoryNameVersionResource extends DefaultReadOnlyResource {
         List<Relation> relations = new ArrayList<Relation>();
 
         // Add relation 'bundle' to READ the bundle that declares this factory
-        relations.add(new DefaultRelation(PATH_TO_BUNDLES.addElements(String.valueOf(m_factory.getBundleContext().getBundle().getBundleId())), Action.READ, "bundle"));
+        relations.add(new DefaultRelation(
+                PATH_TO_OSGI_BUNDLES.addElements(String.valueOf(m_factory.getBundleContext().getBundle().getBundleId())),
+                Action.READ, "bundle"));
 
-        // Add relation 'requiredHandler:$ns:$name' to READ the handlers required by this factory
+        // Add relation 'requiredHandler[$ns:$name]' to READ the handlers required by this factory
         @SuppressWarnings("unchecked")
         List<String> required = (List<String>) m_factory.getRequiredHandlers();
         for (String nsName : required) {
             int i = nsName.lastIndexOf(':');
             String ns = nsName.substring(0, i);
             String name = nsName.substring(i + 1);
-            relations.add(new DefaultRelation(HandlersResource.PATH.addElements(ns, name), Action.READ, "requiredHandler:" + nsName));
+            relations.add(new DefaultRelation(IpojoRootResource.HANDLERS.addElements(ns, name), Action.READ,
+                    "requiredHandler[" + nsName + "]"));
         }
 
         setRelations(relations);
@@ -106,7 +109,8 @@ public class FactoryNameVersionResource extends DefaultReadOnlyResource {
 
         // Add relation to created instances
         for (String instanceName : getCreatedInstanceNames()) {
-            relations.add(new DefaultRelation(InstancesResource.PATH.addElements(instanceName), Action.READ, "instance:" + instanceName));
+            relations.add(new DefaultRelation(IpojoRootResource.INSTANCES.addElements(instanceName), Action.READ,
+                    "instance[" + instanceName + "]"));
         }
 
         return relations;
@@ -115,7 +119,7 @@ public class FactoryNameVersionResource extends DefaultReadOnlyResource {
     private static Path canonicalPathOf(Factory f) {
         // Canonical path is '/ipojo/factory/$factoryName/$factoryVersion'
         // If m_version == null, then $factoryVersion is the literal 'null'
-        return FactoriesResource.PATH.addElements(f.getName(), String.valueOf(f.getVersion()));
+        return IpojoRootResource.FACTORIES.addElements(f.getName(), String.valueOf(f.getVersion()));
     }
 
     public static String stateAsString(int state) {
@@ -144,7 +148,8 @@ public class FactoryNameVersionResource extends DefaultReadOnlyResource {
         try {
             name = m_factory.createComponentInstance(config).getInstanceName();
         } catch (Exception e) {
-            IllegalActionOnResourceException ee = new IllegalActionOnResourceException(request, this, "cannot create component instance");
+            IllegalActionOnResourceException ee = new IllegalActionOnResourceException(request, this,
+                    "cannot create component instance");
             ee.initCause(e);
             throw ee;
         }
@@ -201,6 +206,11 @@ public class FactoryNameVersionResource extends DefaultReadOnlyResource {
                 weapon.setAccessible(false);
             }
         }
+    }
+
+    @Override
+    public boolean isObservable() {
+        return true;
     }
 
     @Override

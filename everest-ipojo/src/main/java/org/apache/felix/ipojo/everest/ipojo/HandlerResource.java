@@ -13,13 +13,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.apache.felix.ipojo.everest.ipojo.FactoryNameVersionResource.stateAsString;
-import static org.apache.felix.ipojo.everest.ipojo.IpojoResource.PATH_TO_BUNDLES;
+import static org.apache.felix.ipojo.everest.ipojo.FactoryResource.stateAsString;
+import static org.apache.felix.ipojo.everest.ipojo.IpojoRootResource.PATH_TO_OSGI_BUNDLES;
 
 /**
  * '/ipojo/handler/$namespace/$name' resource, where $namespace stands for the namespace of a handler, and $name for its name.
  */
-public class HandlerNamespaceNameResource extends DefaultReadOnlyResource {
+public class HandlerResource extends DefaultReadOnlyResource {
 
     /**
      * The underlying handler factory.
@@ -36,7 +36,7 @@ public class HandlerNamespaceNameResource extends DefaultReadOnlyResource {
      */
     private final ResourceMetadata m_baseMetadata;
 
-    public HandlerNamespaceNameResource(HandlerFactory handler) {
+    public HandlerResource(HandlerFactory handler) {
         super(canonicalPathOf(handler));
         m_handler = handler;
         // Build the immutable metadata of this factory.
@@ -49,7 +49,7 @@ public class HandlerNamespaceNameResource extends DefaultReadOnlyResource {
         List<Relation> relations = new ArrayList<Relation>();
 
         // Add relation 'bundle' to READ the bundle that declares this handler
-        relations.add(new DefaultRelation(PATH_TO_BUNDLES.addElements(String.valueOf(m_handler.getBundleContext().getBundle().getBundleId())), Action.READ, "bundle"));
+        relations.add(new DefaultRelation(PATH_TO_OSGI_BUNDLES.addElements(String.valueOf(m_handler.getBundleContext().getBundle().getBundleId())), Action.READ, "bundle"));
 
         // Add relation 'requiredHandler:$ns:$name' to READ the handlers required by this factory
         @SuppressWarnings("unchecked")
@@ -58,7 +58,7 @@ public class HandlerNamespaceNameResource extends DefaultReadOnlyResource {
             int i = nsName.lastIndexOf(':');
             String ns = nsName.substring(0, i);
             String name = nsName.substring(i + 1);
-            relations.add(new DefaultRelation(HandlersResource.PATH.addElements(ns, name), Action.READ, "requiredHandler:" + nsName));
+            relations.add(new DefaultRelation(IpojoRootResource.HANDLERS.addElements(ns, name), Action.READ, "requiredHandler[" + nsName + "]"));
         }
 
         setRelations(relations);
@@ -73,7 +73,7 @@ public class HandlerNamespaceNameResource extends DefaultReadOnlyResource {
 
     public static Path canonicalPathOf(HandlerFactory h) {
         // Canonical path is '/ipojo/handler/$namespace/$name'
-        return HandlersResource.PATH.addElements(h.getNamespace(), h.getName());
+        return IpojoRootResource.HANDLERS.addElements(h.getNamespace(), h.getName());
     }
 
     @Override
@@ -87,6 +87,11 @@ public class HandlerNamespaceNameResource extends DefaultReadOnlyResource {
         mb.set("missingHandlers", !m_isStale ? m_handler.getMissingHandlers() : Collections.emptyList()); // List<String>
 
         return mb.build();
+    }
+
+    @Override
+    public boolean isObservable() {
+        return true;
     }
 
     @Override

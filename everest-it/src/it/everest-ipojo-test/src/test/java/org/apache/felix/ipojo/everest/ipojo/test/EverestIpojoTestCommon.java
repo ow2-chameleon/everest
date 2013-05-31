@@ -1,6 +1,11 @@
 package org.apache.felix.ipojo.everest.ipojo.test;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.felix.ipojo.ComponentInstance;
+import org.apache.felix.ipojo.Factory;
+import org.apache.felix.ipojo.IPojoFactory;
+import org.apache.felix.ipojo.architecture.Architecture;
+import org.apache.felix.ipojo.architecture.InstanceDescription;
 import org.apache.felix.ipojo.everest.impl.DefaultRequest;
 import org.apache.felix.ipojo.everest.services.*;
 import org.junit.Before;
@@ -10,6 +15,8 @@ import org.ops4j.pax.tinybundles.core.TinyBundle;
 import org.ops4j.pax.tinybundles.core.TinyBundles;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Constants;
+import org.osgi.framework.InvalidSyntaxException;
+import org.osgi.framework.ServiceReference;
 import org.ow2.chameleon.testing.helpers.BaseTest;
 import org.ow2.chameleon.testing.tinybundles.ipojo.IPOJOStrategy;
 
@@ -17,12 +24,13 @@ import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.util.Collection;
 
 import static junit.framework.Assert.assertNotNull;
 import static org.ops4j.pax.exam.CoreOptions.*;
-import static org.ops4j.pax.exam.CoreOptions.bundle;
 
 /**
  * Common configuration for the everest iPOJO tests.
@@ -38,6 +46,21 @@ public class EverestIpojoTestCommon extends BaseTest {
      * The bundle symbolic name of the second generated test bundle.
      */
     public static final String TEST_BUNDLE_2_SYMBOLIC_NAME = "test.bundle2";
+
+    /**
+     * The iPOJO namespace.
+     */
+    public static final String IPOJO = "org.apache.felix.ipojo";
+
+    /**
+     * The name of the "Bar" factories.
+     */
+    public static final String BAR = IPOJO + ".everest.ipojo.test.b1.BarProviderImpl";
+
+    /**
+     * The class name of the "Bar" 2.0.0 factory.
+     */
+    public static final String BAR_2 = IPOJO + ".everest.ipojo.test.b2.BarProviderImpl";
 
     /**
      * The everest service.
@@ -88,14 +111,14 @@ public class EverestIpojoTestCommon extends BaseTest {
         return options(
                 systemProperty("ipojo.processing.synchronous").value("true"),
                 // everest bundles
-                mavenBundle("org.apache.felix.ipojo", "everest-core").versionAsInProject(),
-                mavenBundle("org.apache.felix.ipojo", "everest-ipojo").versionAsInProject(),
-                mavenBundle("org.apache.felix.ipojo", "everest-osgi").versionAsInProject(),
+                mavenBundle(IPOJO, "everest-core").versionAsInProject(),
+                mavenBundle(IPOJO, "everest-ipojo").versionAsInProject(),
+                mavenBundle(IPOJO, "everest-osgi").versionAsInProject(),
                 // The EventAdmin service
                 mavenBundle("org.apache.felix", "org.apache.felix.eventadmin").versionAsInProject(),
                 // Generated test bundles
-                generateBundle(TEST_BUNDLE_SYMBOLIC_NAME, "org.apache.felix.ipojo.everest.ipojo.test.b1"),
-                generateBundle(TEST_BUNDLE_2_SYMBOLIC_NAME, "org.apache.felix.ipojo.everest.ipojo.test.b2"),
+                generateTestBundle(TEST_BUNDLE_SYMBOLIC_NAME, IPOJO + ".everest.ipojo.test.b1"),
+                generateTestBundle(TEST_BUNDLE_2_SYMBOLIC_NAME, IPOJO + ".everest.ipojo.test.b2"),
                 // Fest assert JARs wrapped as bundles
                 wrappedBundle(mavenBundle("org.easytesting", "fest-util").versionAsInProject()),
                 wrappedBundle(mavenBundle("org.easytesting", "fest-assert").versionAsInProject())
@@ -109,18 +132,22 @@ public class EverestIpojoTestCommon extends BaseTest {
     public void commonSetUp() {
         super.commonSetUp();
         // Get the interesting bundles
-        ipojoBundle = osgiHelper.getBundle("org.apache.felix.ipojo");
+        ipojoBundle = osgiHelper.getBundle(IPOJO);
         testBundle = osgiHelper.getBundle(TEST_BUNDLE_SYMBOLIC_NAME);
         testBundle2 = osgiHelper.getBundle(TEST_BUNDLE_2_SYMBOLIC_NAME);
     }
 
     /**
+     * Generates a test bundle with the specified symbolic name.
+     * <p>
+     * The generated bundle contains all the classes and resources in the specified package name, and its sub-packages.
+     * </p>
      *
-     * @param symbolicName
-     * @param packageName
-     * @return
+     * @param symbolicName symbolic name of the bundle to generate
+     * @param packageName  name of the package to include in the bundle
+     * @return the generated bundle
      */
-    private static Option generateBundle(String symbolicName, String packageName) {
+    private static Option generateTestBundle(String symbolicName, String packageName) {
         TinyBundle bundle = TinyBundles.bundle();
 
         // We look inside target/classes/$packageName to find the class and resources
@@ -129,7 +156,7 @@ public class EverestIpojoTestCommon extends BaseTest {
         Collection<File> classes = FileUtils.listFiles(packageDir, null, true);
 
         // Add all classes and resources to the tiny bundle
-        int index = classesDir.getAbsolutePath().length() +1;
+        int index = classesDir.getAbsolutePath().length() + 1;
         for (File clazz : classes) {
             String relativePath = clazz.getAbsolutePath().substring(index);
             try {
@@ -178,6 +205,96 @@ public class EverestIpojoTestCommon extends BaseTest {
     @Test
     public void testEverestServiceIsPresent() {
         assertNotNull(everest);
+    }
+
+    // UTILITY METHODS (HACKS)
+
+    public void waitForFactoryToBeValid(String factoryName, String factoryVersion) {
+
+    }
+
+    private Architecture getArchitecture(String name) throws InvalidSyntaxException {
+        Collection<ServiceReference<Architecture>> refs = context.getServiceReferences(Architecture.class, "(architecture.instance=" + name + ")");
+        if (refs.isEmpty()) {
+            return null;
+        } else if (refs.size() > 1) {
+            // Should never happen!
+            throw new AssertionError("multiple architecture service with same instance name");
+        }
+        ServiceReference<Architecture> ref = refs.iterator().next();
+        return context.getService(ref);
+    }
+
+    private ComponentInstance getComponentInstance(String name) throws InvalidSyntaxException, NoSuchFieldException, IllegalAccessException {
+        Architecture arch = getArchitecture(name);
+        if (arch == null) {
+            return null;
+        }
+        ComponentInstance instance;
+        InstanceDescription desc = arch.getInstanceDescription();
+        Field shunt = InstanceDescription.class.getDeclaredField("m_instance");
+        shunt.setAccessible(true);
+        try {
+            return (ComponentInstance) shunt.get(desc);
+        } finally {
+            shunt.setAccessible(false);
+        }
+    }
+
+    // WARN: this is a hack!!!
+    private boolean killInstance(String name) throws InvalidSyntaxException, NoSuchFieldException, IllegalAccessException {
+        ComponentInstance instance = getComponentInstance(name);
+        if (instance == null) {
+            return false;
+        }
+        // FATALITY!!!
+        instance.dispose();
+        return true;
+    }
+
+    private Factory getFactory(String name, String version) throws InvalidSyntaxException {
+        // Scientifically build the selection filter.
+        String filter = "(&(factory.name=" + name + ")";
+        if (version != null) {
+            filter += "(factory.version=" + version + ")";
+        } else {
+            filter += "(!(factory.version=*))";
+        }
+        filter += ")";
+
+        Collection<ServiceReference<Factory>> refs = context.getServiceReferences(Factory.class, filter);
+        if (refs.isEmpty()) {
+            return null;
+        } else if (refs.size() > 1) {
+            // Should never happen!
+            throw new AssertionError("multiple factory service with same name/version");
+        }
+        return context.getService(refs.iterator().next());
+    }
+
+    // WARN: this is a hack!!!
+    private boolean killFactory(String name, String version) throws InvalidSyntaxException {
+        Factory factory = getFactory(name, version);
+        if (factory == null) {
+            return false;
+        }
+
+        IPojoFactory f = (IPojoFactory) factory;
+        Method weapon = null;
+        try {
+            weapon = IPojoFactory.class.getDeclaredMethod("dispose");
+            weapon.setAccessible(true);
+            // FATALITY!!!
+            weapon.invoke(f);
+        } catch (Exception e) {
+            throw new IllegalStateException("cannot kill factory", e);
+        } finally {
+            // It's a bad idea to let kids play with such a weapon...
+            if (weapon != null) {
+                weapon.setAccessible(false);
+            }
+        }
+        return true;
     }
 
 }
