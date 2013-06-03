@@ -1,0 +1,11 @@
+<ipojo>
+    <!-- Instance declarations used to test InstanceDeclarationResource's -->
+    <instance component="Foo" version="1.2.3.foo" name="DeclaredFoo123">
+        <property name="fooPrefix" value="__declared"/>
+        <property name="fooCounter" value="123"/>
+    </instance>
+    <instance component="org.apache.felix.ipojo.everest.ipojo.test.b1.BarProviderImpl">
+        <property name="barPrefix" value="__declared"/>
+        <property name="barSuffix" value="barNull__"/>
+    </instance>
+</ipojo>

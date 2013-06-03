@@ -5,88 +5,76 @@ import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
 import org.apache.felix.ipojo.everest.impl.DefaultRelation;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.services.Action;
-import org.apache.felix.ipojo.everest.services.Path;
 import org.apache.felix.ipojo.everest.services.Relation;
 import org.apache.felix.ipojo.everest.services.ResourceMetadata;
+import org.osgi.framework.Constants;
+import org.osgi.framework.ServiceReference;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static org.apache.felix.ipojo.everest.ipojo.FactoryResource.stateAsString;
-import static org.apache.felix.ipojo.everest.ipojo.IpojoRootResource.PATH_TO_OSGI_BUNDLES;
+import static org.apache.felix.ipojo.everest.ipojo.IpojoRootResource.*;
 
 /**
- * '/ipojo/handler/$namespace/$name' resource, where $namespace stands for the namespace of a handler, and $name for its name.
+ * '/ipojo/handler/$namespace/$name' resource.
  */
 public class HandlerResource extends DefaultReadOnlyResource {
 
     /**
-     * The underlying handler factory.
+     * The underlying HandlerFactory service.
      */
-    private final HandlerFactory m_handler;
+    private final WeakReference<HandlerFactory> m_handler;
 
-    /**
-     * Flag indicating if the underlying HandlerFactory service still exists.
-     */
-    private volatile boolean m_isStale = false;
-
-    /**
-     * The base immutable metadata of this resource.
-     */
-    private final ResourceMetadata m_baseMetadata;
-
-    public HandlerResource(HandlerFactory handler) {
-        super(canonicalPathOf(handler));
-        m_handler = handler;
-        // Build the immutable metadata of this factory.
-        ImmutableResourceMetadata.Builder mb = new ImmutableResourceMetadata.Builder();
-        mb.set("namespace", m_handler.getNamespace()); // String
-        mb.set("name", m_handler.getName()); // String
-        m_baseMetadata = mb.build();
-
-        // Relations
+    public HandlerResource(HandlerFactory handler, ServiceReference<HandlerFactory> ref) {
+        super(HANDLERS.addElements(handler.getNamespace(), handler.getName()),
+                new ImmutableResourceMetadata.Builder()
+                        .set("namespace", handler.getNamespace())
+                        .set("name", handler.getName())
+                        .build());
+        m_handler = new WeakReference<HandlerFactory>(handler);
+        // Set the immutable relations
         List<Relation> relations = new ArrayList<Relation>();
-
-        // Add relation 'bundle' to READ the bundle that declares this handler
-        relations.add(new DefaultRelation(PATH_TO_OSGI_BUNDLES.addElements(String.valueOf(m_handler.getBundleContext().getBundle().getBundleId())), Action.READ, "bundle"));
-
+        relations.add(new DefaultRelation(
+                PATH_TO_OSGI_SERVICES.addElements(String.valueOf(ref.getProperty(Constants.SERVICE_ID))),
+                Action.READ,
+                "service",
+                "The HandlerFactory OSGi service"));
+        relations.add(new DefaultRelation(
+                PATH_TO_OSGI_BUNDLES.addElements(String.valueOf(handler.getBundleContext().getBundle().getBundleId())),
+                Action.READ,
+                "bundle",
+                "The declaring OSGi bundle"));
         // Add relation 'requiredHandler:$ns:$name' to READ the handlers required by this factory
         @SuppressWarnings("unchecked")
-        List<String> required = (List<String>) m_handler.getRequiredHandlers();
+        List<String> required = (List<String>) handler.getRequiredHandlers();
         for (String nsName : required) {
             int i = nsName.lastIndexOf(':');
             String ns = nsName.substring(0, i);
             String name = nsName.substring(i + 1);
-            relations.add(new DefaultRelation(IpojoRootResource.HANDLERS.addElements(ns, name), Action.READ, "requiredHandler[" + nsName + "]"));
+            relations.add(new DefaultRelation(
+                    IpojoRootResource.HANDLERS.addElements(ns, name),
+                    Action.READ,
+                    "requiredHandler[" + nsName + "]",
+                    String.format("Required handler '%s'", nsName)));
         }
-
         setRelations(relations);
-    }
-
-    /**
-     * Set this handler resource as stale. It happens when the underlying HandlerFactory service vanishes.
-     */
-    void setStale() {
-        m_isStale = true;
-    }
-
-    public static Path canonicalPathOf(HandlerFactory h) {
-        // Canonical path is '/ipojo/handler/$namespace/$name'
-        return IpojoRootResource.HANDLERS.addElements(h.getNamespace(), h.getName());
     }
 
     @Override
     public ResourceMetadata getMetadata() {
-        // Append mutable state to the immutable metadata.
-        ImmutableResourceMetadata.Builder mb = new ImmutableResourceMetadata.Builder(m_baseMetadata);
-
-        mb.set("state", stateAsString(m_handler.getState())); // String
-
-        // Some factory getters miserably fail when the factory is stale.
-        mb.set("missingHandlers", !m_isStale ? m_handler.getMissingHandlers() : Collections.emptyList()); // List<String>
-
-        return mb.build();
+        HandlerFactory h = m_handler.get();
+        ResourceMetadata m = super.getMetadata();
+        if (h == null) {
+            // Reference has been released
+            return m;
+        }
+        // Add dynamic metadata
+        return new ImmutableResourceMetadata.Builder(m)
+                .set("state", stateAsString(h.getState())) // String
+                .set("missingHandlers", h.getMissingHandlers()) // List<String>
+                .build();
     }
 
     @Override
@@ -97,8 +85,10 @@ public class HandlerResource extends DefaultReadOnlyResource {
     @Override
     public <A> A adaptTo(Class<A> clazz) {
         if (clazz == HandlerFactory.class) {
-            return (A) m_handler;
+            // Returns null if reference has been released
+            return clazz.cast(m_handler.get());
+        } else {
+            return super.adaptTo(clazz);
         }
-        return null;
     }
 }

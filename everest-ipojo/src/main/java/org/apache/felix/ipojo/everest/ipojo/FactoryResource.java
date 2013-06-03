@@ -8,118 +8,120 @@ import org.apache.felix.ipojo.everest.impl.DefaultRelation;
 import org.apache.felix.ipojo.everest.impl.DefaultRequest;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.services.*;
+import org.osgi.framework.Constants;
+import org.osgi.framework.ServiceReference;
 
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
 
-import static org.apache.felix.ipojo.everest.ipojo.IpojoRootResource.PATH_TO_OSGI_BUNDLES;
+import static org.apache.felix.ipojo.everest.ipojo.IpojoRootResource.*;
 
 /**
- * '/ipojo/factory/$name/$version' resource, where $name stands for the name of a factory, and $version for its version.
+ * '/ipojo/factory/$name/$version' resource.
  */
 public class FactoryResource extends DefaultReadOnlyResource {
 
     /**
-     * The enclosing iPOJO resource.
+     * The enclosing iPOJO root resource.
      */
     private final IpojoRootResource m_ipojo;
 
     /**
-     * The represented factory.
+     * The underlying Factory service.
      */
-    private final Factory m_factory;
-
-    /**
-     * Flag indicating if the underlying Factory service still exists.
-     */
-    private volatile boolean m_isStale = false;
-
-    /**
-     * The base immutable metadata of this resource.
-     */
-    private final ResourceMetadata m_baseMetadata;
+    private final WeakReference<Factory> m_factory;
 
     //TODO add relation to factory declaration
-    //TODO add relation to instances created by this factory
     //TODO add relation to bundle that defines the implementation class
-    //TODO add relation to Factory service
 
-    /**
-     * @param factory the factory represented by this resource
-     */
     @SuppressWarnings("deprecation")
-    public FactoryResource(IpojoRootResource ipojo, Factory factory) {
-        super(canonicalPathOf(factory));
+    public FactoryResource(IpojoRootResource ipojo, Factory factory, ServiceReference<Factory> ref) {
+        super(FACTORIES.addElements(factory.getName(), String.valueOf(factory.getVersion())),
+                new ImmutableResourceMetadata.Builder()
+                        .set("name", factory.getName())
+                        .set("version", factory.getVersion())
+                        .set("className", factory.getClassName())
+                        .build());
         m_ipojo = ipojo;
-        m_factory = factory;
-        // Build the immutable metadata of this factory.
-        ImmutableResourceMetadata.Builder mb = new ImmutableResourceMetadata.Builder();
-        mb.set("name", m_factory.getName()); // String
-        mb.set("version", m_factory.getVersion()); // String
-        mb.set("className", m_factory.getClassName()); // String, deprecated but who cares?
-        m_baseMetadata = mb.build();
-
-        // Relations
+        m_factory = new WeakReference<Factory>(factory);
+        // Set the immutable relations
         List<Relation> relations = new ArrayList<Relation>();
-
-        // Add relation 'bundle' to READ the bundle that declares this factory
         relations.add(new DefaultRelation(
-                PATH_TO_OSGI_BUNDLES.addElements(String.valueOf(m_factory.getBundleContext().getBundle().getBundleId())),
-                Action.READ, "bundle"));
-
+                PATH_TO_OSGI_SERVICES.addElements(String.valueOf(ref.getProperty(Constants.SERVICE_ID))),
+                Action.READ,
+                "service",
+                "The Factory OSGi service"));
+        relations.add(new DefaultRelation(
+                PATH_TO_OSGI_BUNDLES.addElements(String.valueOf(factory.getBundleContext().getBundle().getBundleId())),
+                Action.READ,
+                "bundle",
+                "The declaring OSGi bundle"));
         // Add relation 'requiredHandler[$ns:$name]' to READ the handlers required by this factory
         @SuppressWarnings("unchecked")
-        List<String> required = (List<String>) m_factory.getRequiredHandlers();
+        List<String> required = (List<String>) factory.getRequiredHandlers();
         for (String nsName : required) {
             int i = nsName.lastIndexOf(':');
             String ns = nsName.substring(0, i);
             String name = nsName.substring(i + 1);
-            relations.add(new DefaultRelation(IpojoRootResource.HANDLERS.addElements(ns, name), Action.READ,
-                    "requiredHandler[" + nsName + "]"));
+            relations.add(new DefaultRelation(
+                    HANDLERS.addElements(ns, name),
+                    Action.READ,
+                    "requiredHandler[" + nsName + "]",
+                    String.format("Required handler '%s'", nsName)));
         }
-
         setRelations(relations);
     }
 
-    /**
-     * Set this factory resource as stale. It happens when the underlying Factory service vanishes.
-     */
-    void setStale() {
-        m_isStale = true;
-    }
-
     @Override
-    public synchronized ResourceMetadata getMetadata() {
-        // Append mutable state to the immutable metadata.
-        ImmutableResourceMetadata.Builder mb = new ImmutableResourceMetadata.Builder(m_baseMetadata);
-
-
-        mb.set("state", stateAsString(m_factory.getState())); // String
-
-        // Some factory getters miserably fail when the factory is stale.
-        mb.set("missingHandlers", !m_isStale ? m_factory.getMissingHandlers() : Collections.emptyList()); // List<String>
-
-        return mb.build();
+    public ResourceMetadata getMetadata() {
+        Factory f = m_factory.get();
+        ResourceMetadata m = super.getMetadata();
+        if (f == null) {
+            // Reference has been released
+            return m;
+        }
+        // Add dynamic metadata
+        return new ImmutableResourceMetadata.Builder(m)
+                .set("state", stateAsString(f.getState())) // String
+                .set("missingHandlers", f.getMissingHandlers()) // List<String>
+                .build();
     }
 
     @Override
     public List<Relation> getRelations() {
-        List<Relation> relations = super.getRelations();
-
-        // Add relation to created instances
-        for (String instanceName : getCreatedInstanceNames()) {
-            relations.add(new DefaultRelation(IpojoRootResource.INSTANCES.addElements(instanceName), Action.READ,
-                    "instance[" + instanceName + "]"));
+        List<Relation> r = super.getRelations();
+        Factory f = m_factory.get();
+        if (f == null) {
+            // Reference has been released
+            return r;
         }
-
-        return relations;
+        // Add dynamic relations
+        r = new ArrayList<Relation>(r);
+        for (String instanceName : getCreatedInstanceNames(f)) {
+            r.add(new DefaultRelation(
+                    INSTANCES.addElements(instanceName),
+                    Action.READ,
+                    "instance[" + instanceName + "]",
+                    "Instance '" + instanceName + "'"));
+        }
+        return Collections.unmodifiableList(r);
     }
 
-    private static Path canonicalPathOf(Factory f) {
-        // Canonical path is '/ipojo/factory/$factoryName/$factoryVersion'
-        // If m_version == null, then $factoryVersion is the literal 'null'
-        return IpojoRootResource.FACTORIES.addElements(f.getName(), String.valueOf(f.getVersion()));
+    @Override
+    public boolean isObservable() {
+        return true;
+    }
+
+    @Override
+    public <A> A adaptTo(Class<A> clazz) {
+        if (clazz == Factory.class) {
+            // Returns null if reference has been released
+            return clazz.cast(m_factory.get());
+        } else {
+            return super.adaptTo(clazz);
+        }
     }
 
     public static String stateAsString(int state) {
@@ -135,6 +137,11 @@ public class FactoryResource extends DefaultReadOnlyResource {
 
     @Override
     public Resource create(Request request) throws IllegalActionOnResourceException {
+        Factory factory = m_factory.get();
+        if (factory == null) {
+            throw new IllegalActionOnResourceException(request, this, "Factory has gone");
+        }
+
         // Get configuration of the component instance to create.
         Hashtable<String, Object> config;
         if (request.parameters() != null) {
@@ -144,9 +151,9 @@ public class FactoryResource extends DefaultReadOnlyResource {
         }
 
         // Create the instance.
-        String name;
+        ComponentInstance i;
         try {
-            name = m_factory.createComponentInstance(config).getInstanceName();
+            i = factory.createComponentInstance(config);
         } catch (Exception e) {
             IllegalActionOnResourceException ee = new IllegalActionOnResourceException(request, this,
                     "cannot create component instance");
@@ -155,21 +162,28 @@ public class FactoryResource extends DefaultReadOnlyResource {
         }
 
         // Tricky part : return the resource representing the created instance.
-        Resource instance;
+        Resource r;
         try {
-            instance = m_ipojo.process(new DefaultRequest(Action.READ, Path.from("/ipojo/instance").addElements(name), null));
+            r = m_ipojo.process(new DefaultRequest(
+                    Action.READ,
+                    Path.from("/ipojo/instance").addElements(i.getInstanceName()),
+                    null));
         } catch (ResourceNotFoundException e) {
             // An instance has been created, however its Architecture service is not present.
-            //TODO Should we fail here??? Can null returned value be considered as a confession of failure?
+            //TODO Generate a fake instance resource
             return null;
         }
-        return instance;
+        return r;
     }
 
     @Override
     public Resource delete(Request request) throws IllegalActionOnResourceException {
         // The factory must be destroyed.
-        IPojoFactory f = (IPojoFactory) m_factory;
+        IPojoFactory f = (IPojoFactory) m_factory.get();
+        if (f == null) {
+            throw new IllegalActionOnResourceException(request, this, "Factory has gone");
+        }
+
         Method weapon = null;
         try {
             //TODO find a common agreement on how to kill a factory. Is this the right (messy) way???
@@ -193,12 +207,12 @@ public class FactoryResource extends DefaultReadOnlyResource {
 
     // Get the instances created by this factory
     // This is a hack!
-    private Set<String> getCreatedInstanceNames() {
+    private Set<String> getCreatedInstanceNames(Factory factory) {
         Field weapon = null;
         try {
             weapon = IPojoFactory.class.getDeclaredField("m_componentInstances");
             weapon.setAccessible(true);
-            return ((Map<String, ComponentInstance>) weapon.get(m_factory)).keySet();
+            return ((Map<String, ComponentInstance>) weapon.get(factory)).keySet();
         } catch (Exception e) {
             throw new RuntimeException("cannot get factory created instances", e);
         } finally {
@@ -206,19 +220,6 @@ public class FactoryResource extends DefaultReadOnlyResource {
                 weapon.setAccessible(false);
             }
         }
-    }
-
-    @Override
-    public boolean isObservable() {
-        return true;
-    }
-
-    @Override
-    public <A> A adaptTo(Class<A> clazz) {
-        if (clazz == Factory.class) {
-            return (A) m_factory;
-        }
-        return null;
     }
 
 }

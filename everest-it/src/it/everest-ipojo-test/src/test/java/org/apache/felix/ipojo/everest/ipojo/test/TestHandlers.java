@@ -1,5 +1,6 @@
 package org.apache.felix.ipojo.everest.ipojo.test;
 
+import org.apache.felix.ipojo.HandlerFactory;
 import org.apache.felix.ipojo.everest.filters.RelationFilters;
 import org.apache.felix.ipojo.everest.services.IllegalActionOnResourceException;
 import org.apache.felix.ipojo.everest.services.Resource;
@@ -12,6 +13,7 @@ import java.util.List;
 import static org.apache.felix.ipojo.everest.ipojo.test.ResourceAssert.assertThatResource;
 import static org.apache.felix.ipojo.everest.services.Action.READ;
 import static org.fest.assertions.Assertions.assertThat;
+import static org.osgi.framework.Constants.SERVICE_ID;
 
 /**
  * Test /ipojo/factory and sons
@@ -96,11 +98,18 @@ public class TestHandlers extends EverestIpojoTestCommon {
             assertThat(m.get("state")).isEqualTo("valid");
             assertThat(m.get("missingHandlers", List.class)).isEmpty();
             //TODO Check more metadata, as soon as more metadata are provided...
+            // Check adaptation
+            assertThat(r.adaptTo(HandlerFactory.class)).isSameAs(getHandlerFactory(IPOJO, name));
             // Resource should have relations to the iPOJO bundle
             assertThatResource(r).hasRelation(RelationFilters.and(
                     RelationFilters.hasAction(READ),
                     RelationFilters.hasName("bundle"),
                     RelationFilters.hasHref("/osgi/bundles/" + ipojoBundle.getBundleId())));
+            // Check relation on HandlerFactory service
+            assertThatResource(r).hasRelation(RelationFilters.and(
+                    RelationFilters.hasName("service"),
+                    RelationFilters.hasAction(READ),
+                    RelationFilters.hasHref("/osgi/services/" + getHandlerFactoryReference(IPOJO, name).getProperty(SERVICE_ID))));
             //TODO Check more relations, as soon as more relations are provided...
         }
     }
@@ -125,6 +134,11 @@ public class TestHandlers extends EverestIpojoTestCommon {
                 RelationFilters.hasAction(READ),
                 RelationFilters.hasName("bundle"),
                 RelationFilters.hasHref("/osgi/bundles/" + testBundle.getBundleId())));
+        // Check relation on HandlerFactory service
+        assertThatResource(r).hasRelation(RelationFilters.and(
+                RelationFilters.hasName("service"),
+                RelationFilters.hasAction(READ),
+                RelationFilters.hasHref("/osgi/services/" + getHandlerFactoryReference("foo.bar", "qux").getProperty(SERVICE_ID))));
         // Resource should have relations to the required bundles
         for (String name : CORE_HANDLERS) {
             System.out.println("Checking handler: " + name);

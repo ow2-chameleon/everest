@@ -18,11 +18,13 @@ import static org.apache.felix.ipojo.everest.ipojo.test.ResourceAssert.assertTha
 import static org.apache.felix.ipojo.everest.services.Action.*;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assert.fail;
+import static org.osgi.framework.Constants.SERVICE_ID;
 
 /**
  * Test /ipojo/factory and sons
  */
 public class TestFactories extends EverestIpojoTestCommon {
+
     /**
      * Read /ipojo/factory
      */
@@ -102,6 +104,8 @@ public class TestFactories extends EverestIpojoTestCommon {
         // Check missing handler
         assertThat(m.get("missingHandlers", List.class)).isEmpty();
         //TODO Check more metadata, as soon as more metadata are provided...
+        // Check adaptation
+        assertThat(r.adaptTo(Factory.class)).isSameAs(getFactory("Foo", "1.2.3.foo"));
         // Check relation on declaring bundle
         assertThatResource(r).hasRelation(RelationFilters.and(
                 RelationFilters.hasName("bundle"),
@@ -114,6 +118,17 @@ public class TestFactories extends EverestIpojoTestCommon {
                     RelationFilters.hasName(String.format("requiredHandler[%s:%s]", IPOJO, handlerName)),
                     RelationFilters.hasHref("/ipojo/handler/" + IPOJO + "/" + handlerName)));
         }
+        // Check relation on Factory service
+        ServiceReference<Factory> ref = getFactoryReference("Foo", "1.2.3.foo");
+        assertThatResource(r).hasRelation(RelationFilters.and(
+                RelationFilters.hasName("service"),
+                RelationFilters.hasAction(READ),
+                RelationFilters.hasHref("/osgi/services/" + ref.getProperty(SERVICE_ID))));
+        // Check relation on declared instance
+        assertThatResource(r).hasRelation(RelationFilters.and(
+                RelationFilters.hasName("instance[DeclaredFoo123]"),
+                RelationFilters.hasAction(READ),
+                RelationFilters.hasHref("/ipojo/instance/DeclaredFoo123")));
         //TODO Check more relations, as soon as more relations are provided...
     }
 
@@ -135,6 +150,8 @@ public class TestFactories extends EverestIpojoTestCommon {
         // Check missing handler
         assertThat(m.get("missingHandlers", List.class)).isEmpty();
         //TODO Check more, as soon as more metadata are provided...
+        // Check adaptation
+        assertThat(r.adaptTo(Factory.class)).isSameAs(getFactory(BAR, null));
         // Check relation on declaring bundle
         assertThatResource(r).hasRelation(RelationFilters.and(
                 RelationFilters.hasName("bundle"),
@@ -147,6 +164,13 @@ public class TestFactories extends EverestIpojoTestCommon {
                     RelationFilters.hasName(String.format("requiredHandler[%s:%s]", IPOJO, handlerName)),
                     RelationFilters.hasHref("/ipojo/handler/" + IPOJO + "/" + handlerName)));
         }
+        // Check relation on Factory service
+        ServiceReference<Factory> ref = getFactoryReference(BAR, null);
+        assertThatResource(r).hasRelation(RelationFilters.and(
+                RelationFilters.hasName("service"),
+                RelationFilters.hasAction(READ),
+                RelationFilters.hasHref("/osgi/services/" + ref.getProperty(SERVICE_ID))));
+        // TODO Check relation on declared instance, but name is unknown
         //TODO Check more relations, as soon as more relations are provided...
     }
 
@@ -168,6 +192,8 @@ public class TestFactories extends EverestIpojoTestCommon {
         // Check missing handler
         assertThat(m.get("missingHandlers", List.class)).isEmpty();
         //TODO Check more, as soon as more metadata are provided...
+        // Check adaptation
+        assertThat(r.adaptTo(Factory.class)).isSameAs(getFactory(BAR, "2.0.0"));
         // Check relation on declaring bundle
         assertThatResource(r).hasRelation(RelationFilters.and(
                 RelationFilters.hasName("bundle"),
@@ -180,6 +206,13 @@ public class TestFactories extends EverestIpojoTestCommon {
                     RelationFilters.hasName(String.format("requiredHandler[%s:%s]", IPOJO, handlerName)),
                     RelationFilters.hasHref("/ipojo/handler/" + IPOJO + "/" + handlerName)));
         }
+        // Check relation on Factory service
+        ServiceReference<Factory> ref = getFactoryReference(BAR, "2.0.0");
+        assertThatResource(r).hasRelation(RelationFilters.and(
+                RelationFilters.hasName("service"),
+                RelationFilters.hasAction(READ),
+                RelationFilters.hasHref("/osgi/services/" + ref.getProperty(SERVICE_ID))));
+        // TODO Check relation on declared instance, but name is unknown
         //TODO Check more relations, as soon as more relations are provided...
     }
 

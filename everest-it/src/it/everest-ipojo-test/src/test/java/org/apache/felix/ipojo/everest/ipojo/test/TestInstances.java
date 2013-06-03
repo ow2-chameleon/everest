@@ -1,5 +1,8 @@
 package org.apache.felix.ipojo.everest.ipojo.test;
 
+import org.apache.felix.ipojo.ComponentInstance;
+import org.apache.felix.ipojo.Factory;
+import org.apache.felix.ipojo.architecture.Architecture;
 import org.apache.felix.ipojo.everest.filters.RelationFilters;
 import org.apache.felix.ipojo.everest.impl.DefaultRequest;
 import org.apache.felix.ipojo.everest.ipojo.test.b1.BarService;
@@ -7,14 +10,17 @@ import org.apache.felix.ipojo.everest.ipojo.test.b1.FooService;
 import org.apache.felix.ipojo.everest.services.*;
 import org.junit.Before;
 import org.junit.Test;
+import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.apache.felix.ipojo.everest.ipojo.test.ResourceAssert.assertThatResource;
 import static org.apache.felix.ipojo.everest.services.Action.READ;
 import static org.fest.assertions.Assertions.assertThat;
+import static org.osgi.framework.Constants.SERVICE_ID;
 
 /**
  * Test for instance resources.
@@ -25,6 +31,54 @@ public class TestInstances extends EverestIpojoTestCommon {
     public void setup() {
         // Create a Foo instance so Bar instances can be valid
         ipojoHelper.createComponentInstance("Foo");
+    }
+
+    /**
+     * Read /ipojo/instance
+     */
+    @Test
+    public void testReadInstances() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        Resource r = read("/ipojo/instance");
+        // Resource should be observable
+        assertThat(r.isObservable()).isTrue();
+        // Metadata should be empty
+        assertThat(r.getMetadata()).isEmpty();
+        // Resource should have relations to /ipojo/instance/DeclaredFoo123
+        assertThatResource(r).hasRelation(RelationFilters.and(
+                RelationFilters.hasAction(READ),
+                RelationFilters.hasName("instance[DeclaredFoo123]"),
+                RelationFilters.hasHref("/ipojo/instance/DeclaredFoo123")));
+    }
+
+    /**
+     * Read /ipojo/instance
+     */
+    @Test
+    public void testReadInstanceDeclaredFoo123() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        Resource r = read("/ipojo/instance/DeclaredFoo123");
+        // Resource should be observable
+        assertThat(r.isObservable()).isTrue();
+        ResourceMetadata m = r.getMetadata();
+        // Check name, factory
+        assertThat(m.get("name")).isEqualTo("DeclaredFoo123");
+        assertThat(m.get("factory.name")).isEqualTo("Foo");
+        assertThat(m.get("factory.version")).isEqualTo("1.2.3.foo");
+        // Check state
+        assertThat(m.get("state")).isEqualTo("valid");
+        //TODO Check more metadata, as soon as more metadata are provided...
+        // Check adaptations
+        assertThat(r.adaptTo(Architecture.class)).isSameAs(getArchitecture("DeclaredFoo123"));
+        assertThat(r.adaptTo(ComponentInstance.class)).isSameAs(getComponentInstance("DeclaredFoo123"));
+        // Check relation on factory resource
+        assertThatResource(r).hasRelation(RelationFilters.and(
+                RelationFilters.hasName("factory"),
+                RelationFilters.hasAction(READ),
+                RelationFilters.hasHref("/ipojo/factory/Foo/1.2.3.foo")));
+        // Check relation on Architecture service
+        assertThatResource(r).hasRelation(RelationFilters.and(
+                RelationFilters.hasName("service"),
+                RelationFilters.hasAction(READ),
+                RelationFilters.hasHref("/osgi/services/" + getArchitectureReference("DeclaredFoo123").getProperty(Constants.SERVICE_ID))));
     }
 
     /**

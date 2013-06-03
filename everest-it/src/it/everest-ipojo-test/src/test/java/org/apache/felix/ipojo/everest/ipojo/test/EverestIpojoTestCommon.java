@@ -3,11 +3,13 @@ package org.apache.felix.ipojo.everest.ipojo.test;
 import org.apache.commons.io.FileUtils;
 import org.apache.felix.ipojo.ComponentInstance;
 import org.apache.felix.ipojo.Factory;
+import org.apache.felix.ipojo.HandlerFactory;
 import org.apache.felix.ipojo.IPojoFactory;
 import org.apache.felix.ipojo.architecture.Architecture;
 import org.apache.felix.ipojo.architecture.InstanceDescription;
 import org.apache.felix.ipojo.everest.impl.DefaultRequest;
 import org.apache.felix.ipojo.everest.services.*;
+import org.apache.felix.ipojo.extender.ExtensionDeclaration;
 import org.junit.Before;
 import org.junit.Test;
 import org.ops4j.pax.exam.Option;
@@ -28,7 +30,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.util.Collection;
+import java.util.Map;
 
+import static java.util.Map.Entry;
 import static junit.framework.Assert.assertNotNull;
 import static org.ops4j.pax.exam.CoreOptions.*;
 
@@ -117,8 +121,8 @@ public class EverestIpojoTestCommon extends BaseTest {
                 // The EventAdmin service
                 mavenBundle("org.apache.felix", "org.apache.felix.eventadmin").versionAsInProject(),
                 // Generated test bundles
-                generateTestBundle(TEST_BUNDLE_SYMBOLIC_NAME, IPOJO + ".everest.ipojo.test.b1"),
-                generateTestBundle(TEST_BUNDLE_2_SYMBOLIC_NAME, IPOJO + ".everest.ipojo.test.b2"),
+                generateTestBundle(TEST_BUNDLE_SYMBOLIC_NAME, IPOJO + ".everest.ipojo.test.b1", "metadata.1.xml", null),
+                generateTestBundle(TEST_BUNDLE_2_SYMBOLIC_NAME, IPOJO + ".everest.ipojo.test.b2", "metadata.2.xml", null),
                 // Fest assert JARs wrapped as bundles
                 wrappedBundle(mavenBundle("org.easytesting", "fest-util").versionAsInProject()),
                 wrappedBundle(mavenBundle("org.easytesting", "fest-assert").versionAsInProject())
@@ -145,9 +149,11 @@ public class EverestIpojoTestCommon extends BaseTest {
      *
      * @param symbolicName symbolic name of the bundle to generate
      * @param packageName  name of the package to include in the bundle
+     * @param metadataXml  the name of the iPOJO metadata XML file to use, may be {@code null}
+     * @param headers      additional bundle headers
      * @return the generated bundle
      */
-    private static Option generateTestBundle(String symbolicName, String packageName) {
+    public static Option generateTestBundle(String symbolicName, String packageName, String metadataXml, Map<String, String> headers) {
         TinyBundle bundle = TinyBundles.bundle();
 
         // We look inside target/classes/$packageName to find the class and resources
@@ -167,11 +173,22 @@ public class EverestIpojoTestCommon extends BaseTest {
         }
 
         // Add the bundle headers and generate the stream
+        if (headers != null) {
+            for (Entry<String, String> header : headers.entrySet()) {
+                bundle.set(header.getKey(), header.getValue());
+            }
+        }
+        File metadata;
+        if (metadataXml != null) {
+            metadata = new File("src/main/resources/" + metadataXml);
+        } else {
+            metadata = null;
+        }
         InputStream stream = bundle
                 .set(Constants.BUNDLE_SYMBOLICNAME, symbolicName)
                 .set(Constants.IMPORT_PACKAGE, "*")
                 .set(Constants.EXPORT_PACKAGE, packageName + ", " + packageName + ".*")
-                .build(IPOJOStrategy.withiPOJO());
+                .build(IPOJOStrategy.withiPOJO(metadata));
 
         // Write the bundle and return its URL
         File output = new File("target/tested/" + symbolicName + ".jar");
@@ -207,35 +224,136 @@ public class EverestIpojoTestCommon extends BaseTest {
         assertNotNull(everest);
     }
 
-    // UTILITY METHODS (HACKS)
+    // UTILITY METHODS
 
-    public void waitForFactoryToBeValid(String factoryName, String factoryVersion) {
-
+    public Factory getFactory(String name, String version) {
+        ServiceReference<Factory> ref = getFactoryReference(name, version);
+        if (ref == null) {
+            throw new AssertionError("no factory service with same name/version: " + name + "/" + version);
+        }
+        return context.getService(ref);
     }
 
-    private Architecture getArchitecture(String name) throws InvalidSyntaxException {
-        Collection<ServiceReference<Architecture>> refs = context.getServiceReferences(Architecture.class, "(architecture.instance=" + name + ")");
+    public HandlerFactory getHandlerFactory(String namespace, String name) {
+        ServiceReference<HandlerFactory> ref = getHandlerFactoryReference(namespace, name);
+        if (ref == null) {
+            throw new AssertionError("no handler factory service with same namespace/name: " + namespace + "/" + name);
+        }
+        return context.getService(ref);
+    }
+
+    public Architecture getArchitecture(String instance) {
+        ServiceReference<Architecture> ref = getArchitectureReference(instance);
+        if (ref == null) {
+            throw new AssertionError("no architecture service with same instance name: " + instance);
+        }
+        return context.getService(ref);
+    }
+
+    public ServiceReference<Factory> getFactoryReference(String name, String version) {
+        // Scientifically build the selection filter.
+        String filter = "(&(factory.name=" + name + ")";
+        if (version != null) {
+            filter += "(factory.version=" + version + ")";
+        } else {
+            filter += "(!(factory.version=*))";
+        }
+        filter += ")";
+        Collection<ServiceReference<Factory>> refs;
+        try {
+            refs = context.getServiceReferences(Factory.class, filter);
+        } catch (InvalidSyntaxException e) {
+            // Should never happen!
+            throw new AssertionError(e);
+        }
         if (refs.isEmpty()) {
             return null;
         } else if (refs.size() > 1) {
             // Should never happen!
-            throw new AssertionError("multiple architecture service with same instance name");
+            throw new AssertionError("multiple factory service with same name/version: " + name + "/" + version);
         }
-        ServiceReference<Architecture> ref = refs.iterator().next();
-        return context.getService(ref);
+        return refs.iterator().next();
     }
 
-    private ComponentInstance getComponentInstance(String name) throws InvalidSyntaxException, NoSuchFieldException, IllegalAccessException {
-        Architecture arch = getArchitecture(name);
-        if (arch == null) {
-            return null;
+    public ServiceReference<HandlerFactory> getHandlerFactoryReference(String namespace, String name) {
+        // Scientifically build the selection filter.
+        String filter = "(&(handler.namespace=" + namespace + ")(handler.name=" + name +"))";
+        Collection<ServiceReference<HandlerFactory>> refs;
+        try {
+            refs = context.getServiceReferences(HandlerFactory.class, filter);
+        } catch (InvalidSyntaxException e) {
+            // Should never happen!
+            throw new AssertionError(e);
         }
-        ComponentInstance instance;
+        if (refs.isEmpty()) {
+            return null;
+        } else if (refs.size() > 1) {
+            // Should never happen!
+            throw new AssertionError("multiple factory service with same namespace/name: " + namespace + "/" + name);
+        }
+        return refs.iterator().next();
+    }
+
+    public ServiceReference<Architecture> getArchitectureReference(String instance) {
+        // Scientifically build the selection filter.
+        String filter = "(architecture.instance=" + instance + ")";
+        Collection<ServiceReference<Architecture>> refs;
+        try {
+            refs = context.getServiceReferences(Architecture.class, filter);
+        } catch (InvalidSyntaxException e) {
+            // Should never happen!
+            throw new AssertionError(e);
+        }
+        if (refs.isEmpty()) {
+            return null;
+        } else if (refs.size() > 1) {
+            // Should never happen!
+            throw new AssertionError("multiple architecture service with same instance: " + instance);
+        }
+        return refs.iterator().next();
+    }
+
+    public ServiceReference<ExtensionDeclaration> getExtensionDeclarationServiceReference(String extension) {
+        // Get ALL the ExtensionDeclaration services
+        Collection<ServiceReference<ExtensionDeclaration>> refs;
+        try {
+            refs = context.getServiceReferences(ExtensionDeclaration.class, null);
+        } catch (InvalidSyntaxException e) {
+            // Should never... NEVER happen!
+            throw new AssertionError(e);
+        }
+        for (ServiceReference<ExtensionDeclaration> ref : refs) {
+            ExtensionDeclaration e = context.getService(ref);
+            try {
+                if (extension.equals(e.getExtensionName())) {
+                    return ref;
+                }
+            } finally {
+                context.ungetService(ref);
+            }
+        }
+        return null;
+    }
+
+    // HACKs
+
+    // WARN: this is a hack!!!
+    public ComponentInstance getComponentInstance(String instance) {
+        Architecture arch = getArchitecture(instance);
         InstanceDescription desc = arch.getInstanceDescription();
-        Field shunt = InstanceDescription.class.getDeclaredField("m_instance");
+        Field shunt;
+        try {
+            shunt = InstanceDescription.class.getDeclaredField("m_instance");
+        } catch (NoSuchFieldException e) {
+            // Should never happen!
+            throw new AssertionError(e);
+        }
         shunt.setAccessible(true);
         try {
             return (ComponentInstance) shunt.get(desc);
+        } catch (IllegalAccessException e) {
+            // Should never happen!
+            throw new AssertionError(e);
         } finally {
             shunt.setAccessible(false);
         }
@@ -250,26 +368,6 @@ public class EverestIpojoTestCommon extends BaseTest {
         // FATALITY!!!
         instance.dispose();
         return true;
-    }
-
-    private Factory getFactory(String name, String version) throws InvalidSyntaxException {
-        // Scientifically build the selection filter.
-        String filter = "(&(factory.name=" + name + ")";
-        if (version != null) {
-            filter += "(factory.version=" + version + ")";
-        } else {
-            filter += "(!(factory.version=*))";
-        }
-        filter += ")";
-
-        Collection<ServiceReference<Factory>> refs = context.getServiceReferences(Factory.class, filter);
-        if (refs.isEmpty()) {
-            return null;
-        } else if (refs.size() > 1) {
-            // Should never happen!
-            throw new AssertionError("multiple factory service with same name/version");
-        }
-        return context.getService(refs.iterator().next());
     }
 
     // WARN: this is a hack!!!
