@@ -15,10 +15,10 @@ import org.junit.Test;
 import org.ops4j.pax.exam.Option;
 import org.ops4j.pax.tinybundles.core.TinyBundle;
 import org.ops4j.pax.tinybundles.core.TinyBundles;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.Constants;
-import org.osgi.framework.InvalidSyntaxException;
-import org.osgi.framework.ServiceReference;
+import org.osgi.framework.*;
+import org.osgi.service.event.Event;
+import org.osgi.service.event.EventConstants;
+import org.osgi.service.event.EventHandler;
 import org.ow2.chameleon.testing.helpers.BaseTest;
 import org.ow2.chameleon.testing.tinybundles.ipojo.IPOJOStrategy;
 
@@ -30,6 +30,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.util.Collection;
+import java.util.Dictionary;
+import java.util.Hashtable;
 import java.util.Map;
 
 import static java.util.Map.Entry;
@@ -88,6 +90,11 @@ public class EverestIpojoTestCommon extends BaseTest {
     Bundle testBundle2;
 
     /**
+     * The registered event handler service.
+     */
+    ServiceRegistration<EventHandler> eventHandlerService;
+
+    /**
      * Disable construction of the test bundle, as we need to construct manually two of them.
      *
      * @return {@code false}
@@ -114,6 +121,7 @@ public class EverestIpojoTestCommon extends BaseTest {
     protected Option[] getCustomOptions() {
         return options(
                 systemProperty("ipojo.processing.synchronous").value("true"),
+                systemProperty("everest.processing.synchronous").value("true"),
                 // everest bundles
                 mavenBundle(IPOJO, "everest-core").versionAsInProject(),
                 mavenBundle(IPOJO, "everest-ipojo").versionAsInProject(),
@@ -139,6 +147,23 @@ public class EverestIpojoTestCommon extends BaseTest {
         ipojoBundle = osgiHelper.getBundle(IPOJO);
         testBundle = osgiHelper.getBundle(TEST_BUNDLE_SYMBOLIC_NAME);
         testBundle2 = osgiHelper.getBundle(TEST_BUNDLE_2_SYMBOLIC_NAME);
+        // Register an EventHandler for debug
+        Dictionary<String, String> props = new Hashtable<String, String>();
+        props.put(EventConstants.EVENT_TOPIC, "everest/ipojo/*");
+        eventHandlerService = context.registerService(EventHandler.class, new EventHandler() {
+            public void handleEvent(Event event) {
+                System.out.println("Event " + event.getProperty("eventType") + " on path " + event.getProperty("canonicalPath"));
+            }
+        }, props);
+    }
+
+    /**
+     * Common test tear down.
+     */
+    @Override
+    public void commonTearDown() {
+        eventHandlerService.unregister();
+        super.commonTearDown();
     }
 
     /**

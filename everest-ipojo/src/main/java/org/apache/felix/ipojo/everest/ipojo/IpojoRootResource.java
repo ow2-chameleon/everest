@@ -5,6 +5,7 @@ import org.apache.felix.ipojo.Factory;
 import org.apache.felix.ipojo.HandlerFactory;
 import org.apache.felix.ipojo.annotations.*;
 import org.apache.felix.ipojo.architecture.Architecture;
+import org.apache.felix.ipojo.everest.core.Everest;
 import org.apache.felix.ipojo.everest.impl.DefaultRelation;
 import org.apache.felix.ipojo.everest.impl.DefaultRequest;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
@@ -235,15 +236,24 @@ public class IpojoRootResource extends ResourceMap<ResourceMap<?>> {
     @Bind(id = "instances", optional = true, aggregate = true)
     public void bindInstance(Architecture instance, ServiceReference<Architecture> ref) {
         String name = instance.getInstanceDescription().getName();
+        InstanceResource r = new InstanceResource(instance, ref);
         m_instances.addResource(
-                new InstanceResource(instance, ref),
+                r,
                 format("instance[%s]", name),
                 format("iPOJO component instance '%s'", name));
+        // Post resource creation event
+        Everest.postResource(ResourceEvent.CREATED, r);
+        Everest.postResource(ResourceEvent.UPDATED, m_instances);
+        // TODO may affect factory, instance declaration
     }
 
     @Unbind(id = "instances")
     public void unbindInstance(Architecture instance) {
-        m_instances.removePath(INSTANCES.addElements(instance.getInstanceDescription().getName()));
+        InstanceResource r = m_instances.removePath(INSTANCES.addElements(instance.getInstanceDescription().getName()));
+        // Post resource deletion event
+        Everest.postResource(ResourceEvent.DELETED, r);
+        Everest.postResource(ResourceEvent.UPDATED, m_instances);
+        // TODO may affect factory, instance declaration
     }
 
     // Callbacks for the tracking of iPOJO component factories
@@ -253,17 +263,28 @@ public class IpojoRootResource extends ResourceMap<ResourceMap<?>> {
     public void bindFactory(Factory factory, ServiceReference<Factory> ref) {
         // Find/create the intermediate level node : ipojo/factory/$name
         String name = factory.getName();
-        ResourceMap<FactoryResource> namedFactories = m_factories.addResourceMapIfAbsent(
+        AtomicInsertionResult<ResourceMap<FactoryResource>> i = m_factories.addResourceMapIfAbsent(
                 FACTORIES.addElements(name), true,
                 String.format("factories[%s]", name),
                 String.format("Factories with name '%s'", name));
+        ResourceMap<FactoryResource> namedFactories = i.resource;
 
         // Add the factory resource : ipojo/factory/$name/$version
+        FactoryResource r = new FactoryResource(this, factory, ref);
         String version = String.valueOf(factory.getVersion());
         namedFactories.addResource(
-                new FactoryResource(this, factory, ref),
+                r,
                 String.format("factory[%s]", version),
                 String.format("Factory with name '%s' and version '%s", name, version));
+        // Post resource creation event
+        Everest.postResource(ResourceEvent.CREATED, r);
+        if (!i.wasPresent) {
+            Everest.postResource(ResourceEvent.CREATED, namedFactories);
+            Everest.postResource(ResourceEvent.UPDATED, m_factories);
+        } else {
+            Everest.postResource(ResourceEvent.UPDATED, namedFactories);
+        }
+        // TODO may affect *
     }
 
     @Unbind(id = "factories")
@@ -274,16 +295,19 @@ public class IpojoRootResource extends ResourceMap<ResourceMap<?>> {
         Path path = FACTORIES.addElements(factory.getName());
         ResourceMap<FactoryResource> namedFactories;
         m_factories.m_lock.writeLock().lock();
+        boolean wasLast = false;
+        FactoryResource r;
         try {
             namedFactories = m_factories.getResource(path);
             namedFactories.m_lock.writeLock().lock();
             try {
                 // Remove the factory resource : ipojo/factory/$name/$version
                 String version = String.valueOf(factory.getVersion());
-                namedFactories.removePath(path.addElements(version));
+                r = namedFactories.removePath(path.addElements(version));
                 if (namedFactories.isEmpty()) {
                     // Last standing factory with this name
                     m_factories.removePath(path);
+                    wasLast = true;
                 }
             } finally {
                 namedFactories.m_lock.writeLock().unlock();
@@ -291,6 +315,15 @@ public class IpojoRootResource extends ResourceMap<ResourceMap<?>> {
         } finally {
             m_factories.m_lock.writeLock().unlock();
         }
+        // Post resource deletion event
+        Everest.postResource(ResourceEvent.DELETED, r);
+        if (!wasLast) {
+            Everest.postResource(ResourceEvent.UPDATED, namedFactories);
+        } else {
+            Everest.postResource(ResourceEvent.DELETED, namedFactories);
+            Everest.postResource(ResourceEvent.UPDATED, m_factories);
+        }
+        // TODO may affect *
     }
 
     // Callbacks for the tracking of iPOJO handlers
@@ -300,17 +333,28 @@ public class IpojoRootResource extends ResourceMap<ResourceMap<?>> {
     public void bindHandler(HandlerFactory handler, ServiceReference<HandlerFactory> ref) {
         // Find/create the intermediate level node : ipojo/handler/$ns
         String ns = handler.getNamespace();
-        ResourceMap<HandlerResource> nsHandlers = m_handlers.addResourceMapIfAbsent(
+        AtomicInsertionResult<ResourceMap<HandlerResource>> i = m_handlers.addResourceMapIfAbsent(
                 HANDLERS.addElements(ns), true,
                 String.format("handlers[%s]", ns),
                 String.format("Handlers with namespace '%s'", ns));
+        ResourceMap<HandlerResource> nsHandlers = i.resource;
 
         // Add the handler resource : ipojo/handler/$ns/$name
+        HandlerResource r = new HandlerResource(handler, ref);
         String name = String.valueOf(handler.getName());
         nsHandlers.addResource(
-                new HandlerResource(handler, ref),
+                r,
                 String.format("handler[%s]", name),
                 String.format("Handler with namespace '%s' and name '%s", ns, name));
+        // Post resource creation event
+        Everest.postResource(ResourceEvent.CREATED, r);
+        if (!i.wasPresent) {
+            Everest.postResource(ResourceEvent.CREATED, nsHandlers);
+            Everest.postResource(ResourceEvent.UPDATED, m_handlers);
+        } else {
+            Everest.postResource(ResourceEvent.UPDATED, nsHandlers);
+        }
+        // TODO may affect *
     }
 
     @Unbind(id = "handlers")
@@ -320,6 +364,8 @@ public class IpojoRootResource extends ResourceMap<ResourceMap<?>> {
         // delete the latter one if the leaving handler is the last one with that namespace.
         Path path = HANDLERS.addElements(handler.getNamespace());
         ResourceMap<HandlerResource> nsHandlers;
+        boolean wasLast = false;
+        HandlerResource r;
         m_handlers.m_lock.writeLock().lock();
         try {
             nsHandlers = m_handlers.getResource(path);
@@ -327,10 +373,11 @@ public class IpojoRootResource extends ResourceMap<ResourceMap<?>> {
             try {
                 // Remove the handler resource : ipojo/handler/$name/$version
                 String name = String.valueOf(handler.getName());
-                nsHandlers.removePath(path.addElements(name));
+                r = nsHandlers.removePath(path.addElements(name));
                 if (nsHandlers.isEmpty()) {
                     // Last standing handler with this namespace
                     m_handlers.removePath(path);
+                    wasLast = true;
                 }
             } finally {
                 nsHandlers.m_lock.writeLock().unlock();
@@ -338,6 +385,15 @@ public class IpojoRootResource extends ResourceMap<ResourceMap<?>> {
         } finally {
             m_handlers.m_lock.writeLock().unlock();
         }
+        // Post resource deletion event
+        Everest.postResource(ResourceEvent.DELETED, r);
+        if (!wasLast) {
+            Everest.postResource(ResourceEvent.UPDATED, nsHandlers);
+        } else {
+            Everest.postResource(ResourceEvent.DELETED, nsHandlers);
+            Everest.postResource(ResourceEvent.UPDATED, m_handlers);
+        }
+        // TODO may affect *
     }
 
     // Callbacks for the tracking of iPOJO component instances
@@ -347,27 +403,38 @@ public class IpojoRootResource extends ResourceMap<ResourceMap<?>> {
     public void bindInstanceDeclaration(InstanceDeclaration instance, ServiceReference<InstanceDeclaration> ref) {
         // Find/create the intermediate level node : ipojo/declaration/instance/$name
         String name = instance.getInstanceName();
-        ResourceMap<InstanceDeclarationResource> namedInstances = m_instanceDeclarations.addResourceMapIfAbsent(
-                INSTANCE_DECLARATIONS.addElements(name), true,
-                String.format("instances[%s]", name),
-                String.format("Instances declared with name '%s'", name));
-
+        AtomicInsertionResult<ResourceMap<InstanceDeclarationResource>> i =
+                m_instanceDeclarations.addResourceMapIfAbsent(
+                        INSTANCE_DECLARATIONS.addElements(name), true,
+                        String.format("instances[%s]", name),
+                        String.format("Instances declared with name '%s'", name));
+        ResourceMap<InstanceDeclarationResource> namedInstances = i.resource;
         // Add the instance declaration resource: ipojo/declaration/instance/$name/$index
-        // We need to hold the :ipojo/declaration/instance/$name WRITE lock because we need to atomically :
+        // We need to hold the :ipojo/declaration/instance/$name WRITE lock because we need to _atomically_ :
         // - get its size to generate the instance declaration index
         // - add the InstanceDeclarationResource resource
         namedInstances.m_lock.writeLock().lock();
+        InstanceDeclarationResource r;
         try {
             String index = String.valueOf(namedInstances.size());
-            namedInstances.addResource(new InstanceDeclarationResource(index, instance, ref),
+            r = new InstanceDeclarationResource(index, instance, ref);
+            namedInstances.addResource(
+                    r,
                     String.format("instance[%s]", index),
                     String.format("Instance declaration with name '%s' and index %s", name, index));
         } finally {
             namedInstances.m_lock.writeLock().unlock();
         }
+        // Post resource creation event
+        Everest.postResource(ResourceEvent.CREATED, r);
+        if (!i.wasPresent) {
+            Everest.postResource(ResourceEvent.CREATED, namedInstances);
+            Everest.postResource(ResourceEvent.UPDATED, m_instanceDeclarations);
+        } else {
+            Everest.postResource(ResourceEvent.UPDATED, namedInstances);
+        }
+        // TODO may affect *
     }
-
-    // TODO check synchro: race conditions may occur
 
     @Unbind(id = "instanceDeclarations")
     public void unbindInstanceDeclaration(InstanceDeclaration instance, ServiceReference<InstanceDeclaration> ref) {
@@ -375,25 +442,27 @@ public class IpojoRootResource extends ResourceMap<ResourceMap<?>> {
         // We need to hold the ipojo/declaration/instance and ipojo/declaration/instance/$name WRITE lock at the same
         // time because we may delete the latter one if the leaving instance declaration is the last one with that name.
         Path path = INSTANCE_DECLARATIONS.addElements(instance.getInstanceName());
+        boolean wasLast = false;
+        InstanceDeclarationResource r = null;
+        ResourceMap<InstanceDeclarationResource> namedInstances;
         m_instanceDeclarations.m_lock.writeLock().lock();
         try {
-            ResourceMap<InstanceDeclarationResource> namedInstances = m_instanceDeclarations.getResource(path);
+            namedInstances = m_instanceDeclarations.getResource(path);
             namedInstances.m_lock.writeLock().lock();
             try {
                 // Find in namedInstances the resource to remove, using the service reference
-                InstanceDeclarationResource toRemove = null;
-                for (Resource r : namedInstances.getResources()) {
-                    InstanceDeclarationResource rr = (InstanceDeclarationResource) r;
-                    if (ref.equals(rr.m_ref)) {
-                        toRemove = rr;
+                for (InstanceDeclarationResource i : namedInstances.getResourcesTypeSafe()) {
+                    if (ref.equals(i.m_ref)) {
+                        r = i;
                         break;
                     }
                 }
                 // Remove the instance declaration resource : ipojo/declaration/instance/$name/$index
-                namedInstances.removeResource(toRemove);
+                namedInstances.removeResource(r);
                 if (namedInstances.isEmpty()) {
                     // Last standing instance declaration with that name.
                     m_instanceDeclarations.removeResource(namedInstances);
+                    wasLast = true;
                 }
             } finally {
                 namedInstances.m_lock.writeLock().unlock();
@@ -401,22 +470,42 @@ public class IpojoRootResource extends ResourceMap<ResourceMap<?>> {
         } finally {
             m_instanceDeclarations.m_lock.writeLock().unlock();
         }
+        // Post resource deletion event
+        Everest.postResource(ResourceEvent.DELETED, r);
+        if (!wasLast) {
+            Everest.postResource(ResourceEvent.UPDATED, namedInstances);
+        } else {
+            Everest.postResource(ResourceEvent.DELETED, namedInstances);
+            Everest.postResource(ResourceEvent.UPDATED, m_instanceDeclarations);
+        }
+        // TODO may affect *
     }
 
     @Bind(id = "typeDeclarations", optional = true, aggregate = true)
     public void bindTypeDeclaration(TypeDeclaration type, ServiceReference<TypeDeclaration> ref) {
         // Find/create the intermediate level node: ipojo/declaration/type/$name
         String name = type.getComponentName();
-        ResourceMap<TypeDeclarationResource> namedTypes = m_typeDeclarations.addResourceMapIfAbsent(
+        AtomicInsertionResult<ResourceMap<TypeDeclarationResource>> i  = m_typeDeclarations.addResourceMapIfAbsent(
                 TYPE_DECLARATIONS.addElements(name), true,
                 String.format("types[%s]", name),
                 String.format("Types declared with name '%s'", name));
-
+        ResourceMap<TypeDeclarationResource> namedTypes = i.resource;
         // Add the type declaration resource: ipojo/declaration/type/$name/$version
         String version = String.valueOf(type.getComponentVersion());
-        namedTypes.addResource(new TypeDeclarationResource(type, ref),
+        TypeDeclarationResource r = new TypeDeclarationResource(type, ref);
+        namedTypes.addResource(
+                r,
                 String.format("type[%s]", version),
                 String.format("Type declaration with name '%s' and version %s", name, version));
+        // Post resource creation event
+        Everest.postResource(ResourceEvent.CREATED, r);
+        if (!i.wasPresent) {
+            Everest.postResource(ResourceEvent.CREATED, namedTypes);
+            Everest.postResource(ResourceEvent.UPDATED, m_typeDeclarations);
+        } else {
+            Everest.postResource(ResourceEvent.UPDATED, namedTypes);
+        }
+        // TODO may affect *
     }
 
     @Unbind(id = "typeDeclarations")
@@ -425,16 +514,20 @@ public class IpojoRootResource extends ResourceMap<ResourceMap<?>> {
         // We need to hold the ipojo/declaration/type and ipojo/declaration/type/$name WRITE lock at the same time
         // because we may delete the latter one if the leaving type declaration is the last one with that name.
         Path path = TYPE_DECLARATIONS.addElements(type.getComponentName());
+        boolean wasLast = false;
+        TypeDeclarationResource r;
+        ResourceMap<TypeDeclarationResource> namedTypes;
         m_typeDeclarations.m_lock.writeLock().lock();
         try {
-            ResourceMap<TypeDeclarationResource> namedTypes = m_typeDeclarations.getResource(path);
+            namedTypes = m_typeDeclarations.getResource(path);
             namedTypes.m_lock.writeLock().lock();
             try {
                 // Remove the type declaration resource:  ipojo/declaration/type/$name/$version
-                namedTypes.removePath(path.addElements(String.valueOf(type.getComponentVersion())));
+                r = namedTypes.removePath(path.addElements(String.valueOf(type.getComponentVersion())));
                 if (namedTypes.isEmpty()) {
                     // Last standing declaration with that name
                     m_typeDeclarations.removeResource(namedTypes);
+                    wasLast = true;
                 }
             } finally {
                 namedTypes.m_lock.writeLock().unlock();
@@ -442,22 +535,40 @@ public class IpojoRootResource extends ResourceMap<ResourceMap<?>> {
         } finally {
             m_typeDeclarations.m_lock.writeLock().unlock();
         }
+        // Post resource deletion event
+        Everest.postResource(ResourceEvent.DELETED, r);
+        if (!wasLast) {
+            Everest.postResource(ResourceEvent.UPDATED, namedTypes);
+        } else {
+            Everest.postResource(ResourceEvent.DELETED, namedTypes);
+            Everest.postResource(ResourceEvent.UPDATED, m_instanceDeclarations);
+        }
+        // TODO may affect *
     }
 
     @Bind(id = "extensionDeclarations", optional = true, aggregate = true)
     public void bindExtensionDeclaration(ExtensionDeclaration extension, ServiceReference<ExtensionDeclaration> ref) {
         // ipojo/declaration/extensions/$name
         String name = extension.getExtensionName();
+        ExtensionDeclarationResource r = new ExtensionDeclarationResource(extension, ref);
         m_extensionDeclarations.addResource(
-                new ExtensionDeclarationResource(extension, ref),
+                r,
                 String.format("extension[%s]", name),
                 String.format("Extension declaration with name '%s'", name));
+        // Post resource creation event
+        Everest.postResource(ResourceEvent.CREATED, r);
+        Everest.postResource(ResourceEvent.UPDATED, m_extensionDeclarations);
+        // TODO may affect *
     }
 
     @Unbind(id = "extensionDeclarations")
     public void unbindExtensionDeclaration(ExtensionDeclaration extension) {
         // ipojo/declaration/extensions/$name
-        m_extensionDeclarations.removePath(EXTENSION_DECLARATIONS.addElements(extension.getExtensionName()));
+        ExtensionDeclarationResource r =
+                m_extensionDeclarations.removePath(EXTENSION_DECLARATIONS.addElements(extension.getExtensionName()));
+        // Post resource deletion event
+        Everest.postResource(ResourceEvent.DELETED, r);
+        // TODO may affect *
     }
 
     // Utility methods

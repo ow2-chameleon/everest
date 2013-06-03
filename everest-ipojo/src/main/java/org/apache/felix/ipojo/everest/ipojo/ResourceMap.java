@@ -123,7 +123,7 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
     }
 
     // TODO
-    public R addResourceMapIfAbsent(Path path, boolean isObservable, String relationName, String relationDescription) {
+    public AtomicInsertionResult<R> addResourceMapIfAbsent(Path path, boolean isObservable, String relationName, String relationDescription) {
         if (path == null) {
             throw new NullPointerException("path is null");
         }
@@ -131,12 +131,12 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
         try {
             if (m_children.containsKey(path)) {
                 // Check for presence and return fast (we own the write lock!).
-                return m_children.get(path);
+                return new AtomicInsertionResult<R>(true, m_children.get(path));
             } else {
                 @SuppressWarnings("unchecked")
                 R child = (R) new ResourceMap<Resource>(path, isObservable);
                 addResource(child, relationName, relationDescription);
-                return child;
+                return new AtomicInsertionResult<R>(false, child);
             }
         } finally {
             m_lock.writeLock().unlock();
@@ -291,6 +291,22 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
     }
 
     /**
+     * Get resources as a type-safe list
+     */
+    public List<R> getResourcesTypeSafe() {
+        m_lock.readLock().lock();
+        try {
+            if (m_children.isEmpty()) {
+                return Collections.emptyList();
+            } else {
+                return Collections.unmodifiableList(new ArrayList<R>(m_children.values()));
+            }
+        } finally {
+            m_lock.readLock().unlock();
+        }
+    }
+
+    /**
      * Get an <em>unmodifiable snapshot</em> of the current path-to-resource mappings.
      *
      * @return an unmodifiable snapshot of the current path-to-resource mappings
@@ -343,4 +359,28 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
     public boolean isObservable() {
         return m_isObservable;
     }
+
+    /**
+     * The result of an atomic {@link #addResourceMapIfAbsent(Path, boolean, String, String)} operation.
+     *
+     * @param <T>
+     */
+    public final static class AtomicInsertionResult<T extends Resource> {
+
+        /**
+         * Flag indicating if a resource was present at the specified path.
+         */
+        final boolean wasPresent;
+
+        /**
+         * The existing resource if {@code wasPresent} is {@code true}, the created one otherwise.
+         */
+        final T resource;
+
+        private AtomicInsertionResult(boolean wasPresent, T resource) {
+            this.wasPresent = wasPresent;
+            this.resource = resource;
+        }
+    }
+
 }
