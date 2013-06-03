@@ -14,7 +14,7 @@ import static org.fest.assertions.Assertions.assertThat;
  * Date: 5/30/13
  * Time: 12:44 AM
  */
-public class TestLog extends Common {
+public class TestLog extends EverestOsgiTest {
 
 
     @Test

@@ -1,7 +1,5 @@
 package org.apache.felix.ipojo.everest.ipojo.test;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils;
@@ -10,14 +8,14 @@ import org.apache.felix.ipojo.everest.services.IllegalActionOnResourceException;
 import org.apache.felix.ipojo.everest.services.Resource;
 import org.apache.felix.ipojo.everest.services.ResourceNotFoundException;
 import org.junit.Test;
-import org.ops4j.pax.exam.Configuration;
 import org.ops4j.pax.exam.Option;
+import org.ops4j.pax.exam.spi.reactors.ExamReactorStrategy;
+import org.ops4j.pax.exam.spi.reactors.PerMethod;
 import org.ops4j.pax.tinybundles.core.TinyBundle;
 import org.ops4j.pax.tinybundles.core.TinyBundles;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Constants;
 import org.ow2.chameleon.testing.tinybundles.ipojo.IPOJOStrategy;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,7 +27,8 @@ import java.util.HashMap;
 import java.util.List;
 
 import static org.fest.assertions.Assertions.assertThat;
-import static org.ops4j.pax.exam.CoreOptions.*;
+import static org.ops4j.pax.exam.CoreOptions.options;
+import static org.ops4j.pax.exam.CoreOptions.systemProperty;
 
 /**
  * Created with IntelliJ IDEA.
@@ -37,27 +36,32 @@ import static org.ops4j.pax.exam.CoreOptions.*;
  * Date: 4/28/13
  * Time: 7:20 PM
  */
-public class TestBundleActions extends Common {
+@ExamReactorStrategy(PerMethod.class)
+public class TestBundleActions extends EverestOsgiTest {
 
     InputStream input = null;
 
     File file = new File("target/tested/bundle.jar");
 
-    @Configuration
-    public Option[] config() throws MalformedURLException {
-        Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-        root.setLevel(Level.INFO);
-        input = testedBundleStream();
-        file = testedBundleFile(input, file);
+    @Override
+    public boolean deployTestBundle() {
+        return false;
+    }
+
+    @Override
+    protected Option[] getCustomOptions() {
+        try {
+            input = testedBundleStream();
+            file = testedBundleFile(input, file);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
         return options(
                 systemProperty("ipojo.processing.synchronous").value("true"),
-                // The EventAdmin service
-                mavenBundle("org.apache.felix", "org.apache.felix.eventadmin").versionAsInProject(),
-                ipojoBundles(),
+                systemProperty("everest.processing.synchronous").value("true"),
                 everestBundles(),
-                junitBundles(),
-                festBundles(),
-                systemProperty("org.ops4j.pax.logging.DefaultServiceLog.level").value("WARN")
+                osgiBundles(),
+                festBundles()
         );
     }
 

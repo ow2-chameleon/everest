@@ -7,6 +7,8 @@ import org.apache.felix.ipojo.everest.services.Resource;
 import org.apache.felix.ipojo.everest.services.ResourceNotFoundException;
 import org.junit.After;
 import org.junit.Test;
+import org.ops4j.pax.exam.spi.reactors.ExamReactorStrategy;
+import org.ops4j.pax.exam.spi.reactors.PerMethod;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.startlevel.FrameworkStartLevel;
 
@@ -20,7 +22,8 @@ import static org.fest.assertions.Assertions.assertThat;
  * Date: 5/29/13
  * Time: 9:10 AM
  */
-public class TestOsgiActions extends Common {
+@ExamReactorStrategy(PerMethod.class)
+public class TestOsgiActions extends EverestOsgiTest {
 
     @After
     public void commonTearDown() {

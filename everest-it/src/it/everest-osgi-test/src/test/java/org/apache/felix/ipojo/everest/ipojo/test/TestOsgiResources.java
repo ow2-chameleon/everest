@@ -1,7 +1,5 @@
 package org.apache.felix.ipojo.everest.ipojo.test;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
 import org.apache.felix.ipojo.everest.osgi.bundle.BundleResource;
 import org.apache.felix.ipojo.everest.osgi.packages.PackageResource;
 import org.apache.felix.ipojo.everest.services.IllegalActionOnResourceException;
@@ -10,8 +8,6 @@ import org.apache.felix.ipojo.everest.services.Resource;
 import org.apache.felix.ipojo.everest.services.ResourceNotFoundException;
 import org.junit.Assert;
 import org.junit.Test;
-import org.ops4j.pax.exam.Configuration;
-import org.ops4j.pax.exam.Option;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.framework.Version;
@@ -19,14 +15,11 @@ import org.osgi.service.event.Event;
 import org.osgi.service.event.EventConstants;
 import org.osgi.service.event.EventHandler;
 import org.osgi.service.packageadmin.ExportedPackage;
-import org.slf4j.LoggerFactory;
 
-import java.net.MalformedURLException;
 import java.util.Hashtable;
 import java.util.List;
 
 import static org.fest.assertions.Assertions.assertThat;
-import static org.ops4j.pax.exam.CoreOptions.*;
 
 
 /**
@@ -35,26 +28,7 @@ import static org.ops4j.pax.exam.CoreOptions.*;
  * Date: 4/22/13
  * Time: 4:24 PM
  */
-public class TestOsgiResources extends Common {
-
-    @Configuration
-    public Option[] config() throws MalformedURLException {
-        Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-        root.setLevel(Level.INFO);
-
-        return options(
-                systemProperty("ipojo.processing.synchronous").value("true"),
-                systemProperty("everest.processing.synchronous").value("true"),
-                // The EventAdmin service
-                mavenBundle("org.apache.felix", "org.apache.felix.eventadmin").versionAsInProject(),
-                ipojoBundles(),
-                everestBundles(),
-                junitBundles(),
-                festBundles(),
-                testedBundle(),
-                systemProperty("org.ops4j.pax.logging.DefaultServiceLog.level").value("WARN")
-        );
-    }
+public class TestOsgiResources extends EverestOsgiTest {
 
     /**
      * Check that the '/osgi' resource is present.
