@@ -12,6 +12,7 @@ import org.osgi.framework.ServiceReference;
 
 import java.lang.ref.WeakReference;
 
+import static org.apache.felix.ipojo.everest.ipojo.IpojoRootResource.EXTENSION_DECLARATIONS;
 import static org.apache.felix.ipojo.everest.ipojo.IpojoRootResource.PATH_TO_OSGI_BUNDLES;
 import static org.apache.felix.ipojo.everest.ipojo.IpojoRootResource.PATH_TO_OSGI_SERVICES;
 
@@ -43,7 +44,12 @@ public class TypeDeclarationResource extends DefaultReadOnlyResource {
                         PATH_TO_OSGI_BUNDLES.addElements(String.valueOf(ref.getBundle().getBundleId())),
                         Action.READ,
                         "bundle",
-                        "The declaring OSGi bundle"));
+                        "The declaring OSGi bundle"),
+                new DefaultRelation(
+                        EXTENSION_DECLARATIONS.addElements(declaration.getExtension()),
+                        Action.READ,
+                        "extension",
+                        "The iPOJO extension used by this declared type"));
     }
 
     @Override

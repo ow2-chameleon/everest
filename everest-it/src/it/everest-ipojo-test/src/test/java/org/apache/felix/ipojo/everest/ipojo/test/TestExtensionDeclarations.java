@@ -65,7 +65,6 @@ public class TestExtensionDeclarations extends EverestIpojoTestCommon {
         assertThat(r.isObservable()).isTrue();
         // Metadata should be empty
         assertThat(r.getMetadata()).isEmpty();
-        // TODO Resource should have relations to /ipojo/declaration/extension/Component...
         // Check relation to "component" extension
         assertThatResource(r).hasRelation(RelationFilters.and(
                 RelationFilters.hasAction(READ),
@@ -105,11 +104,11 @@ public class TestExtensionDeclarations extends EverestIpojoTestCommon {
         assertThatResource(r).hasRelation(RelationFilters.and(
                 RelationFilters.hasAction(READ),
                 RelationFilters.hasName("service"),
-                RelationFilters.hasHref("/osgi/services/" + getExtensionDeclarationServiceReference("component").getProperty(Constants.SERVICE_ID))));
+                RelationFilters.hasHref("/osgi/services/" + getExtensionDeclarationReference("component").getProperty(Constants.SERVICE_ID))));
     }
 
     /**
-     * Read /ipojo/declaration/extension/component
+     * Read /ipojo/declaration/extension/handler
      */
     @Test
     public void testHandlerExtension() throws ResourceNotFoundException, IllegalActionOnResourceException {
@@ -130,11 +129,11 @@ public class TestExtensionDeclarations extends EverestIpojoTestCommon {
         assertThatResource(r).hasRelation(RelationFilters.and(
                 RelationFilters.hasAction(READ),
                 RelationFilters.hasName("service"),
-                RelationFilters.hasHref("/osgi/services/" + getExtensionDeclarationServiceReference("handler").getProperty(Constants.SERVICE_ID))));
+                RelationFilters.hasHref("/osgi/services/" + getExtensionDeclarationReference("handler").getProperty(Constants.SERVICE_ID))));
     }
 
     /**
-     * Read /ipojo/declaration/extension/component
+     * Read /ipojo/declaration/extension/dummy
      */
     @Test
     public void testDummyExtension() throws ResourceNotFoundException, IllegalActionOnResourceException {
@@ -155,7 +154,7 @@ public class TestExtensionDeclarations extends EverestIpojoTestCommon {
         assertThatResource(r).hasRelation(RelationFilters.and(
                 RelationFilters.hasAction(READ),
                 RelationFilters.hasName("service"),
-                RelationFilters.hasHref("/osgi/services/" + getExtensionDeclarationServiceReference("dummy").getProperty(Constants.SERVICE_ID))));
+                RelationFilters.hasHref("/osgi/services/" + getExtensionDeclarationReference("dummy").getProperty(Constants.SERVICE_ID))));
     }
 
 }

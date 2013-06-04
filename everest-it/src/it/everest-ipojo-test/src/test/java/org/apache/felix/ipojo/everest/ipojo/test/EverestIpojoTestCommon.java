@@ -10,6 +10,7 @@ import org.apache.felix.ipojo.architecture.InstanceDescription;
 import org.apache.felix.ipojo.everest.impl.DefaultRequest;
 import org.apache.felix.ipojo.everest.services.*;
 import org.apache.felix.ipojo.extender.ExtensionDeclaration;
+import org.apache.felix.ipojo.extender.TypeDeclaration;
 import org.junit.Before;
 import org.junit.Test;
 import org.ops4j.pax.exam.Option;
@@ -278,6 +279,14 @@ public class EverestIpojoTestCommon extends BaseTest {
         return context.getService(ref);
     }
 
+    public TypeDeclaration getTypeDeclaration(String name, String version) {
+        ServiceReference<TypeDeclaration> ref = getTypeDeclarationReference(name, version);
+        if (ref == null) {
+            throw new AssertionError("no type declaration service with same name/version: " + name + "/" + String.valueOf(version));
+        }
+        return context.getService(ref);
+    }
+
     public ServiceReference<Factory> getFactoryReference(String name, String version) {
         // Scientifically build the selection filter.
         String filter = "(&(factory.name=" + name + ")";
@@ -341,7 +350,7 @@ public class EverestIpojoTestCommon extends BaseTest {
         return refs.iterator().next();
     }
 
-    public ServiceReference<ExtensionDeclaration> getExtensionDeclarationServiceReference(String extension) {
+    public ServiceReference<ExtensionDeclaration> getExtensionDeclarationReference(String extension) {
         // Get ALL the ExtensionDeclaration services
         Collection<ServiceReference<ExtensionDeclaration>> refs;
         try {
@@ -355,6 +364,31 @@ public class EverestIpojoTestCommon extends BaseTest {
             try {
                 if (extension.equals(e.getExtensionName())) {
                     return ref;
+                }
+            } finally {
+                context.ungetService(ref);
+            }
+        }
+        return null;
+    }
+
+    public ServiceReference<TypeDeclaration> getTypeDeclarationReference(String name, String version) {
+        // Get ALL the ExtensionDeclaration services
+        Collection<ServiceReference<TypeDeclaration>> refs;
+        try {
+            refs = context.getServiceReferences(TypeDeclaration.class, null);
+        } catch (InvalidSyntaxException e) {
+            // Should never... NEVER happen!
+            throw new AssertionError(e);
+        }
+        for (ServiceReference<TypeDeclaration> ref : refs) {
+            TypeDeclaration t = context.getService(ref);
+            try {
+                if (name.equals(t.getComponentName())) {
+                    String v = t.getComponentVersion();
+                    if (version == null && v == null || version != null && version.equals(v)) {
+                        return ref;
+                    }
                 }
             } finally {
                 context.ungetService(ref);
