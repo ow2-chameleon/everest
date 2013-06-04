@@ -22,6 +22,11 @@ public class Everest extends DefaultReadOnlyResource implements EverestService {
      */
     public static final String SYNCHRONOUS_PROCESSING = "everest.processing.synchronous";
 
+    /**
+     * The system property used to dump requests to System.out.
+     */
+    public static final String DEBUG_REQUEST = "everest.debug.request";
+
     private Map<Path, Resource> resources = new LinkedHashMap<Path, Resource>();
     private List<ResourceExtender> extenders = new ArrayList<ResourceExtender>();
 

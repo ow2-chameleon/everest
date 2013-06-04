@@ -120,8 +120,11 @@ public class EverestIpojoTestCommon extends BaseTest {
     @Override
     protected Option[] getCustomOptions() {
         return options(
+                // Enable iPOJO synchronous mode
                 systemProperty("ipojo.processing.synchronous").value("true"),
+                // Enable everest synchronous event processing + debug of requests
                 systemProperty("everest.processing.synchronous").value("true"),
+                systemProperty("everest.debug.request").value("true"),
                 // everest bundles
                 mavenBundle(IPOJO, "everest-core").versionAsInProject(),
                 mavenBundle(IPOJO, "everest-ipojo").versionAsInProject(),
