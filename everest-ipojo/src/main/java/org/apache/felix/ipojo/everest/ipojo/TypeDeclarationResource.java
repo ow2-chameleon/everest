@@ -1,49 +1,86 @@
 package org.apache.felix.ipojo.everest.ipojo;
 
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
+import org.apache.felix.ipojo.everest.impl.DefaultRelation;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
-import org.apache.felix.ipojo.everest.services.Path;
+import org.apache.felix.ipojo.everest.services.Action;
 import org.apache.felix.ipojo.everest.services.ResourceMetadata;
 import org.apache.felix.ipojo.extender.Status;
 import org.apache.felix.ipojo.extender.TypeDeclaration;
+import org.osgi.framework.Constants;
+import org.osgi.framework.ServiceReference;
+
+import java.lang.ref.WeakReference;
+
+import static org.apache.felix.ipojo.everest.ipojo.IpojoRootResource.EXTENSION_DECLARATIONS;
+import static org.apache.felix.ipojo.everest.ipojo.IpojoRootResource.PATH_TO_OSGI_BUNDLES;
+import static org.apache.felix.ipojo.everest.ipojo.IpojoRootResource.PATH_TO_OSGI_SERVICES;
 
 /**
  * '/ipojo/declaration/type' resource.
  */
 public class TypeDeclarationResource extends DefaultReadOnlyResource {
 
-    private final TypeDeclaration m_type;
-    private final ResourceMetadata m_baseMetadata;
+    private final WeakReference<TypeDeclaration> m_type;
 
-    public TypeDeclarationResource(Path path, TypeDeclaration declaration) {
-        super(path);
-        m_type = declaration;
-
-        // Build the immutable metadata of this type.
-        ImmutableResourceMetadata.Builder mb = new ImmutableResourceMetadata.Builder();
-        mb.set("name", m_type.getComponentName()); // String
-        mb.set("version", m_type.getComponentVersion()); // String
-        mb.set("extension", m_type.getExtension()); // String
-        mb.set("isPublic", m_type.isPublic()); // String
-        m_baseMetadata = mb.build();
+    public TypeDeclarationResource(TypeDeclaration declaration, ServiceReference<TypeDeclaration> ref) {
+        super(IpojoRootResource.TYPE_DECLARATIONS.addElements(declaration.getComponentName(), String.valueOf(declaration.getComponentVersion())),
+                new ImmutableResourceMetadata.Builder()
+                        .set("name", declaration.getComponentName())
+                        .set("version", declaration.getComponentVersion())
+                        .set("extension", declaration.getExtension())
+                        .set("isPublic", declaration.isPublic())
+                        .build()
+        );
+        m_type = new WeakReference<TypeDeclaration>(declaration);
+        // Set the immutable relations
+        setRelations(
+                new DefaultRelation(
+                        PATH_TO_OSGI_SERVICES.addElements(String.valueOf(ref.getProperty(Constants.SERVICE_ID))),
+                        Action.READ,
+                        "service",
+                        "The ExtensionDeclaration OSGi service"),
+                new DefaultRelation(
+                        PATH_TO_OSGI_BUNDLES.addElements(String.valueOf(ref.getBundle().getBundleId())),
+                        Action.READ,
+                        "bundle",
+                        "The declaring OSGi bundle"),
+                new DefaultRelation(
+                        EXTENSION_DECLARATIONS.addElements(declaration.getExtension()),
+                        Action.READ,
+                        "extension",
+                        "The iPOJO extension used by this declared type"));
     }
 
     @Override
     public ResourceMetadata getMetadata() {
-        Status s = m_type.getStatus();
-        ImmutableResourceMetadata.Builder b = new ImmutableResourceMetadata.Builder(m_baseMetadata);
-        b.set("status.isBound", s.isBound()); // Boolean
-        b.set("status.message", s.getMessage()); // String
-        b.set("status.throwable", s.getThrowable()); // Serializable
-        return b.build();
+        TypeDeclaration t = m_type.get();
+        ResourceMetadata m = super.getMetadata();
+        if (t == null) {
+            // Reference has been released
+            return m;
+        }
+        Status s = t.getStatus();
+        return new ImmutableResourceMetadata.Builder(m)
+                .set("status.isBound", s.isBound()) // Boolean
+                .set("status.message", s.getMessage()) // String
+                .set("status.throwable", s.getThrowable()) // Serializable
+                .build();
+    }
+
+    @Override
+    public boolean isObservable() {
+        return true;
     }
 
     @Override
     public <A> A adaptTo(Class<A> clazz) {
         if (clazz == TypeDeclaration.class) {
-            return (A) m_type;
+            // Returns null if reference has been released
+            return clazz.cast(m_type.get());
+        } else {
+            return super.adaptTo(clazz);
         }
-        return null;
     }
 
 }

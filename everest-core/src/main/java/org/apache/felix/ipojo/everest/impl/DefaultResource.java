@@ -1,5 +1,6 @@
 package org.apache.felix.ipojo.everest.impl;
 
+import org.apache.felix.ipojo.everest.core.Everest;
 import org.apache.felix.ipojo.everest.filters.ResourceFilters;
 import org.apache.felix.ipojo.everest.services.*;
 
@@ -7,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import static org.apache.felix.ipojo.everest.core.Everest.DEBUG_REQUEST;
 
 /**
  * Default resource implementation
@@ -129,10 +132,17 @@ public class DefaultResource implements Resource {
      * @throws ResourceNotFoundException
      */
     public Resource process(Request request) throws IllegalActionOnResourceException, ResourceNotFoundException {
-        //Trace
-        System.out.println("Processing request " + request.action() + " " + request.path() + " by " +
-                getCanonicalPath());
-        //End Trace
+
+        String debug = System.getProperty(DEBUG_REQUEST);
+        if (debug != null && debug.equalsIgnoreCase("true")) {
+            //Trace
+            System.out.println("Processing request " + request.action() + " " + request.path() + " by " +
+                    getCanonicalPath());
+            //End Trace
+        }
+
+
+
 
         // 1) Substract our path from the request path.
         Path rel = request.path().subtract(this.getPath());

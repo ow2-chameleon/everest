@@ -2,10 +2,7 @@ package org.apache.felix.ipojo.everest.ipojo;
 
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
 import org.apache.felix.ipojo.everest.impl.DefaultRelation;
-import org.apache.felix.ipojo.everest.services.Action;
-import org.apache.felix.ipojo.everest.services.Path;
-import org.apache.felix.ipojo.everest.services.Relation;
-import org.apache.felix.ipojo.everest.services.Resource;
+import org.apache.felix.ipojo.everest.services.*;
 
 import java.util.*;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -61,13 +58,26 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
     private final boolean m_isObservable;
 
     /**
-     * Creates a new resource map with the given path and child relation factory.
+     * Creates a new resource map with the given path.
      *
-     * @param path         path of this resource m_map
+     * @param path         path of this resource map
      * @param isObservable the flag that indicates if the resource map to be created is observable.
      */
     public ResourceMap(Path path, boolean isObservable) {
-        super(path);
+        this(path, isObservable, null);
+    }
+
+    /**
+     * Creates a new resource map with the given path.
+     *
+     * @param path          path of this resource map
+     * @param isObservable  the flag that indicates if the resource map to be created is observable.
+     * @param metadata      the metadata for this resource map, may be {@code null}.
+     * @param baseRelations the base relations of this resource map.
+     */
+    public ResourceMap(Path path, boolean isObservable, ResourceMetadata metadata, Relation... baseRelations) {
+        super(path, metadata);
+        setRelations(baseRelations);
         m_isObservable = isObservable;
     }
 
@@ -110,7 +120,27 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
         } finally {
             m_lock.writeLock().unlock();
         }
+    }
 
+    // TODO
+    public AtomicInsertionResult<R> addResourceMapIfAbsent(Path path, boolean isObservable, String relationName, String relationDescription) {
+        if (path == null) {
+            throw new NullPointerException("path is null");
+        }
+        m_lock.writeLock().lock();
+        try {
+            if (m_children.containsKey(path)) {
+                // Check for presence and return fast (we own the write lock!).
+                return new AtomicInsertionResult<R>(true, m_children.get(path));
+            } else {
+                @SuppressWarnings("unchecked")
+                R child = (R) new ResourceMap<Resource>(path, isObservable);
+                addResource(child, relationName, relationDescription);
+                return new AtomicInsertionResult<R>(false, child);
+            }
+        } finally {
+            m_lock.writeLock().unlock();
+        }
     }
 
     /**
@@ -132,28 +162,27 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
         } finally {
             m_lock.writeLock().unlock();
         }
-
     }
 
     /**
      * Removes the resource with the given path from this resource map.
      *
      * @param path path of the resource to remove
+     * @return the removed resource
      * @throws IllegalArgumentException if this resource map does not contain a resource with the given path
      */
-    public void removePath(Path path) {
+    public R removePath(Path path) {
         m_lock.writeLock().lock();
         try {
             // Checks the resource map contains the given path
             if (!m_children.containsKey(path)) {
                 throw new IllegalArgumentException("path not present");
             }
-            m_children.remove(path);
             m_relationNames.remove(m_relations.remove(path).getName());
+            return m_children.remove(path);
         } finally {
             m_lock.writeLock().unlock();
         }
-
     }
 
     /**
@@ -171,7 +200,6 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
         } finally {
             m_lock.readLock().unlock();
         }
-
     }
 
     /**
@@ -186,7 +214,6 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
         } finally {
             m_lock.readLock().unlock();
         }
-
     }
 
     /**
@@ -201,7 +228,6 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
         } finally {
             m_lock.readLock().unlock();
         }
-
     }
 
     /**
@@ -217,7 +243,6 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
         } finally {
             m_lock.readLock().unlock();
         }
-
     }
 
     /**
@@ -233,7 +258,6 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
         } finally {
             m_lock.readLock().unlock();
         }
-
     }
 
     /**
@@ -264,7 +288,22 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
         } finally {
             m_lock.readLock().unlock();
         }
+    }
 
+    /**
+     * Get resources as a type-safe list
+     */
+    public List<R> getResourcesTypeSafe() {
+        m_lock.readLock().lock();
+        try {
+            if (m_children.isEmpty()) {
+                return Collections.emptyList();
+            } else {
+                return Collections.unmodifiableList(new ArrayList<R>(m_children.values()));
+            }
+        } finally {
+            m_lock.readLock().unlock();
+        }
     }
 
     /**
@@ -279,7 +318,6 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
         } finally {
             m_lock.readLock().unlock();
         }
-
     }
 
     @Override
@@ -321,4 +359,28 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
     public boolean isObservable() {
         return m_isObservable;
     }
+
+    /**
+     * The result of an atomic {@link #addResourceMapIfAbsent(Path, boolean, String, String)} operation.
+     *
+     * @param <T>
+     */
+    public final static class AtomicInsertionResult<T extends Resource> {
+
+        /**
+         * Flag indicating if a resource was present at the specified path.
+         */
+        final boolean wasPresent;
+
+        /**
+         * The existing resource if {@code wasPresent} is {@code true}, the created one otherwise.
+         */
+        final T resource;
+
+        private AtomicInsertionResult(boolean wasPresent, T resource) {
+            this.wasPresent = wasPresent;
+            this.resource = resource;
+        }
+    }
+
 }

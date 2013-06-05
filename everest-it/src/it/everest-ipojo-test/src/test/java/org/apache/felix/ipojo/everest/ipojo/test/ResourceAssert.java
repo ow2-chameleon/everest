@@ -1,6 +1,9 @@
 package org.apache.felix.ipojo.everest.ipojo.test;
 
-import org.apache.felix.ipojo.everest.services.*;
+import org.apache.felix.ipojo.everest.services.Path;
+import org.apache.felix.ipojo.everest.services.Relation;
+import org.apache.felix.ipojo.everest.services.RelationFilter;
+import org.apache.felix.ipojo.everest.services.Resource;
 import org.fest.assertions.GenericAssert;
 
 import java.util.ArrayList;
