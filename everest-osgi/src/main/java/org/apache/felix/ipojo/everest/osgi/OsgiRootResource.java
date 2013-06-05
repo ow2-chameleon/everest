@@ -39,7 +39,7 @@ import java.util.List;
         specifications = Resource.class,
         properties = {@StaticServiceProperty(type = "String", name = "type", value = "osgi")})
 @Instantiate
-public class OsgiRootResource extends AbstractResourceManager implements BundleTrackerCustomizer, ServiceTrackerCustomizer {
+public class OsgiRootResource extends AbstractResourceManager implements BundleTrackerCustomizer, ServiceTrackerCustomizer, FrameworkListener {
 
     public static final String OSGI_ROOT = "osgi";
 
@@ -95,7 +95,6 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
         m_bundleResourceManager = BundleResourceManager.getInstance();
         m_packageResourceManager = PackageResourceManager.getInstance();
         m_serviceResourceManager = ServiceResourceManager.getInstance();
-
         frameworkBundle = m_context.getBundle(0);
         FrameworkWiring fwiring = frameworkBundle.adapt(FrameworkWiring.class);
 
@@ -119,7 +118,7 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
         m_metadata = metadataBuilder.build();
 
         // Initialize bundle & service trackers
-        int stateMask = Bundle.ACTIVE | Bundle.INSTALLED | Bundle.RESOLVED | Bundle.STARTING | Bundle.STOPPING | Bundle.UNINSTALLED;
+        int stateMask = Bundle.ACTIVE | Bundle.INSTALLED | Bundle.RESOLVED | Bundle.STARTING | Bundle.STOPPING;
         Filter allServicesFilter = null;
         try {
             StringBuilder sb = new StringBuilder();
@@ -159,6 +158,7 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
     @Validate
     public void started() {
         // start trackers
+        m_context.addFrameworkListener(this);
         m_bundleTracker.open();
         m_serviceTracker.open(true);
     }
@@ -166,6 +166,7 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
     @Invalidate
     public void stopped() {
         // stop trackers
+        m_context.removeFrameworkListener(this);
         m_bundleTracker.close();
         m_serviceTracker.close();
     }
@@ -258,7 +259,6 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
         synchronized (resourceLock) {
             configurationListenerServiceRegistration.unregister();
             m_configResourceManager = null;
-            //TODO do something to close configadminresourcemanager
         }
         Everest.postResource(ResourceEvent.UPDATED, this);
     }
@@ -277,7 +277,6 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
     public void unbindDeploymentAdmin(DeploymentAdmin deploymentAdmin) {
         synchronized (resourceLock) {
             m_deploymentResourceManager = null;
-            //TODO do something to close deploymentadminresourcemanager
         }
         Everest.postResource(ResourceEvent.UPDATED, this);
     }
@@ -296,7 +295,6 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
     public void unbindLogService(LogReaderService logService) {
         synchronized (resourceLock) {
             m_logResourceManager = null;
-            //TODO do something to close logresourcemanager
         }
         Everest.postResource(ResourceEvent.UPDATED, this);
     }
@@ -312,7 +310,6 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
     }
 
     public void modifiedBundle(Bundle bundle, BundleEvent bundleEvent, Object o) {
-        // TODO think of sending some event
         m_bundleResourceManager.modifyBundle(bundle);
         if (bundleEvent.getType() == BundleEvent.RESOLVED) {
             m_packageResourceManager.addPackagesFrom(bundle);
@@ -335,7 +332,6 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
     }
 
     public void modifiedService(ServiceReference serviceReference, Object o) {
-        // TODO think of sending some event
         m_serviceResourceManager.modifyService(serviceReference);
     }
 
@@ -343,4 +339,25 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
         m_serviceResourceManager.removeService(serviceReference);
     }
 
+    // Framework Listener Method
+
+    public void frameworkEvent(FrameworkEvent event) {
+        switch (event.getType()) {
+            case FrameworkEvent.STARTED:
+                Everest.postResource(ResourceEvent.CREATED, this);
+                break;
+            case FrameworkEvent.STOPPED:
+                Everest.postResource(ResourceEvent.DELETED, this);
+                break;
+            case FrameworkEvent.STARTLEVEL_CHANGED:
+                Everest.postResource(ResourceEvent.UPDATED, this);
+                break;
+            case FrameworkEvent.STOPPED_UPDATE:
+                Everest.postResource(ResourceEvent.UPDATED, this);
+                break;
+            case FrameworkEvent.PACKAGES_REFRESHED:
+                Everest.postResource(ResourceEvent.UPDATED, this);
+                break;
+        }
+    }
 }

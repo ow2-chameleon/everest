@@ -5,16 +5,20 @@ import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.osgi.AbstractResourceCollection;
 import org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils;
 import org.apache.felix.ipojo.everest.osgi.packages.PackageResourceManager;
-import org.apache.felix.ipojo.everest.services.*;
+import org.apache.felix.ipojo.everest.services.Action;
+import org.apache.felix.ipojo.everest.services.Path;
+import org.apache.felix.ipojo.everest.services.Relation;
+import org.apache.felix.ipojo.everest.services.ResourceMetadata;
 import org.osgi.framework.wiring.BundleCapability;
+import org.osgi.framework.wiring.BundleRevision;
 import org.osgi.framework.wiring.BundleWire;
+import org.osgi.framework.wiring.BundleWiring;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.metadataFrom;
-import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.uniqueCapabilityId;
+import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -26,35 +30,49 @@ public class BundleCapabilityResource extends AbstractResourceCollection {
 
     public final static String PACKAGE_RELATION = "package";
 
-    private final List<ProvidedWireResource> m_wires = new ArrayList<ProvidedWireResource>();
+    private final List<BundleWire> m_wires = new ArrayList<BundleWire>();
+
     private final BundleCapability m_capability;
     private final boolean isPackage;
 
     public BundleCapabilityResource(Path path, BundleCapability bundleCapability) {
         super(path.addElements(uniqueCapabilityId(bundleCapability)));
         m_capability = bundleCapability;
-        // calculate wires coming from this capability
-        List<BundleWire> allWires = m_capability.getRevision().getWiring().getProvidedWires(m_capability.getNamespace());
-        for (BundleWire wire : allWires) {
-            if (wire.getCapability().equals(m_capability)) {
-                m_wires.add(new ProvidedWireResource(getPath(), wire));
-            }
-        }
-
         isPackage = m_capability.getNamespace().equals(OsgiResourceUtils.PackageNamespace.PACKAGE_NAMESPACE);
         List<Relation> relations = new ArrayList<Relation>();
-        if (isPackage) {
-            // add relation to package
-            String packageId = uniqueCapabilityId(m_capability);
-            Path packagePath = PackageResourceManager.getInstance().getPath().addElements(packageId);
-            relations.add(new DefaultRelation(packagePath, Action.READ, PACKAGE_RELATION));
-            // add relation to bundle export package header
-            long bundleId = m_capability.getRevision().getBundle().getBundleId();
-            Path exportPackagePath = BundleResourceManager.getInstance().getPath()
-                    .addElements(Long.toString(bundleId), BundleHeadersResource.HEADERS_PATH, BundleHeadersResource.EXPORT_PACKAGE, packageId);
-            relations.add(new DefaultRelation(exportPackagePath, Action.READ, BundleHeadersResource.EXPORT_PACKAGE));
+        // calculate wires coming from this capability
+        BundleRevision revision = m_capability.getRevision();
+        if (revision != null) {
+            BundleWiring wiring = revision.getWiring();
+            if (wiring != null) {
+                List<BundleWire> allWires = wiring.getProvidedWires(m_capability.getNamespace());
+                for (BundleWire wire : allWires) {
+                    if (wire.getCapability().equals(m_capability)) {
+                        // and add a relation link
+                        m_wires.add(wire);
+                        String wireId = uniqueWireId(wire);
+                        Path wirePath = BundleResourceManager.getInstance().getPath().addElements(
+                                BundleWiresResource.WIRES_PATH,
+                                wireId
+                        );
+                        relations.add(new DefaultRelation(wirePath, Action.READ, wireId));
+                    }
+                }
+            }
+
+            if (isPackage) {
+                // add relation to package
+                String packageId = uniqueCapabilityId(m_capability);
+                Path packagePath = PackageResourceManager.getInstance().getPath().addElements(packageId);
+                relations.add(new DefaultRelation(packagePath, Action.READ, PACKAGE_RELATION));
+                // add relation to bundle export package header
+                long bundleId = revision.getBundle().getBundleId();
+                Path exportPackagePath = BundleResourceManager.getInstance().getPath()
+                        .addElements(Long.toString(bundleId), BundleHeadersResource.HEADERS_PATH, BundleHeadersResource.EXPORT_PACKAGE, packageId);
+                relations.add(new DefaultRelation(exportPackagePath, Action.READ, BundleHeadersResource.EXPORT_PACKAGE));
+            }
+            setRelations(relations);
         }
-        setRelations(relations);
     }
 
     @Override
@@ -62,13 +80,6 @@ public class BundleCapabilityResource extends AbstractResourceCollection {
         ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
         metadataFrom(metadataBuilder, m_capability);
         return metadataBuilder.build();
-    }
-
-    @Override
-    public List<Resource> getResources() {
-        ArrayList<Resource> resources = new ArrayList<Resource>();
-        resources.addAll(m_wires);
-        return resources;
     }
 
     @Override
@@ -94,8 +105,8 @@ public class BundleCapabilityResource extends AbstractResourceCollection {
         return isPackage;
     }
 
-    public List<ProvidedWireResource> getWires() {
-        ArrayList<ProvidedWireResource> wires = new ArrayList<ProvidedWireResource>();
+    public List<BundleWire> getWires() {
+        ArrayList<BundleWire> wires = new ArrayList<BundleWire>();
         wires.addAll(m_wires);
         return wires;
     }

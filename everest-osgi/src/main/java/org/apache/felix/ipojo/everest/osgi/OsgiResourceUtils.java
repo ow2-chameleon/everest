@@ -7,6 +7,7 @@ import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.wiring.BundleCapability;
 import org.osgi.framework.wiring.BundleRequirement;
+import org.osgi.framework.wiring.BundleWire;
 import org.osgi.service.log.LogService;
 
 import java.util.Collection;
@@ -125,6 +126,8 @@ public class OsgiResourceUtils {
         StringBuilder sb = new StringBuilder();
         sb.append(bundleId);
         sb.append(PACKAGE_ID_SEPARATOR);
+        sb.append(bundleCapability.getNamespace());
+        sb.append(PACKAGE_ID_SEPARATOR);
         sb.append(capabilityName);
         sb.append(PACKAGE_ID_SEPARATOR);
         sb.append(versionString);
@@ -141,8 +144,14 @@ public class OsgiResourceUtils {
         StringBuilder sb = new StringBuilder();
         sb.append(bundleId);
         sb.append(PACKAGE_ID_SEPARATOR);
+        sb.append(bundleRequirement.getNamespace());
+        sb.append(PACKAGE_ID_SEPARATOR);
         sb.append(requirementString);
         return sb.toString();
+    }
+
+    public static String uniqueWireId(BundleWire wire) {
+        return "wire-" + wire.hashCode();
     }
 
     public static ImmutableResourceMetadata.Builder metadataFrom(ImmutableResourceMetadata.Builder metadataBuilder, BundleRequirement bundleRequirement) {

@@ -8,10 +8,10 @@ import org.apache.felix.ipojo.everest.services.Action;
 import org.apache.felix.ipojo.everest.services.Path;
 import org.apache.felix.ipojo.everest.services.ResourceMetadata;
 import org.osgi.framework.wiring.BundleCapability;
+import org.osgi.framework.wiring.BundleRequirement;
 import org.osgi.framework.wiring.BundleWire;
 
-import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.uniqueCapabilityId;
-import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.uniqueRequirementId;
+import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -19,14 +19,16 @@ import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.uniqueRequir
  * Date: 4/21/13
  * Time: 9:12 PM
  */
-public class RequiredWireResource extends DefaultReadOnlyResource {
+public class BundleWireResource extends DefaultReadOnlyResource {
 
     public static final String WIRE_CAPABILITY = "capability";
 
+    public static final String WIRE_REQUIREMENT = "requirement";
+
     private final BundleWire m_wire;
 
-    public RequiredWireResource(Path path, BundleWire wire) {
-        super(path.addElements("wire" + wire.hashCode()));
+    public BundleWireResource(Path path, BundleWire wire) {
+        super(path.addElements(uniqueWireId(wire)));
         m_wire = wire;
 
         //find capability
@@ -34,18 +36,29 @@ public class RequiredWireResource extends DefaultReadOnlyResource {
         String capabilityId = OsgiResourceUtils.uniqueCapabilityId(capability);
         Path capabilityPath = BundleResourceManager.getInstance().getPath().addElements(
                 Long.toString(capability.getRevision().getBundle().getBundleId()),
-                BundleWiresResource.WIRES_PATH,
-                BundleWiresResource.CAPABILITIES_PATH,
+                BundleResource.CAPABILITIES_PATH,
                 capabilityId
         );
-        setRelations(new DefaultRelation(capabilityPath, Action.READ, WIRE_CAPABILITY));
+
+        //find requirement
+        BundleRequirement requirement = m_wire.getRequirement();
+        String requirementId = OsgiResourceUtils.uniqueRequirementId(requirement);
+        Path requirementPath = BundleResourceManager.getInstance().getPath().addElements(
+                Long.toString(requirement.getRevision().getBundle().getBundleId()),
+                BundleResource.REQUIREMENTS_PATH,
+                requirementId
+        );
+
+        setRelations(
+                new DefaultRelation(capabilityPath, Action.READ, WIRE_CAPABILITY),
+                new DefaultRelation(requirementPath, Action.READ, WIRE_REQUIREMENT));
     }
 
     @Override
     public ResourceMetadata getMetadata() {
         ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
-        metadataBuilder.set(BundleWiresResource.REQUIREMENT_PATH, uniqueRequirementId(m_wire.getRequirement()));
-        metadataBuilder.set(BundleWiresResource.CAPABILITY_PATH, uniqueCapabilityId(m_wire.getCapability()));
+        metadataBuilder.set(BundleResource.REQUIREMENTS_PATH, uniqueRequirementId(m_wire.getRequirement()));
+        metadataBuilder.set(BundleResource.CAPABILITIES_PATH, uniqueCapabilityId(m_wire.getCapability()));
         return metadataBuilder.build();
     }
 
@@ -53,9 +66,19 @@ public class RequiredWireResource extends DefaultReadOnlyResource {
     public <A> A adaptTo(Class<A> clazz) {
         if (BundleWire.class.equals(clazz)) {
             return (A) m_wire;
+        } else if (BundleWireResource.class.equals(clazz)) {
+            return (A) this;
         } else {
             return null;
         }
+    }
+
+    public String getCapabilityId() {
+        return uniqueCapabilityId(m_wire.getCapability());
+    }
+
+    public String getRequirementId() {
+        return uniqueRequirementId(m_wire.getRequirement());
     }
 
 }

@@ -51,19 +51,11 @@ public class PackageResource extends AbstractResourceCollection {
         m_packageName = (String) m_attributes.get(PACKAGE_NAMESPACE);
         m_version = (Version) m_attributes.get(PACKAGE_VERSION_ATTRIBUTE);
 
+        calculateImporters();
         // provider bundle
         Bundle bundle = m_bundleCapability.getRevision().getBundle();
         Path bundlePath = BundleResourceManager.getInstance().getPath().addElements(Long.toString(bundle.getBundleId()));
 
-        // calculate importers
-        BundleWiring wiring = m_bundleCapability.getRevision().getBundle().adapt(BundleWiring.class);
-        List<BundleWire> wires = wiring.getProvidedWires(PACKAGE_NAMESPACE);
-        for (BundleWire wire : wires) {
-            if (wire.getCapability().equals(m_bundleCapability)) {
-                Bundle requirerBundle = wire.getRequirerWiring().getBundle();
-                importers.add(requirerBundle);
-            }
-        }
         // Set relations
         setRelations(
                 new DefaultRelation(bundlePath, Action.READ, PROVIDER_BUNDLE_NAME)
@@ -77,6 +69,7 @@ public class PackageResource extends AbstractResourceCollection {
         metadataBuilder.set(PACKAGE_VERSION_ATTRIBUTE, m_version);
         metadataBuilder.set(CAPABILITY_BUNDLE_SYMBOLICNAME_ATTRIBUTE, getBundle().getSymbolicName());
         metadataBuilder.set(CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, getBundle().getVersion());
+        calculateImporters();
         metadataBuilder.set(PACKAGE_IN_USE, !importers.isEmpty());
         return metadataBuilder.build();
     }
@@ -96,6 +89,7 @@ public class PackageResource extends AbstractResourceCollection {
     @Override
     public List<Resource> getResources() {
         ArrayList<Resource> resources = new ArrayList<Resource>();
+        calculateImporters();
         // create links to importer bundles
         Builder builder = BundleResourceManager.relationsBuilder(getPath().addElements(IMPORTER_BUNDLE_NAME), importers);
         try {
@@ -149,6 +143,7 @@ public class PackageResource extends AbstractResourceCollection {
     }
 
     public boolean isUsed() {
+        calculateImporters();
         return !importers.isEmpty();
     }
 
@@ -158,6 +153,29 @@ public class PackageResource extends AbstractResourceCollection {
 
     public Map<String, String> getDirectives() {
         return m_directives;
+    }
+
+    private void calculateImporters() {
+        importers.clear();
+        synchronized (importers) {
+            // calculate importers
+            Bundle bundle = m_bundleCapability.getRevision().getBundle();
+            if (bundle != null) {
+                BundleWiring wiring = bundle.adapt(BundleWiring.class);
+                if (wiring != null) {
+                    List<BundleWire> wires = wiring.getProvidedWires(PACKAGE_NAMESPACE);
+                    if (wires != null) {
+                        for (BundleWire wire : wires) {
+                            if (wire.getCapability().equals(m_bundleCapability)) {
+                                Bundle requirerBundle = wire.getRequirerWiring().getBundle();
+                                importers.add(requirerBundle);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
     }
 
 }

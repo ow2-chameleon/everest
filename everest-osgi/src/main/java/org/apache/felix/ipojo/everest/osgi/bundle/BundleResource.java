@@ -2,6 +2,7 @@ package org.apache.felix.ipojo.everest.osgi.bundle;
 
 import org.apache.felix.ipojo.everest.impl.DefaultParameter;
 import org.apache.felix.ipojo.everest.impl.DefaultRelation;
+import org.apache.felix.ipojo.everest.impl.DefaultResource;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.osgi.AbstractResourceCollection;
 import org.apache.felix.ipojo.everest.services.*;
@@ -10,17 +11,17 @@ import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
 import org.osgi.framework.Version;
 import org.osgi.framework.startlevel.BundleStartLevel;
+import org.osgi.framework.wiring.BundleCapability;
+import org.osgi.framework.wiring.BundleRequirement;
 import org.osgi.framework.wiring.BundleRevision;
+import org.osgi.framework.wiring.BundleWiring;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.BundleNamespace.*;
-import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.bundleStateToString;
-import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.toBundleState;
+import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.*;
 
 
 /**
@@ -45,6 +46,14 @@ public class BundleResource extends AbstractResourceCollection {
 
     private static final String START_LEVEL_PARAMETER = "startLevel";
 
+    public static final String CAPABILITIES_PATH = "capabilities";
+
+    public static final String REQUIREMENTS_PATH = "requirements";
+
+    private final Path capabilitiesPath = getPath().addElements(CAPABILITIES_PATH);
+
+    private final Path requirementsPath = getPath().addElements(REQUIREMENTS_PATH);
+
     private final Bundle m_bundle;
 
     private final boolean isFragment;
@@ -53,9 +62,11 @@ public class BundleResource extends AbstractResourceCollection {
 
     private final BundleHeadersResource m_bundleHeadersResource;
 
-    private final BundleWiresResource m_bundleWiresResource;
-
     private final BundleServicesResource m_bundleServicesResource;
+
+    private final Map<String, Resource> m_capabilitiesResourceMap;
+
+    private final Map<String, Resource> m_requirementsResourceMap;
 
     public BundleResource(Bundle bundle, BundleResourceManager bundleResourceManager) {
         super(BundleResourceManager.BUNDLE_PATH.addElements(Long.toString(bundle.getBundleId())));
@@ -66,8 +77,12 @@ public class BundleResource extends AbstractResourceCollection {
         isFragment = (rev != null && (rev.getTypes() & BundleRevision.TYPE_FRAGMENT) != 0);
 
         m_bundleHeadersResource = new BundleHeadersResource(getPath(), m_bundle);
-        m_bundleWiresResource = new BundleWiresResource(getPath(), m_bundle);
         m_bundleServicesResource = new BundleServicesResource(getPath(), m_bundle);
+
+        m_capabilitiesResourceMap = new HashMap<String, Resource>();
+        m_requirementsResourceMap = new HashMap<String, Resource>();
+
+        initializeCapabilitiesRequirements();
 
         setRelations(
                 new DefaultRelation(getPath(), Action.UPDATE, UPDATE_RELATION,
@@ -127,7 +142,27 @@ public class BundleResource extends AbstractResourceCollection {
     public List<Resource> getResources() {
         ArrayList<Resource> resources = new ArrayList<Resource>();
         resources.add(m_bundleHeadersResource);
-        resources.add(m_bundleWiresResource);
+        DefaultResource.Builder builder = new Builder().fromPath(capabilitiesPath);
+        for (Resource bundleCapabilityResource : m_capabilitiesResourceMap.values()) {
+            builder.with(bundleCapabilityResource);
+            builder.with(new DefaultRelation(bundleCapabilityResource.getPath(), Action.READ, capabilitiesPath.getLast() + ":" + bundleCapabilityResource.getPath().getLast()));
+        }
+        try {
+            resources.add(builder.build());
+        } catch (IllegalResourceException e) {
+            // should never happen
+        }
+        builder = new Builder().fromPath(requirementsPath);
+        for (Resource bundleRequirementResource : m_requirementsResourceMap.values()) {
+            builder.with(bundleRequirementResource);
+            builder.with(new DefaultRelation(bundleRequirementResource.getPath(), Action.READ, requirementsPath.getLast() + ":" + bundleRequirementResource.getPath()));
+        }
+        try {
+            resources.add(builder.build());
+        } catch (IllegalResourceException e) {
+            // should never happen
+        }
+        resources.add(new BundleWiresResource(getPath(), m_bundle));
         resources.add(m_bundleServicesResource);
         return resources;
     }
@@ -150,7 +185,6 @@ public class BundleResource extends AbstractResourceCollection {
 
     @Override
     public Resource update(Request request) throws IllegalActionOnResourceException {
-        Resource resource = this;
         // start level update
         Integer startLevel = request.get(START_LEVEL_PARAMETER, Integer.class);
         if (startLevel != null) {
@@ -181,7 +215,7 @@ public class BundleResource extends AbstractResourceCollection {
             this.refresh();
         }
 
-        return resource;
+        return this;
     }
 
     @Override
@@ -191,8 +225,7 @@ public class BundleResource extends AbstractResourceCollection {
         } catch (IllegalActionOnResourceException e) {
             throw new IllegalActionOnResourceException(request, e.getMessage());
         }
-        //TODO should build a resource here new DefaultReadOnlyResource.Builder()
-        return null;
+        return this;
     }
 
     public String getState() {
@@ -286,6 +319,30 @@ public class BundleResource extends AbstractResourceCollection {
             m_bundle.uninstall();
         } catch (BundleException e) {
             throw new IllegalActionOnResourceException(null, e.getMessage());
+        }
+    }
+
+    protected void initializeCapabilitiesRequirements() {
+
+        m_requirementsResourceMap.clear();
+        m_capabilitiesResourceMap.clear();
+
+        BundleWiring wiring = m_bundle.adapt(BundleWiring.class);
+        if (wiring != null) {
+            List<BundleCapability> capabilities = wiring.getCapabilities(null);
+            if (capabilities != null) {
+                for (BundleCapability capability : capabilities) {
+                    BundleCapabilityResource bundleCapabilityResource = new BundleCapabilityResource(capabilitiesPath, capability);
+                    m_capabilitiesResourceMap.put(uniqueCapabilityId(capability), bundleCapabilityResource);
+                }
+            }
+            List<BundleRequirement> requirements = wiring.getRequirements(null);
+            if (requirements != null) {
+                for (BundleRequirement requirement : requirements) {
+                    BundleRequirementResource bundleRequirementResource = new BundleRequirementResource(requirementsPath, requirement);
+                    m_requirementsResourceMap.put(uniqueRequirementId(requirement), bundleRequirementResource);
+                }
+            }
         }
     }
 

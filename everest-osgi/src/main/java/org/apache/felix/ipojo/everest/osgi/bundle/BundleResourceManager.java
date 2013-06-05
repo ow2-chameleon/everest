@@ -162,6 +162,7 @@ public class BundleResourceManager extends AbstractResourceCollection {
                 m_bundleResourcesMap.put(bundle.getBundleId(), bundleResource);
             } else {
                 bundleResource = m_bundleResourcesMap.get(bundle.getBundleId());
+                bundleResource.initializeCapabilitiesRequirements();
             }
         }
         Everest.postResource(ResourceEvent.UPDATED, bundleResource);

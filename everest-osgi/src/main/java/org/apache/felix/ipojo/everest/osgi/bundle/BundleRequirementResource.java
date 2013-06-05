@@ -4,10 +4,15 @@ import org.apache.felix.ipojo.everest.impl.DefaultRelation;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.osgi.AbstractResourceCollection;
 import org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils;
-import org.apache.felix.ipojo.everest.services.*;
+import org.apache.felix.ipojo.everest.services.Action;
+import org.apache.felix.ipojo.everest.services.Path;
+import org.apache.felix.ipojo.everest.services.Relation;
+import org.apache.felix.ipojo.everest.services.ResourceMetadata;
 import org.osgi.framework.Constants;
 import org.osgi.framework.wiring.BundleRequirement;
+import org.osgi.framework.wiring.BundleRevision;
 import org.osgi.framework.wiring.BundleWire;
+import org.osgi.framework.wiring.BundleWiring;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,8 +21,7 @@ import java.util.Map;
 import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.BundleNamespace.BUNDLE_NAMESPACE;
 import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.PackageNamespace.PACKAGE_NAMESPACE;
 import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.PackageNamespace.RESOLUTION_DYNAMIC;
-import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.metadataFrom;
-import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.uniqueRequirementId;
+import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -27,7 +31,7 @@ import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.uniqueRequir
  */
 public class BundleRequirementResource extends AbstractResourceCollection {
 
-    private final List<RequiredWireResource> m_wires = new ArrayList<RequiredWireResource>();
+    private final List<BundleWire> m_wires = new ArrayList<BundleWire>();
     private final BundleRequirement m_requirement;
     private final boolean isPackage;
     private final boolean isBundle;
@@ -35,33 +39,46 @@ public class BundleRequirementResource extends AbstractResourceCollection {
     public BundleRequirementResource(Path path, BundleRequirement bundleRequirement) {
         super(path.addElements(uniqueRequirementId(bundleRequirement)));
         m_requirement = bundleRequirement;
-
-        // calculate wires coming to this requirement
-        List<BundleWire> allWires = m_requirement.getRevision().getWiring().getRequiredWires(m_requirement.getNamespace());
-        for (BundleWire wire : allWires) {
-            if (wire.getRequirement().equals(m_requirement)) {
-                m_wires.add(new RequiredWireResource(getPath(), wire));
-            }
-        }
-
         isPackage = m_requirement.getNamespace().equals(PACKAGE_NAMESPACE);
         isBundle = m_requirement.getNamespace().equals(BUNDLE_NAMESPACE);
-        String requirementId = OsgiResourceUtils.uniqueRequirementId(m_requirement);
-        Relation relation = null;
-        long bundleId = m_requirement.getRevision().getBundle().getBundleId();
-        Path bundleHeadersPath = BundleResourceManager.getInstance().getPath().addElements(Long.toString(bundleId), BundleHeadersResource.HEADERS_PATH);
-        // add relation to package import header
-        if (isPackage) {
-            String dynamicOrNot = RESOLUTION_DYNAMIC.equals(m_requirement.getDirectives().get(Constants.RESOLUTION_DIRECTIVE)) ? BundleHeadersResource.DYNAMIC_IMPORT_PACKAGE : BundleHeadersResource.IMPORT_PACKAGE;
-            Path requirementPath = bundleHeadersPath.addElements(dynamicOrNot, requirementId);
-            relation = new DefaultRelation(requirementPath, Action.READ, dynamicOrNot);
+        List<Relation> relations = new ArrayList<Relation>();
+        // calculate wires coming to this requirement
+        BundleRevision revision = m_requirement.getRevision();
+        if (revision != null) {
+            BundleWiring wiring = revision.getWiring();
+            if (wiring != null) {
+                List<BundleWire> allWires = wiring.getRequiredWires(m_requirement.getNamespace());
+                for (BundleWire wire : allWires) {
+                    if (wire.getRequirement().equals(m_requirement)) {
+                        // and add a relation link
+                        m_wires.add(wire);
+                        String wireId = uniqueWireId(wire);
+                        Path wirePath = BundleResourceManager.getInstance().getPath().addElements(
+                                BundleWiresResource.WIRES_PATH,
+                                wireId
+                        );
+                        relations.add(new DefaultRelation(wirePath, Action.READ, wireId));
+                    }
+                }
+            }
+            String requirementId = OsgiResourceUtils.uniqueRequirementId(m_requirement);
+            Relation relation = null;
+            long bundleId = revision.getBundle().getBundleId();
+            Path bundleHeadersPath = BundleResourceManager.getInstance().getPath().addElements(Long.toString(bundleId), BundleHeadersResource.HEADERS_PATH);
+            // add relation to package import header
+            if (isPackage) {
+                String dynamicOrNot = RESOLUTION_DYNAMIC.equals(m_requirement.getDirectives().get(Constants.RESOLUTION_DIRECTIVE)) ? BundleHeadersResource.DYNAMIC_IMPORT_PACKAGE : BundleHeadersResource.IMPORT_PACKAGE;
+                Path requirementPath = bundleHeadersPath.addElements(dynamicOrNot, requirementId);
+                relation = new DefaultRelation(requirementPath, Action.READ, dynamicOrNot);
+            }
+            // add relation to require-bundle header
+            if (isBundle) {
+                Path requirementPath = bundleHeadersPath.addElements(BundleHeadersResource.REQUIRE_BUNDLE, requirementId);
+                relation = new DefaultRelation(requirementPath, Action.READ, BundleHeadersResource.REQUIRE_BUNDLE);
+            }
+            relations.add(relation);
+            setRelations(relations);
         }
-        // add relation to require-bundle header
-        if (isBundle) {
-            Path requirementPath = bundleHeadersPath.addElements(BundleHeadersResource.REQUIRE_BUNDLE, requirementId);
-            relation = new DefaultRelation(requirementPath, Action.READ, BundleHeadersResource.REQUIRE_BUNDLE);
-        }
-        setRelations(relation);
     }
 
     @Override
@@ -69,13 +86,6 @@ public class BundleRequirementResource extends AbstractResourceCollection {
         ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
         metadataFrom(metadataBuilder, m_requirement);
         return metadataBuilder.build();
-    }
-
-    @Override
-    public List<Resource> getResources() {
-        ArrayList<Resource> resources = new ArrayList<Resource>();
-        resources.addAll(m_wires);
-        return resources;
     }
 
     @Override
@@ -105,8 +115,8 @@ public class BundleRequirementResource extends AbstractResourceCollection {
         return isBundle;
     }
 
-    public List<RequiredWireResource> getWires() {
-        ArrayList<RequiredWireResource> wires = new ArrayList<RequiredWireResource>();
+    public List<BundleWire> getWires() {
+        ArrayList<BundleWire> wires = new ArrayList<BundleWire>();
         wires.addAll(m_wires);
         return wires;
     }
