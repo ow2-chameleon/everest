@@ -69,7 +69,7 @@ public class TestOsgiActions extends EverestOsgiTest {
         Resource bundles = get("/osgi/bundles");
         for (Resource bundle : bundles.getResources()) {
             BundleResource bundleResource = bundle.adaptTo(BundleResource.class);
-            System.out.println(bundleResource.getBundleId() + " : " + bundleResource.getStartLevel());
+            //System.out.println(bundleResource.getBundleId() + " : " + bundleResource.getStartLevel());
         }
 
         // set initial bundle start level
@@ -78,6 +78,8 @@ public class TestOsgiActions extends EverestOsgiTest {
         update(osgi.getPath(), params);
         osgi = get("/osgi");
         assertThat(osgi.getMetadata().get("startlevel.bundle")).isEqualTo(2);
+
+
     }
 
     @Test

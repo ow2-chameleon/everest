@@ -15,6 +15,7 @@ import org.ops4j.pax.tinybundles.core.TinyBundle;
 import org.ops4j.pax.tinybundles.core.TinyBundles;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Constants;
+import org.osgi.service.event.Event;
 import org.ow2.chameleon.testing.tinybundles.ipojo.IPOJOStrategy;
 
 import java.io.File;
@@ -119,6 +120,23 @@ public class TestBundleActions extends EverestOsgiTest {
         }
     }
 
+    public Resource installTestBundle() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        Resource r = get("/osgi/bundles");
+        Resource bundleResource = null;
+        HashMap<String, Object> params = new HashMap<String, Object>();
+        params.put("location", file.toURI().toString());
+        params.put("input", input);
+        return create(r.getPath(), params);
+    }
+
+    public Resource startBundle(Resource resource) throws ResourceNotFoundException, IllegalActionOnResourceException {
+        HashMap<String, Object> params = new HashMap<String, Object>();
+        params.put("newState", "ACTIVE");
+        params.put("update", false);
+        resource = update(resource.getPath(), params);
+        return resource;
+    }
+
     @Test
     public void testBundleIsNotHere() throws ResourceNotFoundException, IllegalActionOnResourceException {
         Resource r = get("/osgi/bundles");
@@ -134,117 +152,128 @@ public class TestBundleActions extends EverestOsgiTest {
 
     @Test
     public void testBundleInstall() throws ResourceNotFoundException, IllegalActionOnResourceException, MalformedURLException {
-        Resource r = get("/osgi/bundles");
-        HashMap<String, Object> params = new HashMap<String, Object>();
-        params.put("location", file.toURI().toString());
-        params.put("input", input);
-        Resource res = create(r.getPath(), params);
-        String symbolicName = res.getMetadata().get(Constants.BUNDLE_SYMBOLICNAME_ATTRIBUTE, String.class);
-        assertThat(symbolicName).isEqualTo("test.bundle");
-        assertThat(res.getMetadata().get("bundle-state", String.class)).isEqualTo("INSTALLED");
 
-        params.put("newState", "ACTIVE");
-        params.put("update", false);
-        res = update(res.getPath(), params);
-        assertThat(res.getMetadata().get("bundle-state", String.class)).isEqualTo("ACTIVE");
+        Resource bundleResource = installTestBundle();
+        String symbolicName = bundleResource.getMetadata().get(Constants.BUNDLE_SYMBOLICNAME_ATTRIBUTE, String.class);
+        assertThat(symbolicName).isEqualTo("test.bundle");
+        assertThat(bundleResource.getMetadata().get("bundle-state", String.class)).isEqualTo("INSTALLED");
+
+        assertThat(bundleResource).isNotNull();
+        // test event
+        Event last = createdEvents.getLast();
+        assertThat(last.getProperty("canonicalPath")).isEqualTo(bundleResource.getCanonicalPath().toString());
+        testCreatedEventFrom(bundleResource.getCanonicalPath().toString());
+
     }
 
     @Test
-    public void testBundleStart() throws ResourceNotFoundException, IllegalActionOnResourceException {
-        Resource r = get("/osgi/bundles");
-        for (Resource res : r.getResources()) {
-            String symbolicName = res.getMetadata().get(Constants.BUNDLE_SYMBOLICNAME_ATTRIBUTE, String.class);
-            if (symbolicName.equals("test.bundle")) {
+    public void testBundleStart() throws ResourceNotFoundException, IllegalActionOnResourceException, MalformedURLException {
 
-                HashMap<String, Object> params = new HashMap<String, Object>();
-                params.put("newState", "RESOLVED");
-                res = update(res.getPath(), params);
-                symbolicName = res.getMetadata().get(Constants.BUNDLE_SYMBOLICNAME_ATTRIBUTE, String.class);
-                assertThat(symbolicName).isEqualTo("test.bundle");
-                assertThat(res.getMetadata().get(OsgiResourceUtils.BundleNamespace.BUNDLE_STATE, String.class)).isEqualTo("RESOLVED");
+        Resource bundleResource = installTestBundle();
+        String symbolicName = bundleResource.getMetadata().get(Constants.BUNDLE_SYMBOLICNAME_ATTRIBUTE, String.class);
+        assertThat(symbolicName).isEqualTo("test.bundle");
+        assertThat(bundleResource.getMetadata().get("bundle-state", String.class)).isEqualTo("INSTALLED");
+        assertThat(bundleResource).isNotNull();
+        testCreatedEventFrom(bundleResource.getCanonicalPath().toString());
 
+        bundleResource = startBundle(bundleResource);
+        assertThat(bundleResource.getMetadata().get("bundle-state", String.class)).isEqualTo("ACTIVE");
+        assertThat(bundleResource).isNotNull();
+        testUpdatedEventFrom(bundleResource.getCanonicalPath().toString());
 
-                // Stopped now restarting
-                params = new HashMap<String, Object>();
-                params.put("newState", "ACTIVE");
-                res = update(res.getPath(), params);
-                symbolicName = res.getMetadata().get(Constants.BUNDLE_SYMBOLICNAME_ATTRIBUTE, String.class);
-                assertThat(symbolicName).isEqualTo("test.bundle");
-                assertThat(res.getMetadata().get(OsgiResourceUtils.BundleNamespace.BUNDLE_STATE, String.class)).isEqualTo("ACTIVE");
-            }
-        }
     }
 
     @Test
     public void testBundleStop() throws ResourceNotFoundException, IllegalActionOnResourceException {
-        Resource r = get("/osgi/bundles");
-        for (Resource res : r.getResources()) {
-            String symbolicName = res.getMetadata().get(Constants.BUNDLE_SYMBOLICNAME_ATTRIBUTE, String.class);
-            if (symbolicName.equals("test.bundle")) {
-                HashMap<String, Object> params = new HashMap<String, Object>();
-                params.put("newState", "RESOLVED");
-                res = update(res.getPath(), params);
-                symbolicName = res.getMetadata().get(Constants.BUNDLE_SYMBOLICNAME_ATTRIBUTE, String.class);
-                assertThat(symbolicName).isEqualTo("test.bundle");
-                assertThat(res.getMetadata().get(OsgiResourceUtils.BundleNamespace.BUNDLE_STATE, String.class)).isEqualTo("RESOLVED");
-            }
-        }
+        Resource bundleResource = installTestBundle();
+        assertThat(bundleResource).isNotNull();
+
+        HashMap<String, Object> params = new HashMap<String, Object>();
+        params.put("newState", "RESOLVED");
+        bundleResource = update(bundleResource.getPath(), params);
+        String symbolicName = bundleResource.getMetadata().get(Constants.BUNDLE_SYMBOLICNAME_ATTRIBUTE, String.class);
+        assertThat(symbolicName).isEqualTo("test.bundle");
+        assertThat(bundleResource.getMetadata().get(OsgiResourceUtils.BundleNamespace.BUNDLE_STATE, String.class)).isEqualTo("RESOLVED");
+
+        //Event last = updatedEvents.getLast();
+        //assertThat(last.getProperty("canonicalPath")).isEqualTo(bundleResource.getCanonicalPath().toString());
+        testUpdatedEventFrom(bundleResource.getCanonicalPath().toString());
+        updatedEvents.clear();
+
+        // Stopped now restarting
+        params = new HashMap<String, Object>();
+        params.put("newState", "ACTIVE");
+        bundleResource = update(bundleResource.getPath(), params);
+        symbolicName = bundleResource.getMetadata().get(Constants.BUNDLE_SYMBOLICNAME_ATTRIBUTE, String.class);
+        assertThat(symbolicName).isEqualTo("test.bundle");
+        assertThat(bundleResource.getMetadata().get(OsgiResourceUtils.BundleNamespace.BUNDLE_STATE, String.class)).isEqualTo("ACTIVE");
+
+        //assertThat(updatedEvents.getLast()).isNotEqualTo(last);
+        //last = updatedEvents.getLast();
+        //assertThat(last.getProperty("canonicalPath")).isEqualTo(bundleResource.getCanonicalPath().toString());
+        testUpdatedEventFrom(bundleResource.getCanonicalPath().toString());
+
     }
 
     @Test
     public void testBundleUninstall() throws ResourceNotFoundException, IllegalActionOnResourceException {
 
-        Resource r = get("/osgi/bundles");
-        for (Resource res : r.getResources()) {
-            String symbolicName = res.getMetadata().get(Constants.BUNDLE_SYMBOLICNAME_ATTRIBUTE, String.class);
-            if (symbolicName.equals("test.bundle")) {
-                HashMap<String, Object> params = new HashMap<String, Object>();
-                params.put("newState", "UNINSTALLED");
-                res = update(res.getPath(), params);
-                symbolicName = res.getMetadata().get(Constants.BUNDLE_SYMBOLICNAME_ATTRIBUTE, String.class);
-                assertThat(symbolicName).isEqualTo("test.bundle");
-                assertThat(res.getMetadata().get(OsgiResourceUtils.BundleNamespace.BUNDLE_STATE, String.class)).isEqualTo("UNINSTALLED");
-            }
-        }
+        Resource bundleResource = installTestBundle();
+        bundleResource = startBundle(bundleResource);
+
+        bundleResource = delete(bundleResource.getPath());
+        String symbolicName = bundleResource.getMetadata().get(Constants.BUNDLE_SYMBOLICNAME_ATTRIBUTE, String.class);
+        assertThat(symbolicName).isEqualTo("test.bundle");
+        assertThat(bundleResource.getMetadata().get(OsgiResourceUtils.BundleNamespace.BUNDLE_STATE, String.class)).isEqualTo("UNINSTALLED");
+        Bundle bundle = bundleResource.adaptTo(Bundle.class);
+
+        System.out.println(OsgiResourceUtils.bundleStateToString(bundle.getState()));
+        assertThat(bundleResource).isNotNull();
+        // test Event
+        testDeletedEventFrom(bundleResource.getCanonicalPath().toString());
     }
 
     @Test
     public void testBundleRefresh() throws ResourceNotFoundException, IllegalActionOnResourceException {
-        Resource r = get("/osgi/bundles");
-        for (Resource res : r.getResources()) {
-            String symbolicName = res.getMetadata().get(Constants.BUNDLE_SYMBOLICNAME_ATTRIBUTE, String.class);
-            if (symbolicName.equals("test.bundle")) {
-                HashMap<String, Object> params = new HashMap<String, Object>();
-                params.put("refresh", true);
-                update(res.getPath(), params);
-            }
-        }
+
+        Resource bundleResource = installTestBundle();
+        bundleResource = startBundle(bundleResource);
+        updatedEvents.clear();
+        HashMap<String, Object> params = new HashMap<String, Object>();
+        params.put("refresh", true);
+        update(bundleResource.getPath(), params);
+
+        assertThat(bundleResource).isNotNull();
+        // test Event
+        //Event last = updatedEvents.getLast();
+        //assertThat(last.getProperty("canonicalPath")).isEqualTo(bundleResource.getCanonicalPath().toString());
+        testUpdatedEventFrom(bundleResource.getCanonicalPath().toString());
     }
 
     @Test
     public void testBundleUpdate() throws ResourceNotFoundException, IllegalActionOnResourceException {
         // install test bundle
-        Resource osgi = get("/osgi/bundles");
-        HashMap<String, Object> params = new HashMap<String, Object>();
-        params.put("location", file.toURI().toString());
-        params.put("input", input);
-        Resource res = create(osgi.getPath(), params);
+        Resource res = installTestBundle();
+        updatedEvents.clear();
         String symbolicName = res.getMetadata().get(Constants.BUNDLE_SYMBOLICNAME_ATTRIBUTE, String.class);
         BundleResource bundleResource = res.adaptTo(BundleResource.class);
         assertThat(symbolicName).isEqualTo("test.bundle");
         assertThat(res.getMetadata().get("bundle-state", String.class)).isEqualTo("INSTALLED");
+
         // resolve test bundle
-        params = new HashMap<String, Object>();
+        HashMap<String, Object> params = new HashMap<String, Object>();
         params.put("newState", OsgiResourceUtils.bundleStateToString(Bundle.RESOLVED));
         update(res.getPath(), params);
         assertThat(bundleResource.getState()).isEqualTo(OsgiResourceUtils.bundleStateToString(Bundle.RESOLVED));
+        testUpdatedEventFrom(bundleResource.getCanonicalPath().toString());
 
-        long bundleId = bundleResource.getBundleId();
+        updatedEvents.clear();
         // update test bundle
         params = new HashMap<String, Object>();
         params.put("update", true);
         update(bundleResource.getPath(), params);
         assertThat(bundleResource.getState()).isEqualTo(OsgiResourceUtils.bundleStateToString(Bundle.INSTALLED));
+        testUpdatedEventFrom(bundleResource.getCanonicalPath().toString());
 
     }
 
@@ -252,6 +281,8 @@ public class TestBundleActions extends EverestOsgiTest {
     public void testBundleStartLevel() throws ResourceNotFoundException, IllegalActionOnResourceException {
         // set initial bundle start level to 6
         Resource osgi = get("/osgi");
+        updatedEvents.clear();
+        createdEvents.clear();
         HashMap<String, Object> params = new HashMap<String, Object>();
         params.put("startlevel.bundle", 6);
         update(osgi.getPath(), params);
@@ -268,6 +299,7 @@ public class TestBundleActions extends EverestOsgiTest {
         assertThat(symbolicName).isEqualTo("test.bundle");
         assertThat(res.getMetadata().get("bundle-state", String.class)).isEqualTo("INSTALLED");
         assertThat(bundleResource.getStartLevel()).isEqualTo(6);
+        testCreatedEventFrom(bundleResource.getCanonicalPath().toString());
 
         // start bundle, it should not start
         bundleResource.changeState("ACTIVE");
@@ -282,11 +314,17 @@ public class TestBundleActions extends EverestOsgiTest {
         // wait for start level passage
         System.out.println("Waiting for start level passage");
         try {
-            Thread.sleep(3000);
+            Thread.sleep(1000);
         } catch (InterruptedException e) {
             // Interrupted
         }
         assertThat(bundleResource.getState()).isEqualTo("ACTIVE");
+        testUpdatedEventFrom(bundleResource.getCanonicalPath().toString());
+
+        for (Event updatedEvent : updatedEvents) {
+            System.out.println(updatedEvent.getProperty("canonicalPath"));
+        }
+
 
     }
 

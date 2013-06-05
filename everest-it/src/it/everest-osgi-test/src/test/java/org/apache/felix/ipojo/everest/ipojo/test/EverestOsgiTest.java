@@ -12,13 +12,20 @@ import org.ops4j.pax.exam.options.CompositeOption;
 import org.ops4j.pax.exam.options.DefaultCompositeOption;
 import org.ops4j.pax.exam.spi.reactors.ExamReactorStrategy;
 import org.ops4j.pax.exam.spi.reactors.PerClass;
+import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
+import org.osgi.service.event.EventConstants;
+import org.osgi.service.event.EventHandler;
 import org.ow2.chameleon.testing.helpers.BaseTest;
 
 import javax.inject.Inject;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Map;
 
 import static junit.framework.Assert.assertNotNull;
+import static org.fest.assertions.Assertions.assertThat;
 import static org.ops4j.pax.exam.CoreOptions.*;
 
 /**
@@ -27,6 +34,11 @@ import static org.ops4j.pax.exam.CoreOptions.*;
 @RunWith(PaxExam.class)
 @ExamReactorStrategy(PerClass.class)
 public class EverestOsgiTest extends BaseTest {
+
+    // Event lists
+    LinkedList<Event> createdEvents = new LinkedList<Event>();
+    LinkedList<Event> updatedEvents = new LinkedList<Event>();
+    LinkedList<Event> deletedEvents = new LinkedList<Event>();
 
     @Inject
     EverestService everest;
@@ -58,8 +70,8 @@ public class EverestOsgiTest extends BaseTest {
     @Before
     public void commonSetUp() {
         super.commonSetUp();
+        registerEventHandler();
         // create bundles
-
     }
 
     @After
@@ -119,5 +131,63 @@ public class EverestOsgiTest extends BaseTest {
         assertNotNull(everest);
     }
 
+    protected void registerEventHandler() {
+        Hashtable<String, Object> props = new Hashtable<String, Object>();
+        props.put(EventConstants.EVENT_TOPIC, new String[]{"everest/osgi/*", "everest/osgi"});
+        osgiHelper.getContext().registerService(EventHandler.class.getName(), new EventHandler() {
+            public void handleEvent(Event event) {
+                Object eventType = event.getProperty("eventType");
+                System.out.println(eventType + " " + event.getProperty("canonicalPath"));
+                if (ResourceEvent.CREATED.toString().equals(eventType)) {
+                    createdEvents.add(event);
+                } else if (ResourceEvent.DELETED.toString().equals(eventType)) {
+                    deletedEvents.add(event);
+                } else if (ResourceEvent.UPDATED.toString().equals(eventType)) {
+                    updatedEvents.add(event);
+                }
+            }
+        }, props);
+
+    }
+
+    public void testUpdatedEventFrom(String resourcePath) throws ResourceNotFoundException, IllegalActionOnResourceException {
+        Iterator<Event> iterator = updatedEvents.descendingIterator();
+        boolean fromResource = false;
+        while (iterator.hasNext() && !fromResource) {
+            Event next = iterator.next();
+            String canonicalPath = (String) next.getProperty("canonicalPath");
+            if (canonicalPath.equals(resourcePath)) {
+                fromResource = true;
+            }
+        }
+        assertThat(fromResource).isTrue();
+    }
+
+    public void testCreatedEventFrom(String resourcePath) throws ResourceNotFoundException, IllegalActionOnResourceException {
+        Iterator<Event> iterator = createdEvents.descendingIterator();
+        boolean fromResource = false;
+        while (iterator.hasNext() && !fromResource) {
+            Event next = iterator.next();
+            String canonicalPath = (String) next.getProperty("canonicalPath");
+            if (canonicalPath.equals(resourcePath)) {
+                fromResource = true;
+            }
+        }
+        assertThat(fromResource).isTrue();
+    }
+
+    public void testDeletedEventFrom(String resourcePath) throws ResourceNotFoundException, IllegalActionOnResourceException {
+        Iterator<Event> iterator = deletedEvents.descendingIterator();
+        boolean fromResource = false;
+        while (iterator.hasNext() && !fromResource) {
+            Event next = iterator.next();
+            String canonicalPath = (String) next.getProperty("canonicalPath");
+            System.out.println(next.getTopic() + " " + canonicalPath);
+            if (canonicalPath.equals(resourcePath)) {
+                fromResource = true;
+            }
+        }
+        assertThat(fromResource).isTrue();
+    }
 
 }

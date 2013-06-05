@@ -1,6 +1,10 @@
 package org.apache.felix.ipojo.everest.ipojo.test;
 
+import org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils;
+import org.apache.felix.ipojo.everest.osgi.bundle.BundleCapabilityResource;
+import org.apache.felix.ipojo.everest.osgi.bundle.BundleRequirementResource;
 import org.apache.felix.ipojo.everest.osgi.bundle.BundleResource;
+import org.apache.felix.ipojo.everest.osgi.bundle.BundleWireResource;
 import org.apache.felix.ipojo.everest.osgi.packages.PackageResource;
 import org.apache.felix.ipojo.everest.services.IllegalActionOnResourceException;
 import org.apache.felix.ipojo.everest.services.Relation;
@@ -11,12 +15,12 @@ import org.junit.Test;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.framework.Version;
+import org.osgi.framework.wiring.BundleCapability;
+import org.osgi.framework.wiring.BundleRequirement;
+import org.osgi.framework.wiring.BundleWire;
 import org.osgi.service.event.Event;
-import org.osgi.service.event.EventConstants;
-import org.osgi.service.event.EventHandler;
 import org.osgi.service.packageadmin.ExportedPackage;
 
-import java.util.Hashtable;
 import java.util.List;
 
 import static org.fest.assertions.Assertions.assertThat;
@@ -102,38 +106,81 @@ public class TestOsgiResources extends EverestOsgiTest {
     public void testServicesList() throws ResourceNotFoundException, IllegalActionOnResourceException {
         Resource r = get("/osgi/services");
         int size = r.getResources().size();
-        Hashtable<String, Object> props = new Hashtable<String, Object>();
-        props.put(EventConstants.EVENT_TOPIC, new String[]{"everest/osgi/services/*"});
-        props.put(EventConstants.EVENT_FILTER, "(eventType=CREATED)");
-        osgiHelper.getContext().registerService(EventHandler.class.getName(), new EventHandler() {
-            public void handleEvent(Event event) {
-                System.out.println("EVENT: " + event.toString());
-            }
-        }, props);
         ServiceRegistration reg = osgiHelper.getContext().registerService(this.getClass().getName(), this, null);
-
-        Assert.assertEquals("Services should have incremented", size + 2, r.getResources().size());
+        assertThat(r.getResources().size()).isEqualTo(size + 1);
+        Event last = createdEvents.getLast();
+        System.out.println(last.getTopic() + " " + last.getProperty("eventType"));
     }
 
     @Test
     public void testBundleWiring() throws ResourceNotFoundException, IllegalActionOnResourceException {
-        //TODO should find a way to write assertions on wires
         Resource bundles = get("/osgi/bundles");
         for (int i = 0; i < bundles.getResources().size(); i++) {
             Resource wires = get("/osgi/bundles/" + i + "/wires");
-            for (Resource res : wires.getResources()) {
-                assertThat(res).isNotNull();
-                //System.out.println(res.getPath());
-                //System.out.println("Related to :");
-                for (Relation relation : res.getRelations()) {
-                    //System.out.println("\t" + relation.getName() + " - " + relation.getHref());
-                }
-                //System.out.println("\tWires :");
-                for (Resource wire : res.getResources()) {
-                    for (Relation relation : wire.getRelations()) {
-                        assertThat(relation).isNotNull();
-                        //System.out.println("\t\t" + relation.getName() + " - " + relation.getHref());
+            for (Resource wire : wires.getResources()) {
+                assertThat(wire).isNotNull();
+                //System.out.println(wire.getPath().toString());
+                BundleWire bundleWire = wire.adaptTo(BundleWire.class);
+                BundleWireResource bundleWireResource = wire.adaptTo(BundleWireResource.class);
+                // check capability requirement relations
+                for (Relation capsReqs : wire.getRelations()) {
+                    Resource resource = get(capsReqs.getHref().toString());
+                    assertThat(resource).isNotNull();
+                    BundleCapabilityResource bundleCapabilityResource = resource.adaptTo(BundleCapabilityResource.class);
+                    BundleRequirementResource bundleRequirementResource = resource.adaptTo(BundleRequirementResource.class);
+                    assertThat((bundleCapabilityResource == null && bundleRequirementResource == null)).isFalse();
+
+                    if (bundleCapabilityResource != null) { // then it is a capability
+                        BundleCapability capability = bundleCapabilityResource.adaptTo(BundleCapability.class);
+                        long bundleId = capability.getRevision().getBundle().getBundleId();
+                        String capabilityId = OsgiResourceUtils.uniqueCapabilityId(capability);
+                        Resource capabilityResource = get("/osgi/bundles/" + bundleId + "/capabilities/" + capabilityId);
+                        assertThat(capabilityResource).isEqualTo(bundleCapabilityResource);
+                        assertThat(bundleWire.getCapability()).isEqualTo(capability);
+                        if (bundleCapabilityResource.isPackage()) {
+                            //bundleCapabilityResource
+                            for (Relation relation : bundleCapabilityResource.getRelations()) {
+                                if (relation.getName().equals("package")) {
+                                    Resource pkg = get(relation.getHref().toString());
+                                    PackageResource packageResource = pkg.adaptTo(PackageResource.class);
+                                    assertThat(packageResource).isNotNull();
+                                    assertThat(packageResource.isUsed()).isTrue();
+                                }
+                            }
+
+                        }
                     }
+
+                    if (bundleRequirementResource != null) { // then it is a requirement
+                        BundleRequirement requirement = bundleRequirementResource.adaptTo(BundleRequirement.class);
+                        long bundleId = requirement.getRevision().getBundle().getBundleId();
+                        String requirementId = OsgiResourceUtils.uniqueRequirementId(requirement);
+                        Resource requirementResource = get("/osgi/bundles/" + bundleId + "/requirements/" + requirementId);
+                        assertThat(requirementResource).isEqualTo(bundleRequirementResource);
+                        assertThat(bundleWire.getRequirement()).isEqualTo(requirement);
+                        if (bundleRequirementResource.isBundle()) {
+                            for (Relation relation : bundleRequirementResource.getRelations()) {
+                                if (relation.getName().equals("require-bundle")) {
+                                    Resource bundle = get(relation.getHref().toString());
+                                    assertThat(bundle).isNotNull();
+                                    //System.out.println(bundle.getPath());
+                                }
+                            }
+
+                        }
+                        if (bundleRequirementResource.isPackage()) {
+                            for (Relation relation : bundleRequirementResource.getRelations()) {
+                                if (relation.getName().equals("import-package")) {
+                                    Resource pkgImport = get(relation.getHref().toString());
+                                    assertThat(pkgImport).isNotNull();
+                                    //System.out.println(pkgImport.getPath());
+                                }
+
+                            }
+
+                        }
+                    }
+                    //System.out.println(capsReqs.getName()+" "+capsReqs.getHref());
                 }
             }
         }
