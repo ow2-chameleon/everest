@@ -11,6 +11,7 @@ import org.ops4j.pax.exam.spi.reactors.ExamReactorStrategy;
 import org.ops4j.pax.exam.spi.reactors.PerMethod;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.startlevel.FrameworkStartLevel;
+import org.ow2.chameleon.testing.helpers.TimeUtils;
 
 import java.util.HashMap;
 
@@ -39,8 +40,7 @@ public class TestOsgiActions extends EverestOsgiTest {
     @Test
     public void testOsgiDelete() throws ResourceNotFoundException, IllegalActionOnResourceException {
         //BEHOLD this should break things!
-        Resource resource = osgiHelper.waitForService(Resource.class, "(type=osgi)", 5000);
-
+        Resource resource = osgiHelper.waitForService(Resource.class, "(type=osgi)", TimeUtils.TIME_FACTOR * 1000);
         Resource osgi = get("/osgi");
         delete(osgi.getPath());
         // limboo
@@ -92,6 +92,7 @@ public class TestOsgiActions extends EverestOsgiTest {
         FrameworkStartLevel fwStartlevel = osgiHelper.getBundle(0).adapt(FrameworkStartLevel.class);
         assertThat(startlevel).isEqualTo(fwStartlevel.getStartLevel());
 
+        updatedEvents.clear();
         // set start level
         HashMap<String, Object> params = new HashMap<String, Object>();
         params.put("startlevel", 3);
@@ -100,13 +101,14 @@ public class TestOsgiActions extends EverestOsgiTest {
         // wait for start level passage
         System.out.println("Waiting for start level passage");
         try {
-            Thread.sleep(3000);
+            Thread.sleep(TimeUtils.TIME_FACTOR * 1000);
         } catch (InterruptedException e) {
             // Interrupted
         }
         osgi = get("/osgi");
         startlevel = osgi.getMetadata().get("startlevel", Integer.class);
         assertThat(startlevel).isEqualTo(3);
+        testUpdatedEventFrom("/osgi");
 
         Resource bundles = get("/osgi/bundles");
         for (Resource bundle : bundles.getResources()) {

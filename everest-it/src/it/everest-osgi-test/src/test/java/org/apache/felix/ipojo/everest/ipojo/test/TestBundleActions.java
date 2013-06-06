@@ -16,6 +16,7 @@ import org.ops4j.pax.tinybundles.core.TinyBundles;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Constants;
 import org.osgi.service.event.Event;
+import org.ow2.chameleon.testing.helpers.TimeUtils;
 import org.ow2.chameleon.testing.tinybundles.ipojo.IPOJOStrategy;
 
 import java.io.File;
@@ -238,7 +239,6 @@ public class TestBundleActions extends EverestOsgiTest {
 
         Resource bundleResource = installTestBundle();
         bundleResource = startBundle(bundleResource);
-        updatedEvents.clear();
         HashMap<String, Object> params = new HashMap<String, Object>();
         params.put("refresh", true);
         update(bundleResource.getPath(), params);
@@ -247,7 +247,6 @@ public class TestBundleActions extends EverestOsgiTest {
         // test Event
         //Event last = updatedEvents.getLast();
         //assertThat(last.getProperty("canonicalPath")).isEqualTo(bundleResource.getCanonicalPath().toString());
-        testUpdatedEventFrom(bundleResource.getCanonicalPath().toString());
     }
 
     @Test
@@ -314,7 +313,7 @@ public class TestBundleActions extends EverestOsgiTest {
         // wait for start level passage
         System.out.println("Waiting for start level passage");
         try {
-            Thread.sleep(1000);
+            Thread.sleep(TimeUtils.TIME_FACTOR * 1000);
         } catch (InterruptedException e) {
             // Interrupted
         }

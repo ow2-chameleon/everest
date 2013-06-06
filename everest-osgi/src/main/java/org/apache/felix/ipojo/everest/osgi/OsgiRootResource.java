@@ -243,6 +243,11 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
         return null;
     }
 
+    @Override
+    public boolean isObservable() {
+        return true;
+    }
+
     // Config Admin Bind / Unbind
 
     @Bind(id = "configadmin", optional = true, aggregate = false)
