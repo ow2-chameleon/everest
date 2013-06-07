@@ -19,10 +19,10 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * </ul>
  * </p>
  *
- * @param <R> the type of sub resources
  * @ThreadSafe
  */
-public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
+// TODO refactor : this class gets more and more dirty
+public class ResourceMap extends DefaultReadOnlyResource {
 
     /**
      * The lock regulating concurrent accesses to this resource map.
@@ -34,7 +34,7 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
      *
      * @GuardedBy m_lock
      */
-    private final Map<Path, R> m_children = new LinkedHashMap<Path, R>();
+    private final Map<Path, Resource> m_children = new LinkedHashMap<Path, Resource>();
 
     /**
      * The relations to the children.
@@ -90,7 +90,7 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
      *                                  if this resource map already contains a resource with the same path.
      * @throws IllegalStateException    if the generated relation name is not unique..
      */
-    public void addResource(R child, String relationName, String relationDescription) {
+    public void addResource(Resource child, String relationName, String relationDescription) {
         if (child == null) {
             throw new NullPointerException("resource is null");
         } else if (relationName == null) {
@@ -123,7 +123,7 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
     }
 
     // TODO
-    public AtomicInsertionResult<R> addResourceMapIfAbsent(Path path, boolean isObservable, String relationName, String relationDescription) {
+    public AtomicInsertionResult<ResourceMap> addResourceMapIfAbsent(Path path, boolean isObservable, String relationName, String relationDescription) {
         if (path == null) {
             throw new NullPointerException("path is null");
         }
@@ -131,12 +131,16 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
         try {
             if (m_children.containsKey(path)) {
                 // Check for presence and return fast (we own the write lock!).
-                return new AtomicInsertionResult<R>(true, m_children.get(path));
+                Resource r = m_children.get(path);
+                if (!(r instanceof ResourceMap)) {
+                    throw new IllegalArgumentException("resource present but not a resource map");
+                }
+                return new AtomicInsertionResult<ResourceMap>(true, ResourceMap.class.cast(r));
             } else {
                 @SuppressWarnings("unchecked")
-                R child = (R) new ResourceMap<Resource>(path, isObservable);
+                ResourceMap child = new ResourceMap(path, isObservable);
                 addResource(child, relationName, relationDescription);
-                return new AtomicInsertionResult<R>(false, child);
+                return new AtomicInsertionResult<ResourceMap>(false, child);
             }
         } finally {
             m_lock.writeLock().unlock();
@@ -149,7 +153,7 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
      * @param resource resource to remove
      * @throws IllegalArgumentException if this resource map does not contain {@code resource}
      */
-    public void removeResource(R resource) {
+    public void removeResource(Resource resource) {
         m_lock.writeLock().lock();
         try {
             // Checks the resource is contained in the map
@@ -171,7 +175,7 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
      * @return the removed resource
      * @throws IllegalArgumentException if this resource map does not contain a resource with the given path
      */
-    public R removePath(Path path) {
+    public Resource removePath(Path path) {
         m_lock.writeLock().lock();
         try {
             // Checks the resource map contains the given path
@@ -186,6 +190,32 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
     }
 
     /**
+     * Removes the resource with the given path from this resource map.
+     *
+     * @param path path of the resource to remove
+     * @return the removed resource
+     * @throws IllegalArgumentException if this resource map does not contain a resource with the given path
+     */
+    public <R extends Resource> R removePath(Path path, Class<R> type) {
+        m_lock.writeLock().lock();
+        try {
+            // Checks the resource map contains the given path
+            if (!m_children.containsKey(path)) {
+                throw new IllegalArgumentException("path not present");
+            }
+            Resource r = m_children.get(path);
+            if (!type.isInstance(r)) {
+                throw new IllegalArgumentException("resource not instance of type: " + type.getName());
+            }
+            m_children.remove(path);
+            m_relationNames.remove(m_relations.remove(path).getName());
+            return type.cast(r);
+        } finally {
+            m_lock.writeLock().unlock();
+        }
+    }
+
+    /**
      * Return the resource with the specified path, contained in this resource map, or {@code null} if this resource map
      * contains no resource with that path.
      *
@@ -193,10 +223,34 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
      * @return the resource with the specified path, or {@code null} if this resource map contains no resource with that
      *         path.
      */
-    public R getResource(Path path) {
+    public Resource getResource(Path path) {
         m_lock.readLock().lock();
         try {
             return m_children.get(path);
+        } finally {
+            m_lock.readLock().unlock();
+        }
+    }
+
+    /**
+     * Return the resource with the specified path, contained in this resource map, or {@code null} if this resource map
+     * contains no resource with that path.
+     *
+     * @param path path of the resource to return
+     * @param type the expected type of resource
+     * @return the resource with the specified path, or {@code null} if this resource map contains no resource with that
+     *         path.
+     * @throws ClassCastException if the resource
+     */
+    public <R extends Resource> R getResource(Path path, Class<R> type) {
+        m_lock.readLock().lock();
+        try {
+            Resource r = m_children.get(path);
+            if (r != null && type.isInstance(r)) {
+                return type.cast(r);
+            } else {
+                return null;
+            }
         } finally {
             m_lock.readLock().unlock();
         }
@@ -251,7 +305,7 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
      * @param resource resource whose presence is to be tested
      * @return {@code true} if this resource map contains the specified resource, {@code false} otherwise
      */
-    public boolean containsResource(R resource) {
+    public boolean containsResource(Resource resource) {
         m_lock.readLock().lock();
         try {
             return m_children.containsValue(resource);
@@ -291,15 +345,22 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
     }
 
     /**
-     * Get resources as a type-safe list
+     * Get resources as a type-safe list.
+     * Resources that are not instance of the given type are skipped.
      */
-    public List<R> getResourcesTypeSafe() {
+    public <R extends Resource> List<R> getResourcesTypeSafe(Class<R> type) {
         m_lock.readLock().lock();
         try {
-            if (m_children.isEmpty()) {
-                return Collections.emptyList();
+            List<R> l = new ArrayList<R>(m_children.size());
+            for (Resource r : m_children.values()) {
+                if (type.isInstance(r)) {
+                    l.add(type.cast(r));
+                }
+            }
+            if (!l.isEmpty()) {
+                return Collections.unmodifiableList(l);
             } else {
-                return Collections.unmodifiableList(new ArrayList<R>(m_children.values()));
+                return Collections.emptyList();
             }
         } finally {
             m_lock.readLock().unlock();
@@ -311,10 +372,10 @@ public class ResourceMap<R extends Resource> extends DefaultReadOnlyResource {
      *
      * @return an unmodifiable snapshot of the current path-to-resource mappings
      */
-    public Map<Path, R> getSnapshot() {
+    public Map<Path, Resource> getSnapshot() {
         m_lock.readLock().lock();
         try {
-            return Collections.unmodifiableMap(new LinkedHashMap<Path, R>(m_children));
+            return Collections.unmodifiableMap(new LinkedHashMap<Path, Resource>(m_children));
         } finally {
             m_lock.readLock().unlock();
         }

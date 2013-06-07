@@ -24,8 +24,9 @@ import static java.lang.String.format;
  */
 @Component
 @Instantiate
-@Provides(specifications = Resource.class)
-public class IpojoRootResource extends ResourceMap<ResourceMap<?>> {
+@Provides(specifications = Resource.class,
+        properties = @StaticServiceProperty(name="type", type="String", value="ipojo"))
+public class IpojoRootResource extends ResourceMap {
 
     /**
      * Path to self : "/ipojo"
@@ -85,11 +86,21 @@ public class IpojoRootResource extends ResourceMap<ResourceMap<?>> {
     /**
      * Path to OSGi packages domain : "/osgi/packages"
      */
-    // public static final Path PATH_TO_OSGI_PACKAGES = PATH_TO_OSGI.addElements("packages");
+    public static final Path PATH_TO_OSGI_PACKAGES = PATH_TO_OSGI.addElements("packages");
 
-
+    /**
+     * Factory service property identifying the factory name
+     */
     public static final String FACTORY_NAME = "factory.name";
+
+    /**
+     * Factory service property identifying the factory version
+     */
     public static final String FACTORY_VERSION = "factory.version";
+
+    /**
+     * Architecture service property identifying the instance name
+     */
     public static final String INSTANCE_NAME = "instance.name";
 
     /**
@@ -105,7 +116,7 @@ public class IpojoRootResource extends ResourceMap<ResourceMap<?>> {
     /**
      * The iPOJO component instances, index by instance name.
      */
-    private final ResourceMap<InstanceResource> m_instances = new ResourceMap<InstanceResource>(INSTANCES, true, null) {
+    private final ResourceMap m_instances = new ResourceMap(INSTANCES, true, null) {
 
         // The request may be an instance creation on an nonexistent path.
         // In this case, we must intercept the default process to capture the instance name, etc.
@@ -125,38 +136,44 @@ public class IpojoRootResource extends ResourceMap<ResourceMap<?>> {
      * However factory name is not unique, so for each name we have a map of instance declarations.
      * These maps are indexed by the factory version.
      */
-    private final ResourceMap<ResourceMap<FactoryResource>> m_factories =
-            new ResourceMap<ResourceMap<FactoryResource>>(FACTORIES, true, null);
+    private final ResourceMap m_factories = new ResourceMap(FACTORIES, true, null);
 
     /**
      * The iPOJO handlers, index by namespace.
      * However handler namespace is not unique, so for each namespace we have a map of handlers.
      * These maps are indexed by the handler name.
      */
-    private final ResourceMap<ResourceMap<HandlerResource>> m_handlers =
-            new ResourceMap<ResourceMap<HandlerResource>>(HANDLERS, true, null);
+    private final ResourceMap m_handlers = new ResourceMap(HANDLERS, true, null);
+
+    /**
+     * The iPOJO declarations. Contains :
+     * <ul>
+     *     <li>m_instanceDeclarations</li>
+     *     <li>m_typeDeclarations</li>
+     *     <li>m_extensionDeclarations</li>
+     * </ul>
+     *
+     */
+    private final ResourceMap m_declarations = new ResourceMap(DECLARATIONS, false);
 
     /**
      * Instance declarations, indexed by declared instance name.
      * However declared instance name is not unique, so for each name we have a map of instance declarations.
      * These maps are indexed by the order of arrival of the declarations (ugly, but what else?).
      */
-    private final ResourceMap<ResourceMap<InstanceDeclarationResource>> m_instanceDeclarations =
-            new ResourceMap<ResourceMap<InstanceDeclarationResource>>(INSTANCE_DECLARATIONS, true);
+    private final ResourceMap m_instanceDeclarations = new ResourceMap(INSTANCE_DECLARATIONS, true);
 
     /**
      * Type declarations, indexed by declared type name.
      * However type declaration name is not unique, so for each name we have a map of type declarations
      * These maps are indexed by the declared type version.
      */
-    private final ResourceMap<ResourceMap<TypeDeclarationResource>> m_typeDeclarations =
-            new ResourceMap<ResourceMap<TypeDeclarationResource>>(TYPE_DECLARATIONS, true);
+    private final ResourceMap m_typeDeclarations = new ResourceMap(TYPE_DECLARATIONS, true);
 
     /**
      * Extension declarations, indexed by declared extension name.
      */
-    private final ResourceMap<ExtensionDeclarationResource> m_extensionDeclarations =
-            new ResourceMap<ExtensionDeclarationResource>(EXTENSION_DECLARATIONS, true);
+    private final ResourceMap m_extensionDeclarations = new ResourceMap(EXTENSION_DECLARATIONS, true);
 
     /**
      * Construct the iPOJO root resource
@@ -185,16 +202,40 @@ public class IpojoRootResource extends ResourceMap<ResourceMap<?>> {
             // Should never happen!
             throw new AssertionError("cannot find iPOJO bundle");
         }
-
         // Add the sub-resources
         addResource(m_instances, "instances", "The iPOJO component instances");
         addResource(m_factories, "factories", "The iPOJO component factories");
         addResource(m_handlers, "handlers", "The iPOJO handlers");
-        ResourceMap<ResourceMap<?>> declarations = new ResourceMap<ResourceMap<?>>(DECLARATIONS, false);
-        declarations.addResource(m_instanceDeclarations, "instances", "The iPOJO instance declarations");
-        declarations.addResource(m_typeDeclarations, "types", "The iPOJO type declarations");
-        declarations.addResource(m_extensionDeclarations, "extensions", "The iPOJO extension declarations");
-        addResource(declarations, "declarations", "The iPOJO declarations");
+        m_declarations.addResource(m_instanceDeclarations, "instances", "The iPOJO instance declarations");
+        m_declarations.addResource(m_typeDeclarations, "types", "The iPOJO type declarations");
+        m_declarations.addResource(m_extensionDeclarations, "extensions", "The iPOJO extension declarations");
+        addResource(m_declarations, "declarations", "The iPOJO declarations");
+    }
+
+    @Validate
+    public void start() {
+        // Send event about the /ipojo resource
+        Everest.postResource(ResourceEvent.CREATED, this);
+        Everest.postResource(ResourceEvent.CREATED, m_instances);
+        Everest.postResource(ResourceEvent.CREATED, m_factories);
+        Everest.postResource(ResourceEvent.CREATED, m_handlers);
+        Everest.postResource(ResourceEvent.CREATED, m_declarations);
+        Everest.postResource(ResourceEvent.CREATED, m_instanceDeclarations);
+        Everest.postResource(ResourceEvent.CREATED, m_typeDeclarations);
+        Everest.postResource(ResourceEvent.CREATED, m_extensionDeclarations);
+    }
+
+    @Invalidate
+    public void stop() {
+        // Send event about the /ipojo resource
+        Everest.postResource(ResourceEvent.DELETED, m_extensionDeclarations);
+        Everest.postResource(ResourceEvent.DELETED, m_typeDeclarations);
+        Everest.postResource(ResourceEvent.DELETED, m_instanceDeclarations);
+        Everest.postResource(ResourceEvent.DELETED, m_declarations);
+        Everest.postResource(ResourceEvent.DELETED, m_handlers);
+        Everest.postResource(ResourceEvent.DELETED, m_factories);
+        Everest.postResource(ResourceEvent.DELETED, m_instances);
+        Everest.postResource(ResourceEvent.DELETED, this);
     }
 
     @Override
@@ -249,7 +290,9 @@ public class IpojoRootResource extends ResourceMap<ResourceMap<?>> {
 
     @Unbind(id = "instances")
     public void unbindInstance(Architecture instance) {
-        InstanceResource r = m_instances.removePath(INSTANCES.addElements(instance.getInstanceDescription().getName()));
+        InstanceResource r = m_instances.removePath(
+                INSTANCES.addElements(instance.getInstanceDescription().getName()),
+                InstanceResource.class);
         // Post resource deletion event
         Everest.postResource(ResourceEvent.DELETED, r);
         Everest.postResource(ResourceEvent.UPDATED, m_instances);
@@ -263,11 +306,11 @@ public class IpojoRootResource extends ResourceMap<ResourceMap<?>> {
     public void bindFactory(Factory factory, ServiceReference<Factory> ref) {
         // Find/create the intermediate level node : ipojo/factory/$name
         String name = factory.getName();
-        AtomicInsertionResult<ResourceMap<FactoryResource>> i = m_factories.addResourceMapIfAbsent(
+        AtomicInsertionResult<ResourceMap> i = m_factories.addResourceMapIfAbsent(
                 FACTORIES.addElements(name), true,
                 String.format("factories[%s]", name),
                 String.format("Factories with name '%s'", name));
-        ResourceMap<FactoryResource> namedFactories = i.resource;
+        ResourceMap namedFactories = i.resource;
 
         // Add the factory resource : ipojo/factory/$name/$version
         FactoryResource r = new FactoryResource(this, factory, ref);
@@ -293,17 +336,17 @@ public class IpojoRootResource extends ResourceMap<ResourceMap<?>> {
         // We need to hold the ipojo/factory and ipojo/factory/$name WRITE lock at the same time because we may
         // delete the latter one if the leaving factory is the last one with that name.
         Path path = FACTORIES.addElements(factory.getName());
-        ResourceMap<FactoryResource> namedFactories;
+        ResourceMap namedFactories;
         m_factories.m_lock.writeLock().lock();
         boolean wasLast = false;
         FactoryResource r;
         try {
-            namedFactories = m_factories.getResource(path);
+            namedFactories = m_factories.getResource(path, ResourceMap.class);
             namedFactories.m_lock.writeLock().lock();
             try {
                 // Remove the factory resource : ipojo/factory/$name/$version
                 String version = String.valueOf(factory.getVersion());
-                r = namedFactories.removePath(path.addElements(version));
+                r = namedFactories.removePath(path.addElements(version), FactoryResource.class);
                 if (namedFactories.isEmpty()) {
                     // Last standing factory with this name
                     m_factories.removePath(path);
@@ -333,11 +376,11 @@ public class IpojoRootResource extends ResourceMap<ResourceMap<?>> {
     public void bindHandler(HandlerFactory handler, ServiceReference<HandlerFactory> ref) {
         // Find/create the intermediate level node : ipojo/handler/$ns
         String ns = handler.getNamespace();
-        AtomicInsertionResult<ResourceMap<HandlerResource>> i = m_handlers.addResourceMapIfAbsent(
+        AtomicInsertionResult<ResourceMap> i = m_handlers.addResourceMapIfAbsent(
                 HANDLERS.addElements(ns), true,
                 String.format("handlers[%s]", ns),
                 String.format("Handlers with namespace '%s'", ns));
-        ResourceMap<HandlerResource> nsHandlers = i.resource;
+        ResourceMap nsHandlers = i.resource;
 
         // Add the handler resource : ipojo/handler/$ns/$name
         HandlerResource r = new HandlerResource(handler, ref);
@@ -363,17 +406,17 @@ public class IpojoRootResource extends ResourceMap<ResourceMap<?>> {
         // We need to hold the ipojo/handler and ipojo/handler/$ns WRITE lock at the same time because we may
         // delete the latter one if the leaving handler is the last one with that namespace.
         Path path = HANDLERS.addElements(handler.getNamespace());
-        ResourceMap<HandlerResource> nsHandlers;
+        ResourceMap nsHandlers;
         boolean wasLast = false;
         HandlerResource r;
         m_handlers.m_lock.writeLock().lock();
         try {
-            nsHandlers = m_handlers.getResource(path);
+            nsHandlers = m_handlers.getResource(path, ResourceMap.class);
             nsHandlers.m_lock.writeLock().lock();
             try {
                 // Remove the handler resource : ipojo/handler/$name/$version
                 String name = String.valueOf(handler.getName());
-                r = nsHandlers.removePath(path.addElements(name));
+                r = nsHandlers.removePath(path.addElements(name), HandlerResource.class);
                 if (nsHandlers.isEmpty()) {
                     // Last standing handler with this namespace
                     m_handlers.removePath(path);
@@ -403,12 +446,12 @@ public class IpojoRootResource extends ResourceMap<ResourceMap<?>> {
     public void bindInstanceDeclaration(InstanceDeclaration instance, ServiceReference<InstanceDeclaration> ref) {
         // Find/create the intermediate level node : ipojo/declaration/instance/$name
         String name = instance.getInstanceName();
-        AtomicInsertionResult<ResourceMap<InstanceDeclarationResource>> i =
+        AtomicInsertionResult<ResourceMap> i =
                 m_instanceDeclarations.addResourceMapIfAbsent(
                         INSTANCE_DECLARATIONS.addElements(name), true,
                         String.format("instances[%s]", name),
                         String.format("Instances declared with name '%s'", name));
-        ResourceMap<InstanceDeclarationResource> namedInstances = i.resource;
+        ResourceMap namedInstances = i.resource;
         // Add the instance declaration resource: ipojo/declaration/instance/$name/$index
         // We need to hold the :ipojo/declaration/instance/$name WRITE lock because we need to _atomically_ :
         // - get its size to generate the instance declaration index
@@ -444,14 +487,15 @@ public class IpojoRootResource extends ResourceMap<ResourceMap<?>> {
         Path path = INSTANCE_DECLARATIONS.addElements(instance.getInstanceName());
         boolean wasLast = false;
         InstanceDeclarationResource r = null;
-        ResourceMap<InstanceDeclarationResource> namedInstances;
+        ResourceMap namedInstances;
         m_instanceDeclarations.m_lock.writeLock().lock();
         try {
-            namedInstances = m_instanceDeclarations.getResource(path);
+            namedInstances = m_instanceDeclarations.getResource(path, ResourceMap.class);
             namedInstances.m_lock.writeLock().lock();
             try {
                 // Find in namedInstances the resource to remove, using the service reference
-                for (InstanceDeclarationResource i : namedInstances.getResourcesTypeSafe()) {
+                for (InstanceDeclarationResource i :
+                        namedInstances.getResourcesTypeSafe(InstanceDeclarationResource.class)) {
                     if (ref.equals(i.m_ref)) {
                         r = i;
                         break;
@@ -485,11 +529,11 @@ public class IpojoRootResource extends ResourceMap<ResourceMap<?>> {
     public void bindTypeDeclaration(TypeDeclaration type, ServiceReference<TypeDeclaration> ref) {
         // Find/create the intermediate level node: ipojo/declaration/type/$name
         String name = type.getComponentName();
-        AtomicInsertionResult<ResourceMap<TypeDeclarationResource>> i  = m_typeDeclarations.addResourceMapIfAbsent(
+        AtomicInsertionResult<ResourceMap> i  = m_typeDeclarations.addResourceMapIfAbsent(
                 TYPE_DECLARATIONS.addElements(name), true,
                 String.format("types[%s]", name),
                 String.format("Types declared with name '%s'", name));
-        ResourceMap<TypeDeclarationResource> namedTypes = i.resource;
+        ResourceMap namedTypes = i.resource;
         // Add the type declaration resource: ipojo/declaration/type/$name/$version
         String version = String.valueOf(type.getComponentVersion());
         TypeDeclarationResource r = new TypeDeclarationResource(type, ref);
@@ -516,14 +560,16 @@ public class IpojoRootResource extends ResourceMap<ResourceMap<?>> {
         Path path = TYPE_DECLARATIONS.addElements(type.getComponentName());
         boolean wasLast = false;
         TypeDeclarationResource r;
-        ResourceMap<TypeDeclarationResource> namedTypes;
+        ResourceMap namedTypes;
         m_typeDeclarations.m_lock.writeLock().lock();
         try {
-            namedTypes = m_typeDeclarations.getResource(path);
+            namedTypes = m_typeDeclarations.getResource(path, ResourceMap.class);
             namedTypes.m_lock.writeLock().lock();
             try {
                 // Remove the type declaration resource:  ipojo/declaration/type/$name/$version
-                r = namedTypes.removePath(path.addElements(String.valueOf(type.getComponentVersion())));
+                r = namedTypes.removePath(
+                        path.addElements(String.valueOf(type.getComponentVersion())),
+                        TypeDeclarationResource.class);
                 if (namedTypes.isEmpty()) {
                     // Last standing declaration with that name
                     m_typeDeclarations.removeResource(namedTypes);
@@ -565,7 +611,9 @@ public class IpojoRootResource extends ResourceMap<ResourceMap<?>> {
     public void unbindExtensionDeclaration(ExtensionDeclaration extension) {
         // ipojo/declaration/extensions/$name
         ExtensionDeclarationResource r =
-                m_extensionDeclarations.removePath(EXTENSION_DECLARATIONS.addElements(extension.getExtensionName()));
+                m_extensionDeclarations.removePath(
+                        EXTENSION_DECLARATIONS.addElements(extension.getExtensionName()),
+                        ExtensionDeclarationResource.class);
         // Post resource deletion event
         Everest.postResource(ResourceEvent.DELETED, r);
         // TODO may affect *
@@ -573,6 +621,26 @@ public class IpojoRootResource extends ResourceMap<ResourceMap<?>> {
 
     // Utility methods
     // =================================================================================================================
+
+    public FactoryResource getFactoryResource(String name, String version) {
+        m_factories.m_lock.readLock().lock();
+        try {
+            ResourceMap n = m_factories.getResource(FACTORIES.addElements(name), ResourceMap.class);
+            if (n == null) {
+                return null;
+            }
+            n.m_lock.readLock().lock();
+            try {
+                return n.getResource(
+                        n.getPath().addElements(String.valueOf(version)),
+                        FactoryResource.class);
+            } finally {
+                n.m_lock.readLock().unlock();
+            }
+        } finally {
+            m_factories.m_lock.readLock().unlock();
+        }
+    }
 
     /**
      * Get the reference of the iPOJO Factory service with the specified factory name and version.
