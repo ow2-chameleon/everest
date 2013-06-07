@@ -84,11 +84,6 @@ public class IpojoRootResource extends ResourceMap {
     public static final Path PATH_TO_OSGI_SERVICES = PATH_TO_OSGI.addElements("services");
 
     /**
-     * Path to OSGi packages domain : "/osgi/packages"
-     */
-    public static final Path PATH_TO_OSGI_PACKAGES = PATH_TO_OSGI.addElements("packages");
-
-    /**
      * Factory service property identifying the factory name
      */
     public static final String FACTORY_NAME = "factory.name";
@@ -202,6 +197,12 @@ public class IpojoRootResource extends ResourceMap {
             // Should never happen!
             throw new AssertionError("cannot find iPOJO bundle");
         }
+        // Add relation 'bundle' to READ the iPOJO bundle resource
+        setRelations(new DefaultRelation(
+                PATH_TO_OSGI_BUNDLES.addElements(String.valueOf(m_ipojo.getBundleId())),
+                Action.READ,
+                "bundle",
+                "The iPOJO bundle"));
         // Add the sub-resources
         addResource(m_instances, "instances", "The iPOJO component instances");
         addResource(m_factories, "factories", "The iPOJO component factories");
@@ -244,18 +245,6 @@ public class IpojoRootResource extends ResourceMap {
         return new ImmutableResourceMetadata.Builder(super.getMetadata())
                 .set("version", m_ipojo.getVersion().toString()) // The version of the iPOJO bundle
                 .build();
-    }
-
-    @Override
-    public List<Relation> getRelations() {
-        List<Relation> relations = new ArrayList<Relation>(super.getRelations());
-        // Add relation 'bundle' to READ the iPOJO bundle resource
-        relations.add(new DefaultRelation(
-                PATH_TO_OSGI_BUNDLES.addElements(String.valueOf(m_ipojo.getBundleId())),
-                Action.READ,
-                "bundle",
-                "The iPOJO bundle"));
-        return Collections.unmodifiableList(relations);
     }
 
     @Override
