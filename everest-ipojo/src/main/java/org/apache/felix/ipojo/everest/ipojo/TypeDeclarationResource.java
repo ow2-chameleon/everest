@@ -4,6 +4,7 @@ import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
 import org.apache.felix.ipojo.everest.impl.DefaultRelation;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.services.Action;
+import org.apache.felix.ipojo.everest.services.Relation;
 import org.apache.felix.ipojo.everest.services.ResourceMetadata;
 import org.apache.felix.ipojo.extender.Status;
 import org.apache.felix.ipojo.extender.TypeDeclaration;
@@ -11,10 +12,10 @@ import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
 
-import static org.apache.felix.ipojo.everest.ipojo.IpojoRootResource.EXTENSION_DECLARATIONS;
-import static org.apache.felix.ipojo.everest.ipojo.IpojoRootResource.PATH_TO_OSGI_BUNDLES;
-import static org.apache.felix.ipojo.everest.ipojo.IpojoRootResource.PATH_TO_OSGI_SERVICES;
+import static org.apache.felix.ipojo.everest.ipojo.IpojoRootResource.*;
 
 /**
  * '/ipojo/declaration/type' resource.
@@ -30,26 +31,48 @@ public class TypeDeclarationResource extends DefaultReadOnlyResource {
                         .set("version", declaration.getComponentVersion())
                         .set("extension", declaration.getExtension())
                         .set("isPublic", declaration.isPublic())
+                        .set("componentMetadata", declaration.getComponentMetadata().toXMLString())
                         .build()
         );
         m_type = new WeakReference<TypeDeclaration>(declaration);
         // Set the immutable relations
-        setRelations(
-                new DefaultRelation(
+        List<Relation> relations = new ArrayList<Relation>();
+        if (declaration.getExtension().equalsIgnoreCase("component")) {
+            // Declaration is resolved by a factory
+            relations.add(new DefaultRelation(
+                    FACTORIES.addElements(declaration.getComponentName(), String.valueOf(declaration.getComponentVersion())),
+                    Action.READ,
+                    "resolvedBy",
+                    "The resolved iPOJO factory "));
+        } else if (declaration.getExtension().equalsIgnoreCase("handler")) {
+            String ns = declaration.getComponentMetadata().getAttribute("namespace");
+            if (ns == null) {
+                ns = "org.apache.felix.ipojo";
+            }
+            // Declaration is resolved by a handler
+            relations.add(new DefaultRelation(
+                    HANDLERS.addElements(ns, declaration.getComponentName()),
+                    Action.READ,
+                    "resolvedBy",
+                    "The resolved iPOJO handler"));
+        }
+        relations.add(new DefaultRelation(
                         PATH_TO_OSGI_SERVICES.addElements(String.valueOf(ref.getProperty(Constants.SERVICE_ID))),
                         Action.READ,
                         "service",
-                        "The ExtensionDeclaration OSGi service"),
-                new DefaultRelation(
+                        "The ExtensionDeclaration OSGi service"));
+
+        relations.add(new DefaultRelation(
                         PATH_TO_OSGI_BUNDLES.addElements(String.valueOf(ref.getBundle().getBundleId())),
                         Action.READ,
                         "bundle",
-                        "The declaring OSGi bundle"),
-                new DefaultRelation(
+                        "The declaring OSGi bundle"));
+        relations.add(new DefaultRelation(
                         EXTENSION_DECLARATIONS.addElements(declaration.getExtension()),
                         Action.READ,
                         "extension",
                         "The iPOJO extension used by this declared type"));
+        setRelations(relations);
     }
 
     @Override

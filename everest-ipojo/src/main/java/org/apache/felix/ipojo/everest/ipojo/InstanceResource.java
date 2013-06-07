@@ -20,6 +20,7 @@ import static org.apache.felix.ipojo.everest.ipojo.IpojoRootResource.*;
 /**
  * '/ipojo/instance/$name' resource.
  */
+// TODO extends resourceMap and add resources for dependencies, providings (and ???)
 public class InstanceResource extends DefaultReadOnlyResource {
 
     /**
@@ -48,6 +49,39 @@ public class InstanceResource extends DefaultReadOnlyResource {
                         Action.READ,
                         "factory",
                         "The factory of this component instance"));
+        // TODO add relation on declaration (tricky because declarations are (most of the time) unnamed)
+    }
+
+    /**
+     * Create a fake instance resource for the given component instance. This method is used when a new component is
+     * created but the architecture service is not present, so we return a "one-shot" fake instance resource.
+     * "One-shot" means here that the returned resource will NOT be accessible by further requests.
+     *
+     * @param instance component instance to fake
+     * @return fake resource representing the given component instance
+     */
+    public static Resource fakeInstanceResource(ComponentInstance instance) {
+        String name = instance.getInstanceName();
+        Factory factory = instance.getFactory();
+        try {
+            return new Builder()
+                    .fromPath(INSTANCES.addElements(name))
+                    .with(new ImmutableResourceMetadata.Builder()
+                            .set("name", name)
+                            .set("factory.name", factory.getName())
+                            .set("factory.version", factory.getVersion())
+                            .set("state", stateAsString(instance.getState()))
+                            .build())
+                    .with(new DefaultRelation(
+                            FACTORIES.addElements(factory.getName(), String.valueOf(factory.getVersion())),
+                            Action.READ,
+                            "factory",
+                            "The factory of this component instance"))
+                    .build();
+        } catch (IllegalResourceException e) {
+            // Should never happen!
+            throw new AssertionError(e);
+        }
     }
 
     @Override

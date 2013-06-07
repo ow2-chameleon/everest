@@ -46,6 +46,11 @@ public class HandlerResource extends DefaultReadOnlyResource {
                 Action.READ,
                 "bundle",
                 "The declaring OSGi bundle"));
+        relations.add(new DefaultRelation(
+                TYPE_DECLARATIONS.addElements(handler.getName(), "null"),
+                Action.READ,
+                "declaration",
+                "The declaration of this handler")); // May not exist! Do we mind? Really?
         // Add relation 'requiredHandler:$ns:$name' to READ the handlers required by this factory
         @SuppressWarnings("unchecked")
         List<String> required = (List<String>) handler.getRequiredHandlers();

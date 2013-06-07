@@ -33,9 +33,6 @@ public class FactoryResource extends DefaultReadOnlyResource {
      */
     private final WeakReference<Factory> m_factory;
 
-    //TODO add relation to factory declaration
-    //TODO add relation to bundle that defines the implementation class
-
     @SuppressWarnings("deprecation")
     public FactoryResource(IpojoRootResource ipojo, Factory factory, ServiceReference<Factory> ref) {
         super(FACTORIES.addElements(factory.getName(), String.valueOf(factory.getVersion())),
@@ -58,6 +55,11 @@ public class FactoryResource extends DefaultReadOnlyResource {
                 Action.READ,
                 "bundle",
                 "The declaring OSGi bundle"));
+        relations.add(new DefaultRelation(
+                TYPE_DECLARATIONS.addElements(factory.getName(), String.valueOf(factory.getVersion())),
+                Action.READ,
+                "declaration",
+                "The declaration of this factory")); // May not exist! Do we mind? Really?
         // Add relation 'requiredHandler[$ns:$name]' to READ the handlers required by this factory
         @SuppressWarnings("unchecked")
         List<String> required = (List<String>) factory.getRequiredHandlers();
@@ -170,8 +172,8 @@ public class FactoryResource extends DefaultReadOnlyResource {
                     null));
         } catch (ResourceNotFoundException e) {
             // An instance has been created, however its Architecture service is not present.
-            //TODO Generate a fake instance resource
-            return null;
+            // => Generate a fake instance resource
+            return InstanceResource.fakeInstanceResource(i);
         }
         return r;
     }
@@ -183,10 +185,8 @@ public class FactoryResource extends DefaultReadOnlyResource {
         if (f == null) {
             throw new IllegalActionOnResourceException(request, this, "Factory has gone");
         }
-
         Method weapon = null;
         try {
-            //TODO find a common agreement on how to kill a factory. Is this the right (messy) way???
             weapon = IPojoFactory.class.getDeclaredMethod("dispose");
             weapon.setAccessible(true);
             // FATALITY!!!
@@ -212,7 +212,9 @@ public class FactoryResource extends DefaultReadOnlyResource {
         try {
             weapon = IPojoFactory.class.getDeclaredField("m_componentInstances");
             weapon.setAccessible(true);
-            return ((Map<String, ComponentInstance>) weapon.get(factory)).keySet();
+            @SuppressWarnings("unchecked")
+            Map<String, ComponentInstance> instances = (Map<String, ComponentInstance>)weapon.get(factory);
+            return instances.keySet();
         } catch (Exception e) {
             throw new RuntimeException("cannot get factory created instances", e);
         } finally {
