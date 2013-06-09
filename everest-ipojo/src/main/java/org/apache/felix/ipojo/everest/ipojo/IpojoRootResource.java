@@ -5,6 +5,7 @@ import org.apache.felix.ipojo.Factory;
 import org.apache.felix.ipojo.HandlerFactory;
 import org.apache.felix.ipojo.annotations.*;
 import org.apache.felix.ipojo.architecture.Architecture;
+import org.apache.felix.ipojo.architecture.InstanceDescription;
 import org.apache.felix.ipojo.everest.core.Everest;
 import org.apache.felix.ipojo.everest.impl.DefaultRelation;
 import org.apache.felix.ipojo.everest.impl.DefaultRequest;
@@ -15,6 +16,7 @@ import org.apache.felix.ipojo.extender.InstanceDeclaration;
 import org.apache.felix.ipojo.extender.TypeDeclaration;
 import org.osgi.framework.*;
 
+import java.lang.reflect.Field;
 import java.util.*;
 
 import static java.lang.String.format;
@@ -274,7 +276,13 @@ public class IpojoRootResource extends ResourceMap {
         // Post resource creation event
         Everest.postResource(ResourceEvent.CREATED, r);
         Everest.postResource(ResourceEvent.UPDATED, m_instances);
-        // TODO may affect factory, instance declaration
+        // Try to bind factory to arriving instance
+        Factory f = getComponentInstance(instance).getFactory();
+        FactoryResource fr = getFactoryResource(f.getName(), f.getVersion());
+        if (fr != null) {
+            // Factory resource should have a new "instance[]" relation
+            Everest.postResource(ResourceEvent.UPDATED, fr);
+        }
     }
 
     @Unbind(id = "instances")
@@ -285,7 +293,13 @@ public class IpojoRootResource extends ResourceMap {
         // Post resource deletion event
         Everest.postResource(ResourceEvent.DELETED, r);
         Everest.postResource(ResourceEvent.UPDATED, m_instances);
-        // TODO may affect factory, instance declaration
+        // Try to unbind factory to arriving instance
+        Factory f = getComponentInstance(instance).getFactory();
+        FactoryResource fr = getFactoryResource(f.getName(), f.getVersion());
+        if (fr != null) {
+            // Factory resource should have one "instance[]" relation less
+            Everest.postResource(ResourceEvent.UPDATED, fr);
+        }
     }
 
     // Callbacks for the tracking of iPOJO component factories
@@ -316,7 +330,6 @@ public class IpojoRootResource extends ResourceMap {
         } else {
             Everest.postResource(ResourceEvent.UPDATED, namedFactories);
         }
-        // TODO may affect *
     }
 
     @Unbind(id = "factories")
@@ -355,7 +368,6 @@ public class IpojoRootResource extends ResourceMap {
             Everest.postResource(ResourceEvent.DELETED, namedFactories);
             Everest.postResource(ResourceEvent.UPDATED, m_factories);
         }
-        // TODO may affect *
     }
 
     // Callbacks for the tracking of iPOJO handlers
@@ -386,7 +398,6 @@ public class IpojoRootResource extends ResourceMap {
         } else {
             Everest.postResource(ResourceEvent.UPDATED, nsHandlers);
         }
-        // TODO may affect *
     }
 
     @Unbind(id = "handlers")
@@ -425,7 +436,6 @@ public class IpojoRootResource extends ResourceMap {
             Everest.postResource(ResourceEvent.DELETED, nsHandlers);
             Everest.postResource(ResourceEvent.UPDATED, m_handlers);
         }
-        // TODO may affect *
     }
 
     // Callbacks for the tracking of iPOJO component instances
@@ -465,7 +475,6 @@ public class IpojoRootResource extends ResourceMap {
         } else {
             Everest.postResource(ResourceEvent.UPDATED, namedInstances);
         }
-        // TODO may affect *
     }
 
     @Unbind(id = "instanceDeclarations")
@@ -511,7 +520,6 @@ public class IpojoRootResource extends ResourceMap {
             Everest.postResource(ResourceEvent.DELETED, namedInstances);
             Everest.postResource(ResourceEvent.UPDATED, m_instanceDeclarations);
         }
-        // TODO may affect *
     }
 
     @Bind(id = "typeDeclarations", optional = true, aggregate = true)
@@ -538,7 +546,6 @@ public class IpojoRootResource extends ResourceMap {
         } else {
             Everest.postResource(ResourceEvent.UPDATED, namedTypes);
         }
-        // TODO may affect *
     }
 
     @Unbind(id = "typeDeclarations")
@@ -578,7 +585,6 @@ public class IpojoRootResource extends ResourceMap {
             Everest.postResource(ResourceEvent.DELETED, namedTypes);
             Everest.postResource(ResourceEvent.UPDATED, m_instanceDeclarations);
         }
-        // TODO may affect *
     }
 
     @Bind(id = "extensionDeclarations", optional = true, aggregate = true)
@@ -593,7 +599,6 @@ public class IpojoRootResource extends ResourceMap {
         // Post resource creation event
         Everest.postResource(ResourceEvent.CREATED, r);
         Everest.postResource(ResourceEvent.UPDATED, m_extensionDeclarations);
-        // TODO may affect *
     }
 
     @Unbind(id = "extensionDeclarations")
@@ -605,7 +610,6 @@ public class IpojoRootResource extends ResourceMap {
                         ExtensionDeclarationResource.class);
         // Post resource deletion event
         Everest.postResource(ResourceEvent.DELETED, r);
-        // TODO may affect *
     }
 
     // Utility methods
@@ -748,14 +752,26 @@ public class IpojoRootResource extends ResourceMap {
             return process(new DefaultRequest(Action.READ, INSTANCES.addElements(instance.getInstanceName()), null));
         } catch (ResourceNotFoundException e) {
             // Not public, however we've got the ComponentInstance object, so we can return some valuable info.
-            try {
-                return new Builder()
-                        .fromPath(INSTANCES.addElements(instanceName))
-                                // TODO add some metadata + relations here
-                        .build();
-            } catch (IllegalResourceException e1) {
-                // Should never happen!
-                throw new AssertionError(e1);
+            return InstanceResource.fakeInstanceResource(instance);
+        }
+    }
+
+
+    // Re-usable hacks
+    // =================================================================================================================
+
+    // WARN: This is a hack!
+    public static ComponentInstance getComponentInstance(Architecture arch) {
+        Field shunt = null;
+        try {
+            shunt = InstanceDescription.class.getDeclaredField("m_instance");
+            shunt.setAccessible(true);
+            return (ComponentInstance) shunt.get(arch.getInstanceDescription());
+        } catch (Exception e) {
+            throw new IllegalStateException("cannot get component instance", e);
+        } finally {
+            if (shunt != null) {
+                shunt.setAccessible(false);
             }
         }
     }

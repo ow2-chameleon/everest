@@ -3,7 +3,6 @@ package org.apache.felix.ipojo.everest.ipojo;
 import org.apache.felix.ipojo.ComponentInstance;
 import org.apache.felix.ipojo.Factory;
 import org.apache.felix.ipojo.architecture.Architecture;
-import org.apache.felix.ipojo.architecture.InstanceDescription;
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
 import org.apache.felix.ipojo.everest.impl.DefaultRelation;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
@@ -12,7 +11,6 @@ import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
 
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Field;
 import java.util.Hashtable;
 
 import static org.apache.felix.ipojo.everest.ipojo.IpojoRootResource.*;
@@ -165,22 +163,6 @@ public class InstanceResource extends DefaultReadOnlyResource {
         }
         getComponentInstance(a).reconfigure(config);
         return this;
-    }
-
-    // This is a hack!
-    private static ComponentInstance getComponentInstance(Architecture arch) {
-        Field shunt = null;
-        try {
-            shunt = InstanceDescription.class.getDeclaredField("m_instance");
-            shunt.setAccessible(true);
-            return (ComponentInstance) shunt.get(arch.getInstanceDescription());
-        } catch (Exception e) {
-            throw new IllegalStateException("cannot get component instance", e);
-        } finally {
-            if (shunt != null) {
-                shunt.setAccessible(false);
-            }
-        }
     }
 
 }
