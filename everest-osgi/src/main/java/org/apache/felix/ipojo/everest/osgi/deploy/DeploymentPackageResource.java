@@ -18,17 +18,25 @@ import java.util.List;
 import static org.apache.felix.ipojo.everest.osgi.deploy.DeploymentAdminResourceManager.DEPLOY_PATH;
 
 /**
- * Created with IntelliJ IDEA.
- * User: ozan
- * Date: 5/1/13
- * Time: 6:36 PM
+ * Resource representing a {@code DeploymentPackage}.
  */
 public class DeploymentPackageResource extends DefaultResource {
 
+    /**
+     * Represented deployment package
+     */
     private final DeploymentPackage m_deploymentPackage;
 
+    /**
+     * Bundle info contained in the deployment package
+     */
     private final BundleInfo[] m_bundleInfos;
 
+    /**
+     * Constructor for deployment package resource
+     *
+     * @param deploymentPackage
+     */
     public DeploymentPackageResource(DeploymentPackage deploymentPackage) {
         super(DEPLOY_PATH.addElements(deploymentPackage.getName()));
         this.m_deploymentPackage = deploymentPackage;

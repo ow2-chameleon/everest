@@ -19,15 +19,20 @@ import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.logLevelToSt
 import static org.apache.felix.ipojo.everest.osgi.log.LogServiceResourceManager.LOG_PATH;
 
 /**
- * Created with IntelliJ IDEA.
- * User: ozan
- * Date: 5/1/13
- * Time: 5:22 PM
+ * Resource representing a {@code LogEntry}.
  */
 public class LogEntryResource extends DefaultResource {
 
+    /**
+     * Represented log entry
+     */
     private final LogEntry m_logEntry;
 
+    /**
+     * Constructor for log entry resource
+     *
+     * @param logEntry {@code LogEntry}
+     */
     public LogEntryResource(LogEntry logEntry) {
         super(LOG_PATH.addElements(Long.toString(logEntry.getTime())));
         m_logEntry = logEntry;

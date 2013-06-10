@@ -11,10 +11,7 @@ import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
 import org.osgi.framework.Version;
 import org.osgi.framework.startlevel.BundleStartLevel;
-import org.osgi.framework.wiring.BundleCapability;
-import org.osgi.framework.wiring.BundleRequirement;
-import org.osgi.framework.wiring.BundleRevision;
-import org.osgi.framework.wiring.BundleWiring;
+import org.osgi.framework.wiring.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -25,53 +22,121 @@ import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.*;
 
 
 /**
- * Created with IntelliJ IDEA.
- * User: ozan
- * Date: 4/19/13
- * Time: 4:56 PM
+ * Resource representing a bundle.
  */
 public class BundleResource extends AbstractResourceCollection {
 
-    private final static String NEW_STATE_RELATION_PARAMETER = "newState";
+    /**
+     * Relation name for update relation
+     */
+    public final static String UPDATE_RELATION = "update";
 
-    private final static String UPDATE_RELATION = "update";
+    /**
+     * Relation name for uninstall relation
+     */
+    public static final String UNINSTALL_RELATION = "uninstall";
 
-    private final static String UPDATE_INPUT_PARAMETER = "input";
+    /**
+     * Parameter for state change for update relation
+     */
+    public final static String NEW_STATE_RELATION_PARAMETER = "newState";
 
-    private static final String UNINSTALL_RELATION = "uninstall";
+    /**
+     * Parameter for input for update relation
+     */
+    public final static String UPDATE_INPUT_PARAMETER = "input";
 
-    private static final String UPDATE_PARAMETER = "update";
+    /**
+     * Parameter for update for update relation
+     */
+    public static final String UPDATE_PARAMETER = "update";
 
-    private static final String REFRESH_PARAMETER = "refresh";
+    /**
+     * Parameter for refresh for update relation
+     */
+    public static final String REFRESH_PARAMETER = "refresh";
 
-    private static final String START_LEVEL_PARAMETER = "startLevel";
+    /**
+     * Parameter for bundle start level for update relation
+     */
+    public static final String START_LEVEL_PARAMETER = "startLevel";
 
+    /**
+     * Name for capabilities
+     */
     public static final String CAPABILITIES_PATH = "capabilities";
 
-    public static final String REQUIREMENTS_PATH = "requirements";
-
+    /**
+     * Path for capabilities
+     */
     private final Path capabilitiesPath = getPath().addElements(CAPABILITIES_PATH);
 
+    /**
+     * Name for requirements
+     */
+    public static final String REQUIREMENTS_PATH = "requirements";
+
+    /**
+     * Path for requirements
+     */
     private final Path requirementsPath = getPath().addElements(REQUIREMENTS_PATH);
 
+    /**
+     * Name for wires
+     */
+    public static final String WIRES_PATH = "wires";
+
+    /**
+     * Path for wires
+     */
+    private final Path wiresPath = getPath().addElements(WIRES_PATH);
+
+    /**
+     * Represented bundle
+     */
     private final Bundle m_bundle;
 
+    /**
+     * if this bundle is a fragment
+     */
     private final boolean isFragment;
 
+    /**
+     * Reference to bundle resource manager
+     */
     private final BundleResourceManager m_bundleResourceManager;
 
+    /**
+     * Child resource for bundle headers
+     */
     private final BundleHeadersResource m_bundleHeadersResource;
 
+    /**
+     * Child resource for services registered by this bundle
+     */
     private final BundleServicesResource m_bundleServicesResource;
 
+    /**
+     * Capabilities of this bundle
+     */
     private final Map<String, Resource> m_capabilitiesResourceMap;
 
+    /**
+     * Requirements of this bundle
+     */
     private final Map<String, Resource> m_requirementsResourceMap;
 
+    /**
+     * Constructor for bundle resource
+     *
+     * @param bundle                represented {@code Bundle}
+     * @param bundleResourceManager {@code BundleResourceManager}
+     */
     public BundleResource(Bundle bundle, BundleResourceManager bundleResourceManager) {
         super(BundleResourceManager.BUNDLE_PATH.addElements(Long.toString(bundle.getBundleId())));
         m_bundle = bundle;
         m_bundleResourceManager = bundleResourceManager;
+
         // Check if is fragment
         BundleRevision rev = m_bundle.adapt(BundleRevision.class);
         isFragment = (rev != null && (rev.getTypes() & BundleRevision.TYPE_FRAGMENT) != 0);
@@ -115,10 +180,6 @@ public class BundleResource extends AbstractResourceCollection {
         );
     }
 
-    public Bundle getBundle() {
-        return m_bundle;
-    }
-
     public ResourceMetadata getSimpleMetadata() {
         ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
         metadataBuilder.set(BUNDLE_ID, m_bundle.getBundleId());
@@ -141,7 +202,10 @@ public class BundleResource extends AbstractResourceCollection {
     @Override
     public List<Resource> getResources() {
         ArrayList<Resource> resources = new ArrayList<Resource>();
+
+        // add headers
         resources.add(m_bundleHeadersResource);
+        // add capabilities
         DefaultResource.Builder builder = new Builder().fromPath(capabilitiesPath);
         for (Resource bundleCapabilityResource : m_capabilitiesResourceMap.values()) {
             builder.with(bundleCapabilityResource);
@@ -152,6 +216,7 @@ public class BundleResource extends AbstractResourceCollection {
         } catch (IllegalResourceException e) {
             // should never happen
         }
+        // add requirements
         builder = new Builder().fromPath(requirementsPath);
         for (Resource bundleRequirementResource : m_requirementsResourceMap.values()) {
             builder.with(bundleRequirementResource);
@@ -162,7 +227,31 @@ public class BundleResource extends AbstractResourceCollection {
         } catch (IllegalResourceException e) {
             // should never happen
         }
-        resources.add(new BundleWiresResource(getPath(), m_bundle));
+        // add wires
+        builder = new Builder().fromPath(wiresPath);
+        BundleWiring wiring = m_bundle.adapt(BundleWiring.class);
+        if (wiring != null) {
+            // get provided wires from all namespaces
+            List<BundleWire> providedWires = wiring.getProvidedWires(null);
+            if (providedWires != null) {
+                for (BundleWire providedWire : providedWires) {
+                    builder.with(new BundleWireResource(wiresPath, providedWire));
+                }
+            }
+            // get required wires from all namespaces
+            List<BundleWire> requiredWires = wiring.getRequiredWires(null);
+            if (requiredWires != null) {
+                for (BundleWire requiredWire : requiredWires) {
+                    builder.with(new BundleWireResource(wiresPath, requiredWire));
+                }
+            }
+        }
+        try {
+            resources.add(builder.build());
+        } catch (IllegalResourceException e) {
+            // should never happen
+        }
+        // add services
         resources.add(m_bundleServicesResource);
         return resources;
     }
@@ -226,6 +315,10 @@ public class BundleResource extends AbstractResourceCollection {
             throw new IllegalActionOnResourceException(request, e.getMessage());
         }
         return this;
+    }
+
+    public Bundle getBundle() {
+        return m_bundle;
     }
 
     public String getState() {

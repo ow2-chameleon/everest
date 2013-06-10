@@ -18,21 +18,39 @@ import static org.osgi.service.cm.ConfigurationAdmin.SERVICE_FACTORYPID;
 
 
 /**
- * Created with IntelliJ IDEA.
- * User: ozan
- * Date: 5/1/13
- * Time: 4:11 PM
+ * Resource representing a {@code Configuration}.
  */
 public class ConfigurationResource extends DefaultResource {
 
+    /**
+     * Relation name for update
+     */
+    private static final String UPDATE_RELATION = "update";
+
+    /**
+     * Relation name for delete
+     */
+    private static final String DELETE_RELATION = "delete";
+
+    /**
+     * Property name for properties
+     */
     public static final String CONFIG_PROPERTIES = "properties";
 
+    /**
+     * Represented configuration
+     */
     private final Configuration m_configuration;
 
+    /**
+     * Constructor for Configuration resource
+     *
+     * @param configuration {@code Configuration}
+     */
     public ConfigurationResource(Configuration configuration) {
         super(CONFIG_PATH.addElements(configuration.getPid()));
         this.m_configuration = configuration;
-        setRelations(new DefaultRelation(getPath(), Action.UPDATE, "update",
+        setRelations(new DefaultRelation(getPath(), Action.UPDATE, UPDATE_RELATION,
                 new DefaultParameter()
                         .name(CONFIG_PROPERTIES)
                         .description("properties")
@@ -44,7 +62,7 @@ public class ConfigurationResource extends DefaultResource {
                         .optional(true)
                         .type(String.class)
         ),
-                new DefaultRelation(getPath(), Action.DELETE, "delete"));
+                new DefaultRelation(getPath(), Action.DELETE, DELETE_RELATION));
     }
 
     @Override

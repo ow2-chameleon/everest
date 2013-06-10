@@ -16,25 +16,47 @@ import java.util.List;
 import static org.apache.felix.ipojo.everest.osgi.OsgiRootResource.OSGI_ROOT_PATH;
 
 /**
- * Created with IntelliJ IDEA.
- * User: ozan
- * Date: 4/19/13
- * Time: 10:56 AM
+ * Resource manager for Deployment Package Admin.
  */
 public class DeploymentAdminResourceManager extends AbstractResourceCollection {
 
+    /**
+     * Name for deployment packages resource
+     */
     public static final String DEPLOY_ROOT_NAME = "deployments";
 
+    /**
+     * Path for this resource : "/osgi/deployments"
+     */
     public static final Path DEPLOY_PATH = OSGI_ROOT_PATH.add(Path.from(Path.SEPARATOR + DEPLOY_ROOT_NAME));
 
+
+    /**
+     * Relation name for install
+     */
+    private static final String INSTALL_PARAMETER = "install";
+
+    /**
+     * Parameter for input for install relation
+     */
+    private static final String INPUT_PARAMETER = "input";
+
+    /**
+     * Deployment admin service
+     */
     private final DeploymentAdmin m_deploymentAdmin;
 
+    /**
+     * Constructor for deployment admin resource
+     *
+     * @param deploymentAdmin {@code DeploymentAdmin}
+     */
     public DeploymentAdminResourceManager(DeploymentAdmin deploymentAdmin) {
         super(DEPLOY_PATH);
         this.m_deploymentAdmin = deploymentAdmin;
-        setRelations(new DefaultRelation(getPath(), Action.CREATE, "install",
+        setRelations(new DefaultRelation(getPath(), Action.CREATE, INSTALL_PARAMETER,
                 new DefaultParameter()
-                        .name("input")
+                        .name(INPUT_PARAMETER)
                         .description("input stream")
                         .type(InputStream.class)
                         .optional(false)));
@@ -67,7 +89,7 @@ public class DeploymentAdminResourceManager extends AbstractResourceCollection {
     @Override
     public Resource create(Request request) throws IllegalActionOnResourceException {
         try {
-            InputStream input = request.get("input", InputStream.class);
+            InputStream input = request.get(INPUT_PARAMETER, InputStream.class);
             DeploymentPackage deploymentPackage = m_deploymentAdmin.installDeploymentPackage(input);
             return new DeploymentPackageResource(deploymentPackage);
         } catch (DeploymentException e) {

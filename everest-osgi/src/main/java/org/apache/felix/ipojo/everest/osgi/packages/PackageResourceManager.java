@@ -21,28 +21,87 @@ import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.uniqueCapabi
 import static org.apache.felix.ipojo.everest.osgi.OsgiRootResource.OSGI_ROOT_PATH;
 
 /**
- * Created with IntelliJ IDEA.
- * User: ozan
- * Date: 4/19/13
- * Time: 10:54 AM
+ * Resource manager for packages.
  */
 public class PackageResourceManager extends AbstractResourceCollection {
 
+    /**
+     * Name for packages resource
+     */
     public static final String PACKAGE_ROOT_NAME = "packages";
 
+    /**
+     * Path to osgi packages : "/osgi/packages"
+     */
     public static final Path PACKAGE_PATH = OSGI_ROOT_PATH.add(Path.from(Path.SEPARATOR + PACKAGE_ROOT_NAME));
 
+    /**
+     * Map of package resources by unique id
+     */
     private Map<String, PackageResource> m_packageResourceByPackageIdMap = new HashMap<String, PackageResource>();
 
+    /**
+     * Static instance of this singleton class
+     */
     private static final PackageResourceManager instance = new PackageResourceManager();
 
+    /**
+     * Getter of the static instance of this singleton class
+     *
+     * @return the singleton static instance
+     */
     public static PackageResourceManager getInstance() {
         return instance;
     }
 
+    /**
+     * An utility method for creating a resource that contains only relations to a list osgi packages
+     *
+     * @param path         resource path
+     * @param capabilities list of packages as {@code BundleCapability}
+     * @return {@code Builder} for the resource
+     */
+    public static Builder relationsBuilder(Path path, List<BundleCapability> capabilities) {
+        DefaultResource.Builder builder = new Builder().fromPath(path);
+        for (BundleCapability capability : capabilities) {
+            if (capability != null) {
+                String packageId = uniqueCapabilityId(capability);
+                Path packagePath = PackageResourceManager.getInstance().getPath().addElements(packageId);
+                builder.with(new DefaultRelation(packagePath, Action.READ, packageId));
+            }
+        }
+        return builder;
+    }
+
+    /**
+     * Constructor for package resource manager
+     */
     public PackageResourceManager() {
         super(PACKAGE_PATH);
     }
+
+//    @Override
+//    public ResourceMetadata getMetadata() {
+//        ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
+//        synchronized (m_packageResourceByPackageIdMap) {
+//            for (Map.Entry<String, PackageResource> e : m_packageResourceByPackageIdMap.entrySet()) {
+//                metadataBuilder.set(e.getKey(), e.getValue().getSimpleMetadata());
+//            }
+//        }
+//        return metadataBuilder.build();
+//    }
+
+    @Override
+    public List<Resource> getResources() {
+        ArrayList<Resource> resources = new ArrayList<Resource>();
+        synchronized (m_packageResourceByPackageIdMap) {
+            resources.addAll(m_packageResourceByPackageIdMap.values());
+        }
+        return resources;
+    }
+
+    // Callback redirections from osgi root
+    // =================================================================================================================
 
     public void addPackagesFrom(Bundle bundle) {
         synchronized (m_packageResourceByPackageIdMap) {
@@ -80,38 +139,6 @@ public class PackageResourceManager extends AbstractResourceCollection {
                 }
             }
         }
-    }
-
-//    @Override
-//    public ResourceMetadata getMetadata() {
-//        ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
-//        synchronized (m_packageResourceByPackageIdMap) {
-//            for (Map.Entry<String, PackageResource> e : m_packageResourceByPackageIdMap.entrySet()) {
-//                metadataBuilder.set(e.getKey(), e.getValue().getSimpleMetadata());
-//            }
-//        }
-//        return metadataBuilder.build();
-//    }
-
-    @Override
-    public List<Resource> getResources() {
-        ArrayList<Resource> resources = new ArrayList<Resource>();
-        synchronized (m_packageResourceByPackageIdMap) {
-            resources.addAll(m_packageResourceByPackageIdMap.values());
-        }
-        return resources;
-    }
-
-    public static Builder relationsBuilder(Path path, List<BundleCapability> capabilities) {
-        DefaultResource.Builder builder = new Builder().fromPath(path);
-        for (BundleCapability capability : capabilities) {
-            if (capability != null) {
-                String packageId = uniqueCapabilityId(capability);
-                Path packagePath = PackageResourceManager.getInstance().getPath().addElements(packageId);
-                builder.with(new DefaultRelation(packagePath, Action.READ, packageId));
-            }
-        }
-        return builder;
     }
 
 }

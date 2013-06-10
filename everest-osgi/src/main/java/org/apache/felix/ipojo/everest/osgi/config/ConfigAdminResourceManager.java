@@ -20,27 +20,50 @@ import java.util.Map;
 import static org.apache.felix.ipojo.everest.osgi.OsgiRootResource.OSGI_ROOT_PATH;
 
 /**
- * Created with IntelliJ IDEA.
- * User: ozan
- * Date: 4/19/13
- * Time: 10:56 AM
+ * Resource manager for Configuration Admin service.
  */
 public class ConfigAdminResourceManager extends AbstractResourceCollection implements ConfigurationListener {
 
+    /**
+     * Name for configurations resource
+     */
     public static final String CONFIG_ROOT_NAME = "configurations";
 
+    /**
+     * Path for this configurations resource : "/osgi/configurations"
+     */
     public static final Path CONFIG_PATH = OSGI_ROOT_PATH.add(Path.from(Path.SEPARATOR + CONFIG_ROOT_NAME));
 
+    /**
+     * Location property name
+     */
     public static final String BUNDLE_LOCATION = "location";
 
+    /**
+     * Pid property name
+     */
     public static final String PID = "pid";
 
+    /**
+     * Factory pid property name
+     */
     public static final String FACTORY_PID = "factoryPid";
 
+    /**
+     * Config admin service
+     */
     private final ConfigurationAdmin m_configAdmin;
 
+    /**
+     * Configurations map by pid
+     */
     private Map<String, ConfigurationResource> m_configurationResourceMap = new HashMap<String, ConfigurationResource>();
 
+    /**
+     * Constructor for configuration resource manager
+     *
+     * @param configAdmin {@code ConfigurationAdmin}
+     */
     public ConfigAdminResourceManager(ConfigurationAdmin configAdmin) {
         super(CONFIG_PATH);
         this.m_configAdmin = configAdmin;

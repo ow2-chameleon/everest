@@ -29,10 +29,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created with IntelliJ IDEA.
- * User: ozan
- * Date: 4/19/13
- * Time: 9:50 AM
+ * Osgi domain root resource.
+ * Represents the osgi framework
  */
 @Component
 @Provides(
@@ -41,67 +39,145 @@ import java.util.List;
 @Instantiate
 public class OsgiRootResource extends AbstractResourceManager implements BundleTrackerCustomizer, ServiceTrackerCustomizer, FrameworkListener {
 
+    /**
+     * Name of the osgi root resource
+     */
     public static final String OSGI_ROOT = "osgi";
 
-    public static final Path OSGI_ROOT_PATH = Path.from(Path.SEPARATOR + OSGI_ROOT);
-
+    /**
+     * Description of the osgi root resource
+     */
     public static final String OSGI_DESCRIPTION = "This root represents osgi framework and its subresources";
 
+    /**
+     * Path to Osgi root : "/osgi"
+     */
+    public static final Path OSGI_ROOT_PATH = Path.from(Path.SEPARATOR + OSGI_ROOT);
+
+    /**
+     * Relation name for stopping the framework
+     */
     public static final String FRAMEWORK_STOP_RELATION = "stop";
 
+    /**
+     * Relation name for updating the framework
+     */
     public static final String FRAMEWORK_UPDATE_RELATION = "update";
 
-    public static final String STARTLEVEL_PARAMETER = "startlevel";
-
-    public static final String STARTLEVEL_BUNDLE_PARAMETER = "startlevel.bundle";
-
+    /**
+     * Relation name for restarting the framework
+     */
     private static final String FRAMEWORK_RESTART_RELATION = "restart";
 
-    private static final String RESTART_PARAMETER = "restart";
+    /**
+     * Parameter name for setting start level on update relation
+     */
+    public static final String STARTLEVEL_PARAMETER = "startlevel";
 
+    /**
+     * Parameter name for setting initial bundle start level on update relation
+     */
+    public static final String STARTLEVEL_BUNDLE_PARAMETER = "startlevel.bundle";
+
+    /**
+     * Parameter name for restarting the framework on update relation
+     */
+    public static final String FRAMEWORK_RESTART_PARAMETER = "restart";
+
+    /**
+     * Lock object for adding and removing late appearing resources
+     */
     private final Object resourceLock = new Object();
 
+    /**
+     * Bundle context of this everest domain
+     */
     private final BundleContext m_context;
 
+    /**
+     * Tracker for bundles
+     */
     private final BundleTracker m_bundleTracker;
 
+    /**
+     * Tracker for services
+     */
     private final ServiceTracker m_serviceTracker;
 
-    private final BundleResourceManager m_bundleResourceManager;
-
-    private final PackageResourceManager m_packageResourceManager;
-
-    private final ServiceResourceManager m_serviceResourceManager;
-
+    /**
+     * Static metadata for framework
+     */
     private final ResourceMetadata m_metadata;
 
+    /**
+     * Relations list
+     */
     private final ArrayList<Relation> m_relations;
 
-    private Bundle frameworkBundle;
+    /**
+     * Framework bundle
+     */
+    private final Bundle m_frameworkBundle;
 
+    /**
+     * First level resource manager for bundles.
+     * Always present
+     */
+    private final BundleResourceManager m_bundleResourceManager;
+
+    /**
+     * First level resource manager for packages.
+     * Always present
+     */
+    private final PackageResourceManager m_packageResourceManager;
+
+    /**
+     * First level resource manager for services.
+     * Always present
+     */
+    private final ServiceResourceManager m_serviceResourceManager;
+
+    /**
+     * First level resource manager for config admin
+     * Present only if configuration admin service is found
+     */
     private ConfigAdminResourceManager m_configResourceManager;
 
-    private ServiceRegistration<ConfigurationListener> configurationListenerServiceRegistration;
+    /**
+     * Service registration for configuration listener
+     */
+    private ServiceRegistration<ConfigurationListener> m_configurationListenerServiceRegistration;
 
+    /**
+     * First level resource manager for deployment package admin
+     * Present only if deployment package admin service is found
+     */
     private DeploymentAdminResourceManager m_deploymentResourceManager;
 
+    /**
+     * First level resource manager for logs
+     * Present only if log reader service is found
+     */
     private LogServiceResourceManager m_logResourceManager;
 
+    /**
+     * Constructor for Osgi root resource
+     *
+     * @param context bundle context of the everest-osgi bundle
+     */
     public OsgiRootResource(BundleContext context) {
         super(OSGI_ROOT, OSGI_DESCRIPTION);
         m_context = context;
-
         // Initialize subresource managers
         m_bundleResourceManager = BundleResourceManager.getInstance();
         m_packageResourceManager = PackageResourceManager.getInstance();
         m_serviceResourceManager = ServiceResourceManager.getInstance();
-        frameworkBundle = m_context.getBundle(0);
-        FrameworkWiring fwiring = frameworkBundle.adapt(FrameworkWiring.class);
-
+        m_frameworkBundle = m_context.getBundle(0);
+        FrameworkWiring fwiring = m_frameworkBundle.adapt(FrameworkWiring.class);
+        BundleContext fwContext = m_frameworkBundle.getBundleContext();
         // Construct static framework metadata
         ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder(super.getMetadata());
         //TODO take some metadata from the framework
-        BundleContext fwContext = frameworkBundle.getBundleContext();
         metadataBuilder.set(Constants.FRAMEWORK_VERSION, fwContext.getProperty(Constants.FRAMEWORK_VERSION));
         metadataBuilder.set(Constants.FRAMEWORK_VENDOR, fwContext.getProperty(Constants.FRAMEWORK_VENDOR));
         metadataBuilder.set(Constants.FRAMEWORK_LANGUAGE, fwContext.getProperty(Constants.FRAMEWORK_LANGUAGE));
@@ -149,8 +225,8 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
                         .optional(true)));
         m_relations.add(new DefaultRelation(getPath(), Action.UPDATE, FRAMEWORK_RESTART_RELATION, "Restarts the osgi framework",
                 new DefaultParameter()
-                        .name(RESTART_PARAMETER)
-                        .description(RESTART_PARAMETER)
+                        .name(FRAMEWORK_RESTART_PARAMETER)
+                        .description(FRAMEWORK_RESTART_PARAMETER)
                         .type(Boolean.class)
                         .optional(true)));
     }
@@ -175,7 +251,7 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
     public ResourceMetadata getMetadata() {
         ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder(m_metadata);
         // add Start Level metadata
-        FrameworkStartLevel frameworkStartLevel = frameworkBundle.adapt(FrameworkStartLevel.class);
+        FrameworkStartLevel frameworkStartLevel = m_frameworkBundle.adapt(FrameworkStartLevel.class);
         metadataBuilder.set(STARTLEVEL_BUNDLE_PARAMETER, frameworkStartLevel.getInitialBundleStartLevel());
         metadataBuilder.set(STARTLEVEL_PARAMETER, frameworkStartLevel.getStartLevel());
         return metadataBuilder.build();
@@ -211,7 +287,7 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
 
     @Override
     public Resource update(Request request) throws IllegalActionOnResourceException {
-        FrameworkStartLevel frameworkStartLevel = frameworkBundle.adapt(FrameworkStartLevel.class);
+        FrameworkStartLevel frameworkStartLevel = m_frameworkBundle.adapt(FrameworkStartLevel.class);
         Integer bundleStartLevel = request.get(STARTLEVEL_BUNDLE_PARAMETER, Integer.class);
         if (bundleStartLevel != null) {
             frameworkStartLevel.setInitialBundleStartLevel(bundleStartLevel);
@@ -224,7 +300,7 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
         if (restart != null && restart) {
             try {
                 //restarting framework
-                frameworkBundle.update();
+                m_frameworkBundle.update();
             } catch (BundleException e) {
                 throw new IllegalActionOnResourceException(request, e.getMessage());
             }
@@ -236,7 +312,7 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
     public Resource delete(Request request) throws IllegalActionOnResourceException {
         // R.I.P :REST in PEACE
         try {
-            frameworkBundle.stop();
+            m_frameworkBundle.stop();
         } catch (BundleException e) {
             throw new IllegalActionOnResourceException(request, e.getMessage());
         }
@@ -249,12 +325,13 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
     }
 
     // Config Admin Bind / Unbind
+    // =================================================================================================================
 
     @Bind(id = "configadmin", optional = true, aggregate = false)
     public void bindConfigAdmin(ConfigurationAdmin configAdmin) {
         synchronized (resourceLock) {
             m_configResourceManager = new ConfigAdminResourceManager(configAdmin);
-            configurationListenerServiceRegistration = m_context.registerService(ConfigurationListener.class, m_configResourceManager, null);
+            m_configurationListenerServiceRegistration = m_context.registerService(ConfigurationListener.class, m_configResourceManager, null);
         }
         Everest.postResource(ResourceEvent.UPDATED, this);
     }
@@ -262,13 +339,14 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
     @Unbind(id = "configadmin")
     public void unbindConfigAdmin(ConfigurationAdmin configAdmin) {
         synchronized (resourceLock) {
-            configurationListenerServiceRegistration.unregister();
+            m_configurationListenerServiceRegistration.unregister();
             m_configResourceManager = null;
         }
         Everest.postResource(ResourceEvent.UPDATED, this);
     }
 
     // Deploy Admin Bind / Unbind
+    // =================================================================================================================
 
     @Bind(id = "deploymentadmin", optional = true, aggregate = false)
     public void bindDeploymentAdmin(DeploymentAdmin deploymentAdmin) {
@@ -287,6 +365,7 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
     }
 
     // Log Service Bind / Unbind
+    // =================================================================================================================
 
     @Bind(id = "logservice", optional = true, aggregate = false)
     public void bindLogService(LogReaderService logService) {
@@ -305,6 +384,7 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
     }
 
     // Bundle Tracker Methods
+    // =================================================================================================================
 
     public Object addingBundle(Bundle bundle, BundleEvent bundleEvent) {
         m_bundleResourceManager.addBundle(bundle);
@@ -329,6 +409,7 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
     }
 
     // Service Tracker Methods
+    // =================================================================================================================
 
     public Object addingService(ServiceReference serviceReference) {
         Object serviceId = serviceReference.getProperty(Constants.SERVICE_ID);
@@ -345,6 +426,7 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
     }
 
     // Framework Listener Method
+    // =================================================================================================================
 
     public void frameworkEvent(FrameworkEvent event) {
         switch (event.getType()) {

@@ -13,15 +13,22 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 /**
- * Created with IntelliJ IDEA.
- * User: ozan
- * Date: 4/21/13
- * Time: 10:34 PM
+ * Collection of resources that is initiated with a path and a map of name,metadata for its children.
+ * Children are only resource with static metadata
  */
 public class ReadOnlyLeafCollectionResource extends DefaultReadOnlyResource {
 
+    /**
+     * Map of metadata
+     */
     private final Map<String, ResourceMetadata> m_leafMetadata;
 
+    /**
+     * Constructor for this resource collection
+     *
+     * @param path         path of the parent resource
+     * @param leafMetadata {@code Map<String,ResourceMetadata>} name and metadata of the children
+     */
     public ReadOnlyLeafCollectionResource(Path path, Map<String, ResourceMetadata> leafMetadata) {
         super(path);
         m_leafMetadata = leafMetadata;

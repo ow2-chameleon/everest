@@ -14,35 +14,67 @@ import org.osgi.framework.wiring.BundleWiring;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.PackageNamespace.*;
+import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.metadataFrom;
 import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.uniqueCapabilityId;
 
 
 /**
- * Created with IntelliJ IDEA.
- * User: ozan
- * Date: 4/20/13
- * Time: 9:06 AM
+ * Resource representing an osgi package.
  */
 public class PackageResource extends AbstractResourceCollection {
 
+    /**
+     * Relation name for the provider bundle of this package
+     */
     public static final String PROVIDER_BUNDLE_NAME = "provider-bundle";
 
+    /**
+     * Relation name for bundles that import this package
+     */
     public static final String IMPORTER_BUNDLE_NAME = "importer-bundles";
 
+    /**
+     * Metadata property name for a used package
+     */
     public static final String PACKAGE_IN_USE = "in-use";
 
+    /**
+     * Bundle capability of this package
+     */
     private final BundleCapability m_bundleCapability;
+
+    /**
+     * Name of this package
+     */
     private final String m_packageName;
+
+    /**
+     * Version of this package
+     */
     private final Version m_version;
+
+    /**
+     * Attributes of this package
+     */
     private final Map<String, Object> m_attributes;
+
+    /**
+     * Directives of this package
+     */
     private final Map<String, String> m_directives;
 
-    // importers of this package
+    /**
+     * List of bundles that imports this package
+     */
     private ArrayList<Bundle> importers = new ArrayList<Bundle>();
 
+    /**
+     * Constructor for package resource
+     *
+     * @param bundleCapability {@code BundleCapability} that this package is coming from
+     */
     public PackageResource(BundleCapability bundleCapability) {
         super(PackageResourceManager.PACKAGE_PATH.addElements(uniqueCapabilityId(bundleCapability)));
         m_bundleCapability = bundleCapability;
@@ -77,12 +109,7 @@ public class PackageResource extends AbstractResourceCollection {
     @Override
     public ResourceMetadata getMetadata() {
         ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder(getSimpleMetadata());
-        for (Entry<String, Object> att : m_attributes.entrySet()) {
-            metadataBuilder.set(att.getKey(), att.getValue());
-        }
-        for (Entry<String, String> dir : m_directives.entrySet()) {
-            metadataBuilder.set(dir.getKey(), dir.getValue());
-        }
+        metadataBuilder = metadataFrom(metadataBuilder, m_bundleCapability);
         return metadataBuilder.build();
     }
 
@@ -112,6 +139,28 @@ public class PackageResource extends AbstractResourceCollection {
     @Override
     public boolean isObservable() {
         return true;
+    }
+
+    private void calculateImporters() {
+        importers.clear();
+        synchronized (importers) {
+            // calculate importers
+            Bundle bundle = m_bundleCapability.getRevision().getBundle();
+            if (bundle != null) {
+                BundleWiring wiring = bundle.adapt(BundleWiring.class);
+                if (wiring != null) {
+                    List<BundleWire> wires = wiring.getProvidedWires(PACKAGE_NAMESPACE);
+                    if (wires != null) {
+                        for (BundleWire wire : wires) {
+                            if (wire.getCapability().equals(m_bundleCapability)) {
+                                Bundle requirerBundle = wire.getRequirerWiring().getBundle();
+                                importers.add(requirerBundle);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private Bundle getBundle() {
@@ -153,29 +202,6 @@ public class PackageResource extends AbstractResourceCollection {
 
     public Map<String, String> getDirectives() {
         return m_directives;
-    }
-
-    private void calculateImporters() {
-        importers.clear();
-        synchronized (importers) {
-            // calculate importers
-            Bundle bundle = m_bundleCapability.getRevision().getBundle();
-            if (bundle != null) {
-                BundleWiring wiring = bundle.adapt(BundleWiring.class);
-                if (wiring != null) {
-                    List<BundleWire> wires = wiring.getProvidedWires(PACKAGE_NAMESPACE);
-                    if (wires != null) {
-                        for (BundleWire wire : wires) {
-                            if (wire.getCapability().equals(m_bundleCapability)) {
-                                Bundle requirerBundle = wire.getRequirerWiring().getBundle();
-                                importers.add(requirerBundle);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
     }
 
 }

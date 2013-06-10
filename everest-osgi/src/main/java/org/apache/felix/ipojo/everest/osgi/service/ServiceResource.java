@@ -23,21 +23,35 @@ import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.uniqueCapabi
 import static org.apache.felix.ipojo.everest.osgi.service.ServiceResourceManager.SERVICES_PATH;
 
 /**
- * Created with IntelliJ IDEA.
- * User: ozan
- * Date: 4/20/13
- * Time: 11:39 AM
+ * Resource representing an osgi service.
  */
 public class ServiceResource extends AbstractResourceCollection {
 
+    /**
+     * Relation name for the bundle from which this service is published
+     */
     public static final String FROM_BUNDLE_NAME = "from-bundle";
 
+    /**
+     * Relation name for the bundles that uses this service
+     */
     public static final String USES_BUNDLES_NAME = "using-bundles";
 
+    /**
+     * Relation name for the package that defines this service
+     */
     public static final String FROM_PACKAGE_NAME = "from-package";
 
+    /**
+     * The service reference
+     */
     private ServiceReference m_serviceReference;
 
+    /**
+     * Constructor for service resource
+     *
+     * @param serviceReference the service reference
+     */
     public ServiceResource(ServiceReference serviceReference) {
         super(SERVICES_PATH.addElements(Long.toString((Long) serviceReference.getProperty(Constants.SERVICE_ID))));
         m_serviceReference = serviceReference;
@@ -69,13 +83,13 @@ public class ServiceResource extends AbstractResourceCollection {
         setRelations(relations);
     }
 
-    public ResourceMetadata getSimpleMetadata() {
-        ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
-        metadataBuilder.set(Constants.SERVICE_ID, m_serviceReference.getProperty(Constants.SERVICE_ID));
-        metadataBuilder.set(Constants.OBJECTCLASS, m_serviceReference.getProperty(Constants.OBJECTCLASS));
-        metadataBuilder.set(FROM_BUNDLE_NAME, m_serviceReference.getBundle().getBundleId());
-        return metadataBuilder.build();
-    }
+//    public ResourceMetadata getSimpleMetadata() {
+//        ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
+//        metadataBuilder.set(Constants.SERVICE_ID, m_serviceReference.getProperty(Constants.SERVICE_ID));
+//        metadataBuilder.set(Constants.OBJECTCLASS, m_serviceReference.getProperty(Constants.OBJECTCLASS));
+//        metadataBuilder.set(FROM_BUNDLE_NAME, m_serviceReference.getBundle().getBundleId());
+//        return metadataBuilder.build();
+//    }
 
     @Override
     public ResourceMetadata getMetadata() {
@@ -117,6 +131,9 @@ public class ServiceResource extends AbstractResourceCollection {
     public boolean isObservable() {
         return true;
     }
+
+    // Methods for easy accessing some information
+    // =================================================================================================================
 
     public long getServiceId() {
         return (Long) m_serviceReference.getProperty(Constants.SERVICE_ID);

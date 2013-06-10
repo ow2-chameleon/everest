@@ -137,7 +137,7 @@ public class EverestOsgiTest extends BaseTest {
         osgiHelper.getContext().registerService(EventHandler.class.getName(), new EventHandler() {
             public void handleEvent(Event event) {
                 Object eventType = event.getProperty("eventType");
-                System.out.println(eventType + " " + event.getProperty("canonicalPath"));
+                //System.out.println(eventType + " " + event.getProperty("canonicalPath"));
                 if (ResourceEvent.CREATED.toString().equals(eventType)) {
                     createdEvents.add(event);
                 } else if (ResourceEvent.DELETED.toString().equals(eventType)) {

@@ -13,18 +13,30 @@ import java.util.List;
 import static org.apache.felix.ipojo.everest.osgi.OsgiRootResource.OSGI_ROOT_PATH;
 
 /**
- * Created with IntelliJ IDEA.
- * User: ozan
- * Date: 4/20/13
- * Time: 11:45 AM
+ * Resource manager for log service.
  */
 public class LogServiceResourceManager extends AbstractResourceCollection {
 
+    /**
+     * Name for logs resource
+     */
     public static final String LOG_ROOT_NAME = "logs";
 
+    /**
+     * Path for osgi logs : "/osgi/logs"
+     */
     public static final Path LOG_PATH = OSGI_ROOT_PATH.add(Path.from(Path.SEPARATOR + LOG_ROOT_NAME));
+
+    /**
+     * Log reader service
+     */
     private final LogReaderService m_logService;
 
+    /**
+     * Constructor for this resource manager
+     *
+     * @param logService
+     */
     public LogServiceResourceManager(LogReaderService logService) {
         super(LOG_PATH);
         m_logService = logService;

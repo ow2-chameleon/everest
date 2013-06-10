@@ -18,37 +18,91 @@ import java.util.*;
 import static org.apache.felix.ipojo.everest.osgi.OsgiRootResource.OSGI_ROOT_PATH;
 
 /**
- * Created with IntelliJ IDEA.
- * User: ozan
- * Date: 4/19/13
- * Time: 10:52 AM
+ * Resource manager for bundles.
  */
 public class BundleResourceManager extends AbstractResourceCollection {
 
+    /**
+     * Name for bundles resource
+     */
     public static final String BUNDLE_ROOT_NAME = "bundles";
 
-    public static final String INSTALL_INPUT_PARAMETER = "input";
-
-    public static final String INSTALL_LOCATION_PARAMETER = "location";
-
-    public static final String BUNDLE_INSTALL_RELATION = "install";
-
+    /**
+     * Path to osgi bundles : "/osgi/bundles"
+     */
     public static final Path BUNDLE_PATH = OSGI_ROOT_PATH.add(Path.from(Path.SEPARATOR + BUNDLE_ROOT_NAME));
 
+    /**
+     * Relation name for install relation
+     */
+    public static final String BUNDLE_INSTALL_RELATION = "install";
+
+    /**
+     * Relation name for update relation
+     */
     public static final String BUNDLES_UPDATE_RELATION = "update";
 
+    /**
+     * Parameter for input for install/update relation
+     */
+    public static final String INSTALL_INPUT_PARAMETER = "input";
+
+    /**
+     * Parameter for location for install relation
+     */
+    public static final String INSTALL_LOCATION_PARAMETER = "location";
+
+    /**
+     * Parameter for refresh for update relation
+     */
     public static final String REFRESH_PARAMETER = "refresh";
 
+    /**
+     * Parameter for resolve for update relation
+     */
     public static final String RESOLVE_PARAMETER = "resolve";
 
+    /**
+     * Map of bundle resource by bundle id
+     */
     private Map<Long, BundleResource> m_bundleResourcesMap = new HashMap<Long, BundleResource>();
 
+    /**
+     * Static instance of this singleton class
+     */
     private static final BundleResourceManager instance = new BundleResourceManager();
 
+    /**
+     * Getter of the static instance of this singleton class
+     *
+     * @return the singleton static instance
+     */
     public static BundleResourceManager getInstance() {
         return instance;
     }
 
+    /**
+     * An utility method for creating a resource that contains only relations to a list osgi bundles
+     *
+     * @param path    resource path
+     * @param bundles list of bundles {@code Bundle}
+     * @return {@code Builder} for the resource
+     */
+    public static Builder relationsBuilder(Path path, List<Bundle> bundles) {
+        DefaultResource.Builder builder = new Builder().fromPath(path);
+        for (Bundle bundle : bundles) {
+            if (bundle != null) {
+                String bundleId = Long.toString(bundle.getBundleId());
+                Path bundlePath = BundleResourceManager.getInstance().getPath().addElements(bundleId);
+                builder.with(new DefaultRelation(bundlePath, Action.READ, bundleId));
+            }
+        }
+        return builder;
+    }
+
+    /**
+     * Constructor for bundle resource manager
+     */
     public BundleResourceManager() {
         super(BUNDLE_PATH);
 
@@ -136,7 +190,54 @@ public class BundleResourceManager extends AbstractResourceCollection {
         return resource;
     }
 
-    // bundle listener delegate methods
+
+    public void refreshBundles(List<Long> bundleIds) {
+        Bundle fw = m_bundleResourcesMap.get(0L).getBundle();
+        FrameworkWiring fwiring = fw.adapt(FrameworkWiring.class);
+        List<Bundle> bundlesToRefresh = new ArrayList<Bundle>();
+        for (Long bundleId : bundleIds) {
+            Bundle bundle = fw.getBundleContext().getBundle(bundleId);
+            if (bundle != null) {
+                bundlesToRefresh.add(bundle);
+            }
+        }
+        fwiring.refreshBundles(bundlesToRefresh);
+    }
+
+    public boolean resolveBundles(List<Long> bundleIds) {
+        Bundle fw = m_bundleResourcesMap.get(0L).getBundle();
+        FrameworkWiring fwiring = fw.adapt(FrameworkWiring.class);
+        List<Bundle> bundlesToResolve = new ArrayList<Bundle>();
+        for (Long bundleId : bundleIds) {
+            Bundle bundle = fw.getBundleContext().getBundle(bundleId);
+            if (bundle != null) {
+                bundlesToResolve.add(bundle);
+            }
+        }
+        return fwiring.resolveBundles(bundlesToResolve);
+    }
+
+
+    public List<Long> getDependencyClosure(List<Long> bundleIds) {
+        Bundle fw = m_bundleResourcesMap.get(0L).getBundle();
+        FrameworkWiring fwiring = fw.adapt(FrameworkWiring.class);
+        List<Bundle> bundles = new ArrayList<Bundle>();
+        for (long bundleId : bundleIds) {
+            Bundle bundle = m_bundleResourcesMap.get(bundleId).getBundle();
+            if (bundle != null) {
+                bundles.add(bundle);
+            }
+        }
+        Collection<Bundle> dependencyClosure = fwiring.getDependencyClosure(bundles);
+        List<Long> dependencyClosureBundles = new ArrayList<Long>();
+        for (Bundle b : dependencyClosure) {
+            dependencyClosureBundles.add(b.getBundleId());
+        }
+        return dependencyClosureBundles;
+    }
+
+    // Callback redirections from osgi root
+    // =================================================================================================================
 
     public void addBundle(Bundle bundle) {
         BundleResource newBundle = new BundleResource(bundle, this);
@@ -166,61 +267,5 @@ public class BundleResourceManager extends AbstractResourceCollection {
             }
         }
         Everest.postResource(ResourceEvent.UPDATED, bundleResource);
-    }
-
-    public void refreshBundles(List<Long> bundleIds) {
-        Bundle fw = m_bundleResourcesMap.get(0L).getBundle();
-        FrameworkWiring fwiring = fw.adapt(FrameworkWiring.class);
-        List<Bundle> bundlesToRefresh = new ArrayList<Bundle>();
-        for (Long bundleId : bundleIds) {
-            Bundle bundle = fw.getBundleContext().getBundle(bundleId);
-            if (bundle != null) {
-                bundlesToRefresh.add(bundle);
-            }
-        }
-        fwiring.refreshBundles(bundlesToRefresh);
-    }
-
-    public boolean resolveBundles(List<Long> bundleIds) {
-        Bundle fw = m_bundleResourcesMap.get(0L).getBundle();
-        FrameworkWiring fwiring = fw.adapt(FrameworkWiring.class);
-        List<Bundle> bundlesToResolve = new ArrayList<Bundle>();
-        for (Long bundleId : bundleIds) {
-            Bundle bundle = fw.getBundleContext().getBundle(bundleId);
-            if (bundle != null) {
-                bundlesToResolve.add(bundle);
-            }
-        }
-        return fwiring.resolveBundles(bundlesToResolve);
-    }
-
-    public List<Long> getDependencyClosure(List<Long> bundleIds) {
-        Bundle fw = m_bundleResourcesMap.get(0L).getBundle();
-        FrameworkWiring fwiring = fw.adapt(FrameworkWiring.class);
-        List<Bundle> bundles = new ArrayList<Bundle>();
-        for (long bundleId : bundleIds) {
-            Bundle bundle = m_bundleResourcesMap.get(bundleId).getBundle();
-            if (bundle != null) {
-                bundles.add(bundle);
-            }
-        }
-        Collection<Bundle> dependencyClosure = fwiring.getDependencyClosure(bundles);
-        List<Long> dependencyClosureBundles = new ArrayList<Long>();
-        for (Bundle b : dependencyClosure) {
-            dependencyClosureBundles.add(b.getBundleId());
-        }
-        return dependencyClosureBundles;
-    }
-
-    public static Builder relationsBuilder(Path path, List<Bundle> bundles) {
-        DefaultResource.Builder builder = new Builder().fromPath(path);
-        for (Bundle bundle : bundles) {
-            if (bundle != null) {
-                String bundleId = Long.toString(bundle.getBundleId());
-                Path bundlePath = BundleResourceManager.getInstance().getPath().addElements(bundleId);
-                builder.with(new DefaultRelation(bundlePath, Action.READ, bundleId));
-            }
-        }
-        return builder;
     }
 }

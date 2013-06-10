@@ -14,19 +14,31 @@ import org.osgi.framework.wiring.BundleWire;
 import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.*;
 
 /**
- * Created with IntelliJ IDEA.
- * User: ozan
- * Date: 4/21/13
- * Time: 9:12 PM
+ * Resource representing a {@code BundleWire}.
  */
 public class BundleWireResource extends DefaultReadOnlyResource {
 
+    /**
+     * Relation name for the linked capability
+     */
     public static final String WIRE_CAPABILITY = "capability";
 
+    /**
+     * Relation name for the linked requirement
+     */
     public static final String WIRE_REQUIREMENT = "requirement";
 
+    /**
+     * Represented bundle wire
+     */
     private final BundleWire m_wire;
 
+    /**
+     * Constructor for this bundle wire resource
+     *
+     * @param path
+     * @param wire
+     */
     public BundleWireResource(Path path, BundleWire wire) {
         super(path.addElements(uniqueWireId(wire)));
         m_wire = wire;

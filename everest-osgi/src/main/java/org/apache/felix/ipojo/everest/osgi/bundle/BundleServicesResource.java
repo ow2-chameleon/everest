@@ -14,21 +14,36 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Created with IntelliJ IDEA.
- * User: ozan
- * Date: 4/21/13
- * Time: 4:13 PM
+ * Resource representing services of a bundle.
  */
 public class BundleServicesResource extends AbstractResourceCollection {
 
+    /**
+     * Name for services
+     */
     public static final String BUNDLE_SERVICES_NAME = "services";
 
+    /**
+     * Relation name for registered services
+     */
     public static final String BUNDLE_REGISTERED_SERVICES_NAME = "registered";
 
+    /**
+     * Relation name for services used by this bundle
+     */
     public static final String BUNDLE_USE_SERVICES_NAME = "uses";
 
+    /**
+     * Concerned bundle
+     */
     private final Bundle m_bundle;
 
+    /**
+     * Constructor for bundle services resource
+     *
+     * @param path
+     * @param bundle
+     */
     public BundleServicesResource(Path path, Bundle bundle) {
         super(path.addElements(BUNDLE_SERVICES_NAME));
         m_bundle = bundle;

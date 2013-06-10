@@ -11,14 +11,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created with IntelliJ IDEA.
- * User: ozan
- * Date: 5/28/13
- * Time: 11:04 PM
+ * Abstract class for resources with child resources.
+ * Creates {@code Action.GET} relations to these children
  */
 public abstract class AbstractResourceCollection extends DefaultReadOnlyResource {
 
-
+    /**
+     * Constructor, same as {@code DefaultReadOnlyResource}
+     *
+     * @param path path of the resource
+     */
     public AbstractResourceCollection(Path path) {
         super(path);
     }
@@ -26,7 +28,7 @@ public abstract class AbstractResourceCollection extends DefaultReadOnlyResource
     /**
      * Extracts the direct children and add a {@literal READ} relation to them.
      *
-     * @return a list of relations
+     * @return list of relations
      */
     public List<Relation> getRelations() {
         List<Relation> relations = new ArrayList<Relation>();

@@ -17,18 +17,24 @@ import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.PackageNames
 
 
 /**
- * Created with IntelliJ IDEA.
- * User: ozan
- * Date: 4/21/13
- * Time: 7:42 PM
+ * A utilitary class for common namespaces, static methods and enums
  */
 public class OsgiResourceUtils {
 
+    /**
+     * Enum for bundle state
+     */
     public enum BundleState {
         ACTIVE, STARTING, STOPPING, RESOLVED, INSTALLED, UNINSTALLED
     }
 
-
+    /**
+     * Converts bundle state integer to string
+     *
+     * @param bundleState bundle state integer
+     * @return String for the bundle state all caps
+     * @throws IllegalArgumentException if integer does not corresponds to a bundle state
+     */
     public static String bundleStateToString(int bundleState) {
         switch (bundleState) {
             case Bundle.ACTIVE:
@@ -48,6 +54,13 @@ public class OsgiResourceUtils {
         }
     }
 
+    /**
+     * Converts bundle state string to corresponding bundle state integer
+     *
+     * @param bundleState bundle state string all caps
+     * @return integer for corresponding bundle state
+     * @throws IllegalArgumentException if the string does not corresponds to any bundle state
+     */
     public static int toBundleState(String bundleState) throws IllegalArgumentException {
         BundleState state;
         try {
@@ -73,6 +86,12 @@ public class OsgiResourceUtils {
         }
     }
 
+    /**
+     * Transforms integer for log level to its name in string
+     *
+     * @param level log level
+     * @return name of the log level in String
+     */
     public static String logLevelToString(int level) {
         switch (level) {
             case LogService.LOG_DEBUG:
@@ -88,6 +107,12 @@ public class OsgiResourceUtils {
         }
     }
 
+    /**
+     * Generates a unique id a given bundle capability
+     *
+     * @param bundleCapability capability
+     * @return unique id in string
+     */
     public static String uniqueCapabilityId(BundleCapability bundleCapability) {
         long bundleId = bundleCapability.getRevision().getBundle().getBundleId();
         String capabilityName = "";
@@ -134,6 +159,12 @@ public class OsgiResourceUtils {
         return sb.toString();
     }
 
+    /**
+     * Generates a unique id for given bundle requirement
+     *
+     * @param bundleRequirement requirement
+     * @return unique id in string
+     */
     public static String uniqueRequirementId(BundleRequirement bundleRequirement) {
         long bundleId = bundleRequirement.getRevision().getBundle().getBundleId();
         String requirementString = "";
@@ -150,10 +181,24 @@ public class OsgiResourceUtils {
         return sb.toString();
     }
 
+    /**
+     * Generates a unique id for given bundle wire
+     * Uses hashcode of the wire object
+     *
+     * @param wire {@code BundleWire} object
+     * @return unique id in {@code String}
+     */
     public static String uniqueWireId(BundleWire wire) {
         return "wire-" + wire.hashCode();
     }
 
+    /**
+     * Write metadata for a bundle requirement
+     *
+     * @param metadataBuilder   metadata builder object
+     * @param bundleRequirement bundle requirement
+     * @return the passed builder object with modifications
+     */
     public static ImmutableResourceMetadata.Builder metadataFrom(ImmutableResourceMetadata.Builder metadataBuilder, BundleRequirement bundleRequirement) {
         for (Map.Entry<String, Object> att : bundleRequirement.getAttributes().entrySet()) {
             metadataBuilder.set(att.getKey(), att.getValue());
@@ -164,6 +209,13 @@ public class OsgiResourceUtils {
         return metadataBuilder;
     }
 
+    /**
+     * Write metadata for a bundle capability
+     *
+     * @param metadataBuilder  metadata builder object
+     * @param bundleCapability bundle capability
+     * @return the passed builder object with modifications
+     */
     public static ImmutableResourceMetadata.Builder metadataFrom(ImmutableResourceMetadata.Builder metadataBuilder, BundleCapability bundleCapability) {
         for (Map.Entry<String, Object> att : bundleCapability.getAttributes().entrySet()) {
             metadataBuilder.set(att.getKey(), att.getValue());
@@ -186,6 +238,9 @@ public class OsgiResourceUtils {
         return packageNames;
     }
 
+    /**
+     * Namespace with static fields for bundle properties
+     */
     public class BundleNamespace {
 
         public static final String BUNDLE_NAMESPACE = "osgi.wiring.bundle";
@@ -201,6 +256,9 @@ public class OsgiResourceUtils {
         public static final String BUNDLE_LAST_MODIFIED = "bundle-last-modified";
     }
 
+    /**
+     * Namespace with static fields for package properties
+     */
     public class PackageNamespace {
 
         public static final String PACKAGE_ID_SEPARATOR = "-";

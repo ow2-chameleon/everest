@@ -24,18 +24,36 @@ import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.PackageNames
 import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.*;
 
 /**
- * Created with IntelliJ IDEA.
- * User: ozan
- * Date: 4/22/13
- * Time: 12:52 PM
+ * Resource representing a {@code BundleRequirement}.
  */
 public class BundleRequirementResource extends AbstractResourceCollection {
 
+    /**
+     * Wires linked to this bundle requirement
+     */
     private final List<BundleWire> m_wires = new ArrayList<BundleWire>();
+
+    /**
+     * Represented bundle requirement
+     */
     private final BundleRequirement m_requirement;
+
+    /**
+     * if this requirement is a package requirement
+     */
     private final boolean isPackage;
+
+    /**
+     * if this requirement is a bundle requirement
+     */
     private final boolean isBundle;
 
+    /**
+     * Constructor for this bundle requirement resource
+     *
+     * @param path
+     * @param bundleRequirement
+     */
     public BundleRequirementResource(Path path, BundleRequirement bundleRequirement) {
         super(path.addElements(uniqueRequirementId(bundleRequirement)));
         m_requirement = bundleRequirement;
@@ -54,7 +72,7 @@ public class BundleRequirementResource extends AbstractResourceCollection {
                         m_wires.add(wire);
                         String wireId = uniqueWireId(wire);
                         Path wirePath = BundleResourceManager.getInstance().getPath().addElements(
-                                BundleWiresResource.WIRES_PATH,
+                                BundleResource.WIRES_PATH,
                                 wireId
                         );
                         relations.add(new DefaultRelation(wirePath, Action.READ, wireId));

@@ -21,20 +21,36 @@ import java.util.Map;
 import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.*;
 
 /**
- * Created with IntelliJ IDEA.
- * User: ozan
- * Date: 4/22/13
- * Time: 12:43 PM
+ * Resource representing a {@code BundleCapability}.
  */
 public class BundleCapabilityResource extends AbstractResourceCollection {
 
+    /**
+     * Relation name for package
+     */
     public final static String PACKAGE_RELATION = "package";
 
+    /**
+     * Wires linked to this capability
+     */
     private final List<BundleWire> m_wires = new ArrayList<BundleWire>();
 
+    /**
+     * Represented bundle capability
+     */
     private final BundleCapability m_capability;
+
+    /**
+     * if this is a package
+     */
     private final boolean isPackage;
 
+    /**
+     * Constructor for bundle capability resource
+     *
+     * @param path
+     * @param bundleCapability
+     */
     public BundleCapabilityResource(Path path, BundleCapability bundleCapability) {
         super(path.addElements(uniqueCapabilityId(bundleCapability)));
         m_capability = bundleCapability;
@@ -52,7 +68,7 @@ public class BundleCapabilityResource extends AbstractResourceCollection {
                         m_wires.add(wire);
                         String wireId = uniqueWireId(wire);
                         Path wirePath = BundleResourceManager.getInstance().getPath().addElements(
-                                BundleWiresResource.WIRES_PATH,
+                                BundleResource.WIRES_PATH,
                                 wireId
                         );
                         relations.add(new DefaultRelation(wirePath, Action.READ, wireId));

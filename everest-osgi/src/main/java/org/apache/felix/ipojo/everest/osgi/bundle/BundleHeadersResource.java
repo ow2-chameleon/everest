@@ -22,27 +22,51 @@ import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.metadataFrom
 import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.uniqueRequirementId;
 
 /**
- * Created with IntelliJ IDEA.
- * User: ozan
- * Date: 4/21/13
- * Time: 3:51 PM
+ * Resource representing the bundle headers.
  */
 public class BundleHeadersResource extends AbstractResourceCollection {
 
+    /**
+     * Name for headers resource
+     */
     public static final String HEADERS_PATH = "headers";
 
+    /**
+     * Name for export package
+     */
     public static final String EXPORT_PACKAGE = "export-package";
 
+    /**
+     * Name for import package
+     */
     public static final String IMPORT_PACKAGE = "import-package";
 
+    /**
+     * Name for dynamic import package
+     */
     public static final String DYNAMIC_IMPORT_PACKAGE = "dynamicimport-package";
 
+    /**
+     * Name for require bundle
+     */
     public static final String REQUIRE_BUNDLE = "require-bundle";
 
+    /**
+     * Bundle having the headers
+     */
     private final Bundle m_bundle;
 
+    /**
+     * Static Metadata
+     */
     private final ImmutableResourceMetadata metadata;
 
+    /**
+     * Constructor for bundle headers resource
+     *
+     * @param path   path of the resource
+     * @param bundle concerned bundle
+     */
     public BundleHeadersResource(Path path, Bundle bundle) {
         super(path.addElements(HEADERS_PATH));
         m_bundle = bundle;
