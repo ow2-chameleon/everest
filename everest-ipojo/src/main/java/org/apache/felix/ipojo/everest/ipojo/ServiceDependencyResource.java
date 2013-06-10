@@ -49,9 +49,6 @@ public class ServiceDependencyResource extends DefaultReadOnlyResource implement
         if (d == null) {
             return m;
         } else {
-            //@SuppressWarnings("unchecked")
-            List refs = d.getServiceReferences();
-            List used = d.getUsedServices();
             return new ImmutableResourceMetadata.Builder()
                     .set("state", stateToString(d.getState()))
                     .set("filter", d.getFilter())
@@ -161,7 +158,7 @@ public class ServiceDependencyResource extends DefaultReadOnlyResource implement
             shunt.setAccessible(true);
             return (Dependency) shunt.get(description);
         } catch (Exception e) {
-            throw new IllegalStateException("cannot get component instance", e);
+            throw new IllegalStateException("cannot get service dependency", e);
         } finally {
             if (shunt != null) {
                 shunt.setAccessible(false);
