@@ -2,11 +2,16 @@ package org.apache.felix.ipojo.everest.ipojo;
 
 import org.apache.felix.ipojo.ComponentInstance;
 import org.apache.felix.ipojo.Factory;
+import org.apache.felix.ipojo.InstanceStateListener;
 import org.apache.felix.ipojo.architecture.Architecture;
-import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
+import org.apache.felix.ipojo.everest.core.Everest;
 import org.apache.felix.ipojo.everest.impl.DefaultRelation;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.services.*;
+import org.apache.felix.ipojo.handlers.dependency.DependencyDescription;
+import org.apache.felix.ipojo.handlers.dependency.DependencyHandlerDescription;
+import org.apache.felix.ipojo.handlers.providedservice.ProvidedServiceDescription;
+import org.apache.felix.ipojo.handlers.providedservice.ProvidedServiceHandlerDescription;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
 
@@ -19,7 +24,19 @@ import static org.apache.felix.ipojo.everest.ipojo.IpojoRootResource.*;
  * '/ipojo/instance/$name' resource.
  */
 // TODO extends resourceMap and add resources for dependencies, providings (and ???)
-public class InstanceResource extends DefaultReadOnlyResource {
+public class InstanceResource extends ResourceMap implements InstanceStateListener {
+
+    /**
+     * The service dependencies of this iPOJO component instance, index by id.
+     */
+    // TODO is this really observable? (i.e. can dependencies be added dynamically?)
+    private final ResourceMap m_dependencies = new ResourceMap(getPath().addElements("dependency"), true, null);
+
+    /**
+     * The service providings of this iPOJO component instance, index by id.
+     */
+    // TODO is this really observable? (i.e. can providings be added dynamically?)
+    private final ResourceMap m_providings = new ResourceMap(getPath().addElements("providing"), true, null);
 
     /**
      * The underlying Architecture service.
@@ -27,7 +44,7 @@ public class InstanceResource extends DefaultReadOnlyResource {
     private final WeakReference<Architecture> m_instance;
 
     public InstanceResource(Architecture instance, ServiceReference<Architecture> ref) {
-        super(INSTANCES.addElements(instance.getInstanceDescription().getName()),
+        super(INSTANCES.addElements(instance.getInstanceDescription().getName()), true,
                 new ImmutableResourceMetadata.Builder()
                         .set("name", instance.getInstanceDescription().getName())
                         .set("factory.name", getComponentInstance(instance).getFactory().getName())
@@ -35,7 +52,9 @@ public class InstanceResource extends DefaultReadOnlyResource {
                         .build());
         m_instance = new WeakReference<Architecture>(instance);
         // Set the immutable relations
-        Factory factory = getComponentInstance(instance).getFactory();
+        ComponentInstance ci = getComponentInstance(instance);
+        ci.addInstanceStateListener(this);
+        Factory factory = ci.getFactory();
         setRelations(
                 new DefaultRelation(
                         PATH_TO_OSGI_SERVICES.addElements(String.valueOf(ref.getProperty(Constants.SERVICE_ID))),
@@ -47,7 +66,48 @@ public class InstanceResource extends DefaultReadOnlyResource {
                         Action.READ,
                         "factory",
                         "The factory of this component instance"));
+
+        // Add service dependencies
+        addResource(m_dependencies, "dependencies", "The service dependencies of this component instance");
+        @SuppressWarnings("unchecked")
+        DependencyHandlerDescription dhd = (DependencyHandlerDescription)
+                instance.getInstanceDescription().getHandlerDescription("org.apache.felix.ipojo:requires");
+        if (dhd != null) {
+            for (DependencyDescription d : dhd.getDependencies()) {
+                String id = d.getId();
+                m_dependencies.addResource(
+                        new ServiceDependencyResource(this, d),
+                        "dependency[" + id + "]",
+                        String.format("Service dependency '%s'", id));
+            }
+        }
+
+        // Add service providings
+        addResource(m_providings, "providings", "The service providings of this component instance");
+        @SuppressWarnings("unchecked")
+        ProvidedServiceHandlerDescription phd = (ProvidedServiceHandlerDescription)
+                instance.getInstanceDescription().getHandlerDescription("org.apache.felix.ipojo:provides");
+        if (phd != null) {
+            ProvidedServiceDescription[] providedServices = phd.getProvidedServices();
+            for (int i = 0; i < providedServices.length; i++) {
+                ProvidedServiceDescription p = providedServices[i];
+                String id = Integer.toString(i);
+                m_providings.addResource(
+                        new ServiceProvidingResource(this, id, p),
+                        "providing[" + id + "]",
+                        String.format("Service providing '%s'", id));
+            }
+        }
+
         // TODO add relation on declaration (tricky because declarations are (most of the time) unnamed)
+    }
+
+    ResourceMap getDependencies() {
+        return m_dependencies;
+    }
+
+    ResourceMap getProvidings() {
+        return m_providings;
     }
 
     /**
@@ -94,11 +154,6 @@ public class InstanceResource extends DefaultReadOnlyResource {
         return new ImmutableResourceMetadata.Builder(m)
                 .set("state", stateAsString(i.getInstanceDescription().getState())) // String
                 .build();
-    }
-
-    @Override
-    public boolean isObservable() {
-        return true;
     }
 
     @Override
@@ -165,4 +220,8 @@ public class InstanceResource extends DefaultReadOnlyResource {
         return this;
     }
 
+    public void stateChanged(ComponentInstance instance, int newState) {
+        // Fire UPDATED event
+        Everest.postResource(ResourceEvent.UPDATED, this);
+    }
 }

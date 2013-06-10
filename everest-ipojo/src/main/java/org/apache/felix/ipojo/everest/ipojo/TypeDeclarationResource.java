@@ -31,7 +31,7 @@ public class TypeDeclarationResource extends DefaultReadOnlyResource {
                         .set("version", declaration.getComponentVersion())
                         .set("extension", declaration.getExtension())
                         .set("isPublic", declaration.isPublic())
-                        .set("componentMetadata", declaration.getComponentMetadata().toXMLString())
+                        .set("componentMetadata", declaration.getComponentMetadata().toString())
                         .build()
         );
         m_type = new WeakReference<TypeDeclaration>(declaration);

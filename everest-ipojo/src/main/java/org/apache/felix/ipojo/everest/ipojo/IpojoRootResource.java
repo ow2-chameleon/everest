@@ -275,6 +275,14 @@ public class IpojoRootResource extends ResourceMap {
                 format("iPOJO component instance '%s'", name));
         // Post resource creation event
         Everest.postResource(ResourceEvent.CREATED, r);
+        Everest.postResource(ResourceEvent.CREATED, r.getDependencies());
+        for(Resource rr : r.getDependencies().getResources()) {
+            Everest.postResource(ResourceEvent.CREATED, rr);
+        }
+        Everest.postResource(ResourceEvent.CREATED, r.getProvidings());
+        for(Resource rr : r.getProvidings().getResources()) {
+            Everest.postResource(ResourceEvent.CREATED, rr);
+        }
         Everest.postResource(ResourceEvent.UPDATED, m_instances);
         // Try to bind factory to arriving instance
         Factory f = getComponentInstance(instance).getFactory();
@@ -291,6 +299,14 @@ public class IpojoRootResource extends ResourceMap {
                 INSTANCES.addElements(instance.getInstanceDescription().getName()),
                 InstanceResource.class);
         // Post resource deletion event
+        for(Resource rr : r.getProvidings().getResources()) {
+            Everest.postResource(ResourceEvent.DELETED, rr);
+        }
+        Everest.postResource(ResourceEvent.DELETED, r.getProvidings());
+        for(Resource rr : r.getDependencies().getResources()) {
+            Everest.postResource(ResourceEvent.DELETED, rr);
+        }
+        Everest.postResource(ResourceEvent.DELETED, r.getDependencies());
         Everest.postResource(ResourceEvent.DELETED, r);
         Everest.postResource(ResourceEvent.UPDATED, m_instances);
         // Try to unbind factory to arriving instance
