@@ -37,7 +37,6 @@ public class ServiceProvidingResource extends DefaultReadOnlyResource {
                         .set("controller", providing.getController())
                         .build());
         m_description = new WeakReference<ProvidedServiceDescription>(providing);
-        throw new NullPointerException("e ≠ mc²");
     }
 
     @Override
