@@ -4,10 +4,12 @@ import org.apache.felix.ipojo.ComponentInstance;
 import org.apache.felix.ipojo.Factory;
 import org.apache.felix.ipojo.InstanceStateListener;
 import org.apache.felix.ipojo.architecture.Architecture;
+import org.apache.felix.ipojo.architecture.PropertyDescription;
 import org.apache.felix.ipojo.everest.core.Everest;
 import org.apache.felix.ipojo.everest.impl.DefaultRelation;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.services.*;
+import org.apache.felix.ipojo.handlers.configuration.ConfigurationHandlerDescription;
 import org.apache.felix.ipojo.handlers.dependency.DependencyDescription;
 import org.apache.felix.ipojo.handlers.dependency.DependencyHandlerDescription;
 import org.apache.felix.ipojo.handlers.providedservice.ProvidedServiceDescription;
@@ -150,9 +152,22 @@ public class InstanceResource extends ResourceMap implements InstanceStateListen
             // Reference has been released
             return m;
         }
+
+        // Get the configuration
+        ImmutableResourceMetadata.Builder props = new ImmutableResourceMetadata.Builder();
+        ConfigurationHandlerDescription chd = (ConfigurationHandlerDescription)
+                i.getInstanceDescription().getHandlerDescription("org.apache.felix.ipojo:requires");
+        if (chd != null) {
+            PropertyDescription[] pp = chd.getProperties();
+            for (PropertyDescription p : pp) {
+                props.set(p.getName(), p.getValue());
+            }
+        }
+
         // Add dynamic metadata
         return new ImmutableResourceMetadata.Builder(m)
                 .set("state", stateAsString(i.getInstanceDescription().getState())) // String
+                .set("configuration", props) // Map
                 .build();
     }
 
