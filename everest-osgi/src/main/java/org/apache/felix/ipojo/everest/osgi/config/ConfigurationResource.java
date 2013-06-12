@@ -13,7 +13,6 @@ import java.util.Dictionary;
 import java.util.Enumeration;
 
 import static org.apache.felix.ipojo.everest.osgi.config.ConfigAdminResourceManager.CONFIG_PATH;
-import static org.osgi.service.cm.ConfigurationAdmin.SERVICE_BUNDLELOCATION;
 import static org.osgi.service.cm.ConfigurationAdmin.SERVICE_FACTORYPID;
 
 
@@ -33,9 +32,14 @@ public class ConfigurationResource extends DefaultResource {
     private static final String DELETE_RELATION = "delete";
 
     /**
-     * Property name for properties
+     * Parameter name for properties
      */
-    public static final String CONFIG_PROPERTIES = "properties";
+    public static final String CONFIG_PROPERTIES_PARAMETER = "properties";
+
+    /**
+     * Parameter name for bundle location
+     */
+    public static final String CONFIG_LOCATION_PARAMETER = "location";
 
     /**
      * Represented configuration
@@ -52,12 +56,12 @@ public class ConfigurationResource extends DefaultResource {
         this.m_configuration = configuration;
         setRelations(new DefaultRelation(getPath(), Action.UPDATE, UPDATE_RELATION,
                 new DefaultParameter()
-                        .name(CONFIG_PROPERTIES)
+                        .name(CONFIG_PROPERTIES_PARAMETER)
                         .description("properties")
                         .optional(true)
                         .type(Dictionary.class),
                 new DefaultParameter()
-                        .name(SERVICE_BUNDLELOCATION)
+                        .name(CONFIG_LOCATION_PARAMETER)
                         .description("bundle location")
                         .optional(true)
                         .type(String.class)
@@ -69,7 +73,7 @@ public class ConfigurationResource extends DefaultResource {
     public ResourceMetadata getMetadata() {
         ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
         metadataBuilder.set(Constants.SERVICE_PID, m_configuration.getPid());
-        metadataBuilder.set(SERVICE_BUNDLELOCATION, m_configuration.getBundleLocation());
+        metadataBuilder.set(CONFIG_LOCATION_PARAMETER, m_configuration.getBundleLocation());
         if (m_configuration.getFactoryPid() != null) {
             metadataBuilder.set(SERVICE_FACTORYPID, m_configuration.getFactoryPid());
         }
@@ -87,11 +91,13 @@ public class ConfigurationResource extends DefaultResource {
     @Override
     public Resource update(Request request) throws IllegalActionOnResourceException {
         try {
-            Dictionary properties = request.get(CONFIG_PROPERTIES, Dictionary.class);
+            Dictionary properties = request.get(CONFIG_PROPERTIES_PARAMETER, Dictionary.class);
             this.update(properties);
-            String bundleLocation = request.get(SERVICE_BUNDLELOCATION, String.class);
+            String bundleLocation = request.get(CONFIG_LOCATION_PARAMETER, String.class);
             if (bundleLocation != null) {
-                m_configuration.setBundleLocation(bundleLocation);
+                if (!m_configuration.getBundleLocation().equals(bundleLocation)) {
+                    m_configuration.setBundleLocation(bundleLocation);
+                }
             }
             return this;
         } catch (IllegalActionOnResourceException e) {
