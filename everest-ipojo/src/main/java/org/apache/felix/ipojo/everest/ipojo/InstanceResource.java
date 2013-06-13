@@ -4,6 +4,7 @@ import org.apache.felix.ipojo.ComponentInstance;
 import org.apache.felix.ipojo.Factory;
 import org.apache.felix.ipojo.InstanceStateListener;
 import org.apache.felix.ipojo.architecture.Architecture;
+import org.apache.felix.ipojo.architecture.InstanceDescription;
 import org.apache.felix.ipojo.architecture.PropertyDescription;
 import org.apache.felix.ipojo.everest.core.Everest;
 import org.apache.felix.ipojo.everest.impl.DefaultRelation;
@@ -27,6 +28,14 @@ import static org.apache.felix.ipojo.everest.ipojo.IpojoRootResource.*;
  */
 // TODO extends resourceMap and add resources for dependencies, providings (and ???)
 public class InstanceResource extends ResourceMap implements InstanceStateListener {
+
+    public static final String ACTION = "__action";
+
+    public static final String RECONFIGURE_ACTION = "reconfigure";
+
+    public static final String START_ACTION = "start";
+
+    public static final String STOP_ACTION = "stop";
 
     /**
      * The service dependencies of this iPOJO component instance, index by id.
@@ -123,6 +132,8 @@ public class InstanceResource extends ResourceMap implements InstanceStateListen
     public static Resource fakeInstanceResource(ComponentInstance instance) {
         String name = instance.getInstanceName();
         Factory factory = instance.getFactory();
+
+
         try {
             return new Builder()
                     .fromPath(INSTANCES.addElements(name))
@@ -131,6 +142,7 @@ public class InstanceResource extends ResourceMap implements InstanceStateListen
                             .set("factory.name", factory.getName())
                             .set("factory.version", factory.getVersion())
                             .set("state", stateAsString(instance.getState()))
+                            .set("configuration", getInstanceConfiguration(instance.getInstanceDescription())) // ResourceMetadata
                             .build())
                     .with(new DefaultRelation(
                             FACTORIES.addElements(factory.getName(), String.valueOf(factory.getVersion())),
@@ -153,21 +165,10 @@ public class InstanceResource extends ResourceMap implements InstanceStateListen
             return m;
         }
 
-        // Get the configuration
-        ImmutableResourceMetadata.Builder props = new ImmutableResourceMetadata.Builder();
-        ConfigurationHandlerDescription chd = (ConfigurationHandlerDescription)
-                i.getInstanceDescription().getHandlerDescription("org.apache.felix.ipojo:requires");
-        if (chd != null) {
-            PropertyDescription[] pp = chd.getProperties();
-            for (PropertyDescription p : pp) {
-                props.set(p.getName(), p.getValue());
-            }
-        }
-
         // Add dynamic metadata
         return new ImmutableResourceMetadata.Builder(m)
                 .set("state", stateAsString(i.getInstanceDescription().getState())) // String
-                .set("configuration", props) // Map
+                .set("configuration", getInstanceConfiguration(i.getInstanceDescription())) // ResourceMetadata
                 .build();
     }
 
@@ -224,19 +225,46 @@ public class InstanceResource extends ResourceMap implements InstanceStateListen
         if (a == null) {
             throw new IllegalActionOnResourceException(request, this, "Architecture has gone");
         }
-        // The instance configuration must be updated.
-        Hashtable<String, ?> config;
-        if (request.parameters() != null) {
-            config = new Hashtable<String, Object>(request.parameters());
-        } else {
-            config = new Hashtable<String, Object>();
+        ComponentInstance i = getComponentInstance(a);
+
+        String action = request.get(ACTION, String.class);
+        if (action == null) {
+            throw new IllegalActionOnResourceException(request, this, "Missing required parameter: " + ACTION);
         }
-        getComponentInstance(a).reconfigure(config);
+
+        if (RECONFIGURE_ACTION.equals(action)) {
+            // The instance configuration must be updated.
+            Hashtable<String, ?> config = new Hashtable<String, Object>(request.parameters());
+            // Remove special parameter __action
+            config.remove(ACTION);
+            // Do reconfigure!
+            i.reconfigure(config);
+        } else if (START_ACTION.equals(action)) {
+            i.start();
+        } else if (STOP_ACTION.equals(action)) {
+            i.stop();
+        } else {
+            throw new IllegalActionOnResourceException(request, this, "Unknown action: " + action);
+        }
         return this;
     }
 
     public void stateChanged(ComponentInstance instance, int newState) {
         // Fire UPDATED event
         Everest.postResource(ResourceEvent.UPDATED, this);
+    }
+
+    private static ResourceMetadata getInstanceConfiguration(InstanceDescription instanceDescription) {
+        // Get the configuration
+        ImmutableResourceMetadata.Builder props = new ImmutableResourceMetadata.Builder();
+        ConfigurationHandlerDescription chd = (ConfigurationHandlerDescription)
+                instanceDescription.getHandlerDescription("org.apache.felix.ipojo:properties");
+        if (chd != null) {
+            PropertyDescription[] pp = chd.getProperties();
+            for (PropertyDescription p : pp) {
+                props.set(p.getName(), p.getValue());
+            }
+        }
+        return props.build();
     }
 }

@@ -70,7 +70,7 @@ public class ServiceDependencyResource extends DefaultReadOnlyResource implement
         } else {
             r = new ArrayList<Relation>(r);
             @SuppressWarnings("unchecked")
-            List<ServiceReference<?>> matching = d.getServiceReferences();
+            List<ServiceReference> matching = d.getServiceReferences();
             if (matching != null) {
                 for(ServiceReference<?> s : matching) {
                     String id = String.valueOf(s.getProperty(Constants.SERVICE_ID));
@@ -82,7 +82,7 @@ public class ServiceDependencyResource extends DefaultReadOnlyResource implement
                 }
             }
             @SuppressWarnings("unchecked")
-            List<ServiceReference<?>> used = d.getUsedServices();
+            List<ServiceReference> used = d.getUsedServices();
             for(ServiceReference<?> s : used) {
                 String id = String.valueOf(s.getProperty(Constants.SERVICE_ID));
                 r.add(new DefaultRelation(
