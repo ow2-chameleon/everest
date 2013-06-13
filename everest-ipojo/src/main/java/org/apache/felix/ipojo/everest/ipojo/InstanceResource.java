@@ -7,6 +7,7 @@ import org.apache.felix.ipojo.architecture.Architecture;
 import org.apache.felix.ipojo.architecture.InstanceDescription;
 import org.apache.felix.ipojo.architecture.PropertyDescription;
 import org.apache.felix.ipojo.everest.core.Everest;
+import org.apache.felix.ipojo.everest.impl.DefaultParameter;
 import org.apache.felix.ipojo.everest.impl.DefaultRelation;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.services.*;
@@ -20,6 +21,7 @@ import org.osgi.framework.ServiceReference;
 
 import java.lang.ref.WeakReference;
 import java.util.Hashtable;
+import java.util.Map;
 
 import static org.apache.felix.ipojo.everest.ipojo.IpojoRootResource.*;
 
@@ -28,14 +30,6 @@ import static org.apache.felix.ipojo.everest.ipojo.IpojoRootResource.*;
  */
 // TODO extends resourceMap and add resources for dependencies, providings (and ???)
 public class InstanceResource extends ResourceMap implements InstanceStateListener {
-
-    public static final String ACTION = "__action";
-
-    public static final String RECONFIGURE_ACTION = "reconfigure";
-
-    public static final String START_ACTION = "start";
-
-    public static final String STOP_ACTION = "stop";
 
     /**
      * The service dependencies of this iPOJO component instance, index by id.
@@ -76,7 +70,28 @@ public class InstanceResource extends ResourceMap implements InstanceStateListen
                         FACTORIES.addElements(factory.getName(), String.valueOf(factory.getVersion())),
                         Action.READ,
                         "factory",
-                        "The factory of this component instance"));
+                        "The factory of this component instance"),
+                new DefaultRelation(
+                        getPath(),
+                        Action.DELETE,
+                        "delete",
+                        "Destroy this component instance"),
+                new DefaultRelation(
+                        getPath(),
+                        Action.UPDATE,
+                        "reconfigure",
+                        "Reconfigure this component instance",
+                        new DefaultParameter()
+                                .name("state")
+                                .type(String.class)
+                                .description("The wanted state of the component instance")
+                                .optional(true),
+                        new DefaultParameter()
+                                .name("configuration")
+                                .type(Map.class)
+                                .description("The wanted configuration of the component instance")
+                                .optional(true)
+                ));
 
         // Add service dependencies
         addResource(m_dependencies, "dependencies", "The service dependencies of this component instance");
@@ -207,6 +222,20 @@ public class InstanceResource extends ResourceMap implements InstanceStateListen
         }
     }
 
+    private static Integer stringAsState(String state) {
+        if ("valid".equalsIgnoreCase(state)) {
+            return ComponentInstance.VALID;
+        } else if ("invalid".equalsIgnoreCase(state)) {
+            return ComponentInstance.INVALID;
+        } else if ("stopped".equalsIgnoreCase(state)) {
+            return ComponentInstance.STOPPED;
+        } else if ("disposed".equalsIgnoreCase(state)) {
+            return ComponentInstance.DISPOSED;
+        }
+        // Unknown state
+        return null;
+    }
+
     @Override
     public Resource delete(Request request) throws IllegalActionOnResourceException {
         Architecture a = m_instance.get();
@@ -227,25 +256,54 @@ public class InstanceResource extends ResourceMap implements InstanceStateListen
         }
         ComponentInstance i = getComponentInstance(a);
 
-        String action = request.get(ACTION, String.class);
-        if (action == null) {
-            throw new IllegalActionOnResourceException(request, this, "Missing required parameter: " + ACTION);
+        String s = request.get("state", String.class);
+        if (s != null) {
+            // Requested to change the state of the component.
+            Integer state = stringAsState(s);
+            if (state == null) {
+                throw new IllegalActionOnResourceException(request, this, "Invalid requested component state: " + s);
+            }
+            try {
+                switch (state) {
+                    case ComponentInstance.VALID:
+                    case ComponentInstance.INVALID:
+                        i.start();
+                        break;
+                    case ComponentInstance.STOPPED:
+                        i.stop();
+                        break;
+                    case ComponentInstance.DISPOSED:
+                        i.dispose();
+                        break;
+                    default:
+                }
+            } catch (Exception e) {
+                IllegalActionOnResourceException ee = new IllegalActionOnResourceException(
+                        request,
+                        this,
+                        "Cannot set component instance state to " + s);
+                ee.initCause(e);
+                throw ee;
+            }
         }
 
-        if (RECONFIGURE_ACTION.equals(action)) {
-            // The instance configuration must be updated.
-            Hashtable<String, ?> config = new Hashtable<String, Object>(request.parameters());
-            // Remove special parameter __action
-            config.remove(ACTION);
+        Map<String, Object> c = request.get("configuration", Map.class);
+        if (c != null) {
+            // Reconfiguration requested
+            Hashtable<String, ?> config = new Hashtable<String, Object>(c);
             // Do reconfigure!
-            i.reconfigure(config);
-        } else if (START_ACTION.equals(action)) {
-            i.start();
-        } else if (STOP_ACTION.equals(action)) {
-            i.stop();
-        } else {
-            throw new IllegalActionOnResourceException(request, this, "Unknown action: " + action);
+            try {
+                i.reconfigure(config);
+            } catch (Exception e) {
+                IllegalActionOnResourceException ee = new IllegalActionOnResourceException(
+                        request,
+                        this,
+                        "Cannot reconfigure component instance");
+                ee.initCause(e);
+                throw ee;
+            }
         }
+
         return this;
     }
 

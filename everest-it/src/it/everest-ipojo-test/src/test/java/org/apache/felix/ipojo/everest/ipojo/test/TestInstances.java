@@ -19,7 +19,9 @@ import java.util.Map;
 
 import static org.apache.felix.ipojo.everest.ipojo.test.ResourceAssert.assertThatResource;
 import static org.apache.felix.ipojo.everest.services.Action.READ;
+import static org.apache.felix.ipojo.everest.services.Action.UPDATE;
 import static org.fest.assertions.Assertions.assertThat;
+import static org.fest.assertions.Fail.fail;
 import static org.osgi.framework.Constants.SERVICE_ID;
 
 /**
@@ -193,6 +195,63 @@ public class TestInstances extends EverestIpojoTestCommon {
                 RelationFilters.hasAction(READ),
                 RelationFilters.hasName("instance[Bar-2003]"),
                 RelationFilters.hasHref(r)));
+    }
+
+    /**
+     * Update /ipojo/instance/Foo-2001 with "configuration" parameter.
+     */
+    @Test
+    public void testReconfiguration() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        Resource r = read("/ipojo/instance/Foo-2001");
+
+        // Reconfigure the instance and check
+        Map<String, Object> configuration = new HashMap<String, Object>();
+        configuration.put("fooPrefix", "__reconfigured");
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("configuration", configuration);
+        r = everest.process(new DefaultRequest(UPDATE, Path.from("/ipojo/instance/Foo-2001"), params));
+        assertThat(r.getMetadata().get("configuration", Map.class).get("fooPrefix")).isEqualTo("__reconfigured");
+    }
+
+    /**
+     * Update /ipojo/instance/Foo-2001 with "state" parameter.
+     */
+    @Test
+    public void testStateChange() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        Resource r = read("/ipojo/instance/Foo-2001");
+
+        // Check state is "valid"
+        assertThat(r.getMetadata().get("state", String.class)).isEqualTo("valid");
+
+        // Set set to "stopped" and check
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("state", "stopped");
+        r = everest.process(new DefaultRequest(UPDATE, Path.from("/ipojo/instance/Foo-2001"), params));
+        assertThat(r.getMetadata().get("state", String.class)).isEqualTo("stopped");
+
+        // Set set to "invalid" and check
+        // Component state should be "valid", as validity cannot be forced externally.
+        params.put("state", "invalid");
+        r = everest.process(new DefaultRequest(UPDATE, Path.from("/ipojo/instance/Foo-2001"), params));
+        assertThat(r.getMetadata().get("state", String.class)).isEqualTo("valid");
+
+        // Stop again and check
+        params.put("state", "stopped");
+        r = everest.process(new DefaultRequest(UPDATE, Path.from("/ipojo/instance/Foo-2001"), params));
+        assertThat(r.getMetadata().get("state", String.class)).isEqualTo("stopped");
+
+        // Set state to "disposed" and check
+        params.put("state", "disposed");
+        r = everest.process(new DefaultRequest(UPDATE, Path.from("/ipojo/instance/Foo-2001"), params));
+        assertThat(r.getMetadata().get("state", String.class)).isEqualTo("disposed");
+
+        // Try to get the resource, it should fail
+        try {
+            read("/ipojo/instance/Foo-2001");
+            fail();
+        } catch (ResourceNotFoundException e) {
+            // Ok!
+        }
     }
 
 }
