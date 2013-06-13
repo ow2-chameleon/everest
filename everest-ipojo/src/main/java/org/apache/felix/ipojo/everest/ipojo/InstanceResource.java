@@ -28,20 +28,17 @@ import static org.apache.felix.ipojo.everest.ipojo.IpojoRootResource.*;
 /**
  * '/ipojo/instance/$name' resource.
  */
-// TODO extends resourceMap and add resources for dependencies, providings (and ???)
 public class InstanceResource extends ResourceMap implements InstanceStateListener {
 
     /**
      * The service dependencies of this iPOJO component instance, index by id.
      */
-    // TODO is this really observable? (i.e. can dependencies be added dynamically?)
-    private final ResourceMap m_dependencies = new ResourceMap(getPath().addElements("dependency"), true, null);
+    private final ResourceMap m_dependencies = new ResourceMap(getPath().addElements("dependency"), false, null);
 
     /**
      * The service providings of this iPOJO component instance, index by id.
      */
-    // TODO is this really observable? (i.e. can providings be added dynamically?)
-    private final ResourceMap m_providings = new ResourceMap(getPath().addElements("providing"), true, null);
+    private final ResourceMap m_providings = new ResourceMap(getPath().addElements("providing"), false, null);
 
     /**
      * The underlying Architecture service.
