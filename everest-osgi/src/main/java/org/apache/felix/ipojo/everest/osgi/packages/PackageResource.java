@@ -131,6 +131,8 @@ public class PackageResource extends AbstractResourceCollection {
     public <A> A adaptTo(Class<A> clazz) {
         if (PackageResource.class.equals(clazz)) {
             return (A) this;
+        } else if (BundleCapability.class.equals(clazz)) {
+            return (A) m_bundleCapability;
         } else {
             return null;
         }
