@@ -29,6 +29,14 @@ import static org.apache.felix.ipojo.everest.ipojo.IpojoRootResource.*;
 // TODO extends resourceMap and add resources for dependencies, providings (and ???)
 public class InstanceResource extends ResourceMap implements InstanceStateListener {
 
+    public static final String ACTION = "__action";
+
+    public static final String RECONFIGURE_ACTION = "reconfigure";
+
+    public static final String START_ACTION = "start";
+
+    public static final String STOP_ACTION = "stop";
+
     /**
      * The service dependencies of this iPOJO component instance, index by id.
      */
@@ -217,14 +225,27 @@ public class InstanceResource extends ResourceMap implements InstanceStateListen
         if (a == null) {
             throw new IllegalActionOnResourceException(request, this, "Architecture has gone");
         }
-        // The instance configuration must be updated.
-        Hashtable<String, ?> config;
-        if (request.parameters() != null) {
-            config = new Hashtable<String, Object>(request.parameters());
-        } else {
-            config = new Hashtable<String, Object>();
+        ComponentInstance i = getComponentInstance(a);
+
+        String action = request.get(ACTION, String.class);
+        if (action == null) {
+            throw new IllegalActionOnResourceException(request, this, "Missing required parameter: " + ACTION);
         }
-        getComponentInstance(a).reconfigure(config);
+
+        if (RECONFIGURE_ACTION.equals(action)) {
+            // The instance configuration must be updated.
+            Hashtable<String, ?> config = new Hashtable<String, Object>(request.parameters());
+            // Remove special parameter __action
+            config.remove(ACTION);
+            // Do reconfigure!
+            i.reconfigure(config);
+        } else if (START_ACTION.equals(action)) {
+            i.start();
+        } else if (STOP_ACTION.equals(action)) {
+            i.stop();
+        } else {
+            throw new IllegalActionOnResourceException(request, this, "Unknown action: " + action);
+        }
         return this;
     }
 
