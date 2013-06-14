@@ -2,7 +2,9 @@ package org.apache.felix.ipojo.everest.ipojo;
 
 import org.apache.felix.ipojo.ComponentInstance;
 import org.apache.felix.ipojo.Factory;
+import org.apache.felix.ipojo.FactoryStateListener;
 import org.apache.felix.ipojo.IPojoFactory;
+import org.apache.felix.ipojo.everest.core.Everest;
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
 import org.apache.felix.ipojo.everest.impl.DefaultRelation;
 import org.apache.felix.ipojo.everest.impl.DefaultRequest;
@@ -21,7 +23,7 @@ import static org.apache.felix.ipojo.everest.ipojo.IpojoRootResource.*;
 /**
  * '/ipojo/factory/$name/$version' resource.
  */
-public class FactoryResource extends DefaultReadOnlyResource {
+public class FactoryResource extends DefaultReadOnlyResource implements FactoryStateListener {
 
     /**
      * The enclosing iPOJO root resource.
@@ -43,6 +45,7 @@ public class FactoryResource extends DefaultReadOnlyResource {
                         .build());
         m_ipojo = ipojo;
         m_factory = new WeakReference<Factory>(factory);
+        factory.addFactoryStateListener(this);
         // Set the immutable relations
         List<Relation> relations = new ArrayList<Relation>();
         relations.add(new DefaultRelation(
@@ -224,4 +227,16 @@ public class FactoryResource extends DefaultReadOnlyResource {
         }
     }
 
+    public void stateChanged(Factory factory, int newState) {
+        // Fire UPDATED event
+        Everest.postResource(ResourceEvent.UPDATED, this);
+    }
+
+    public void cleanup() {
+        Factory f = m_factory.get();
+        if (f == null) {
+            return;
+        }
+        f.removeFactoryStateListener(this);
+    }
 }

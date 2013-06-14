@@ -1,11 +1,15 @@
 package org.apache.felix.ipojo.everest.ipojo;
 
+import org.apache.felix.ipojo.Factory;
+import org.apache.felix.ipojo.FactoryStateListener;
 import org.apache.felix.ipojo.HandlerFactory;
+import org.apache.felix.ipojo.everest.core.Everest;
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
 import org.apache.felix.ipojo.everest.impl.DefaultRelation;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.services.Action;
 import org.apache.felix.ipojo.everest.services.Relation;
+import org.apache.felix.ipojo.everest.services.ResourceEvent;
 import org.apache.felix.ipojo.everest.services.ResourceMetadata;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
@@ -20,7 +24,7 @@ import static org.apache.felix.ipojo.everest.ipojo.IpojoRootResource.*;
 /**
  * '/ipojo/handler/$namespace/$name' resource.
  */
-public class HandlerResource extends DefaultReadOnlyResource {
+public class HandlerResource extends DefaultReadOnlyResource implements FactoryStateListener {
 
     /**
      * The underlying HandlerFactory service.
@@ -34,6 +38,7 @@ public class HandlerResource extends DefaultReadOnlyResource {
                         .set("name", handler.getName())
                         .build());
         m_handler = new WeakReference<HandlerFactory>(handler);
+        handler.addFactoryStateListener(this);
         // Set the immutable relations
         List<Relation> relations = new ArrayList<Relation>();
         relations.add(new DefaultRelation(
@@ -95,5 +100,18 @@ public class HandlerResource extends DefaultReadOnlyResource {
         } else {
             return super.adaptTo(clazz);
         }
+    }
+
+    public void stateChanged(Factory factory, int newState) {
+        // Fire UPDATED event
+        Everest.postResource(ResourceEvent.UPDATED, this);
+    }
+
+    public void cleanup() {
+        HandlerFactory h = m_handler.get();
+        if (h == null) {
+            return;
+        }
+        h.removeFactoryStateListener(this);
     }
 }

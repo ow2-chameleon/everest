@@ -383,6 +383,7 @@ public class IpojoRootResource extends ResourceMap {
             m_factories.m_lock.writeLock().unlock();
         }
         // Post resource deletion event
+        r.cleanup();
         Everest.postResource(ResourceEvent.DELETED, r);
         if (!wasLast) {
             Everest.postResource(ResourceEvent.UPDATED, namedFactories);
@@ -451,6 +452,7 @@ public class IpojoRootResource extends ResourceMap {
             m_handlers.m_lock.writeLock().unlock();
         }
         // Post resource deletion event
+        r.cleanup();
         Everest.postResource(ResourceEvent.DELETED, r);
         if (!wasLast) {
             Everest.postResource(ResourceEvent.UPDATED, nsHandlers);
