@@ -5,10 +5,7 @@ import org.apache.felix.ipojo.everest.core.Everest;
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
 import org.apache.felix.ipojo.everest.impl.DefaultRelation;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
-import org.apache.felix.ipojo.everest.services.Action;
-import org.apache.felix.ipojo.everest.services.Relation;
-import org.apache.felix.ipojo.everest.services.ResourceEvent;
-import org.apache.felix.ipojo.everest.services.ResourceMetadata;
+import org.apache.felix.ipojo.everest.services.*;
 import org.apache.felix.ipojo.handlers.providedservice.ProvidedService;
 import org.apache.felix.ipojo.handlers.providedservice.ProvidedServiceDescription;
 import org.apache.felix.ipojo.handlers.providedservice.ProvidedServiceListener;
@@ -17,6 +14,7 @@ import org.osgi.framework.ServiceReference;
 
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -127,6 +125,63 @@ public class ServiceProvidingResource extends DefaultReadOnlyResource implements
         }
     }
 
+    private static Integer stringAsState(String state) {
+        if ("REGISTERED".equalsIgnoreCase(state)) {
+            return REGISTERED;
+        } else if ("UNREGISTERED".equalsIgnoreCase(state)) {
+            return UNREGISTERED;
+        }
+        // Unknown state
+        return null;
+    }
+
+    @Override
+    public Resource update(Request request) throws IllegalActionOnResourceException {
+
+        ProvidedService p = getProvidedService(m_description.get());
+        if (p == null) {
+            throw new IllegalActionOnResourceException(request, this, "Provided service description has gone");
+        }
+
+        String s = request.get("state", String.class);
+        if (s != null) {
+            // Requested to change the state of the provided service.
+            Integer state = stringAsState(s);
+            if (state == null) {
+                throw new IllegalActionOnResourceException(request, this, "Invalid requested service state: " + s);
+            }
+            try {
+                Method hack;
+                switch (state) {
+                    case REGISTERED:
+                        hack = ProvidedService.class.getDeclaredMethod("registerService");
+                        break;
+                    case UNREGISTERED:
+                        hack = ProvidedService.class.getDeclaredMethod("unregisterService");
+                        break;
+                    default:
+                        // Cannot happen!
+                        throw new AssertionError();
+                }
+                hack.setAccessible(true);
+                try {
+                    hack.invoke(p);
+                } finally {
+                    hack.setAccessible(false);
+                }
+            } catch (Exception e) {
+                IllegalActionOnResourceException ee = new IllegalActionOnResourceException(
+                        request,
+                        this,
+                        "Cannot change provided service state to " + s);
+                ee.initCause(e);
+                throw ee;
+            }
+        }
+
+        return this;
+    }
+
     // WARN: This is a hack!
     private static ProvidedService getProvidedService(ProvidedServiceDescription description) {
         if (description == null) {
@@ -172,6 +227,5 @@ public class ServiceProvidingResource extends DefaultReadOnlyResource implements
             }
         }
     }
-
 
 }
