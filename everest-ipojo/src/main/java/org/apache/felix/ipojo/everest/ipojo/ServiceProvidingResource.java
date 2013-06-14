@@ -1,13 +1,17 @@
 package org.apache.felix.ipojo.everest.ipojo;
 
+import org.apache.felix.ipojo.ComponentInstance;
+import org.apache.felix.ipojo.everest.core.Everest;
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
 import org.apache.felix.ipojo.everest.impl.DefaultRelation;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.services.Action;
 import org.apache.felix.ipojo.everest.services.Relation;
+import org.apache.felix.ipojo.everest.services.ResourceEvent;
 import org.apache.felix.ipojo.everest.services.ResourceMetadata;
 import org.apache.felix.ipojo.handlers.providedservice.ProvidedService;
 import org.apache.felix.ipojo.handlers.providedservice.ProvidedServiceDescription;
+import org.apache.felix.ipojo.handlers.providedservice.ProvidedServiceListener;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
 
@@ -16,6 +20,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import static org.apache.felix.ipojo.everest.ipojo.IpojoRootResource.PATH_TO_OSGI_SERVICES;
 import static org.apache.felix.ipojo.handlers.providedservice.ProvidedService.*;
@@ -24,7 +29,7 @@ import static org.apache.felix.ipojo.handlers.providedservice.ProvidedService.*;
  * '/ipojo/instance/$name/providing/$id' resource.
  */
 // TODO Register as a providing listener as soon as iPOJO defines this interface
-public class ServiceProvidingResource extends DefaultReadOnlyResource {
+public class ServiceProvidingResource extends DefaultReadOnlyResource implements ProvidedServiceListener {
 
     private WeakReference<ProvidedServiceDescription> m_description;
 
@@ -37,6 +42,7 @@ public class ServiceProvidingResource extends DefaultReadOnlyResource {
                         .set("controller", providing.getController())
                         .build());
         m_description = new WeakReference<ProvidedServiceDescription>(providing);
+        providing.addListener(this);
     }
 
     @Override
@@ -139,4 +145,33 @@ public class ServiceProvidingResource extends DefaultReadOnlyResource {
             }
         }
     }
+
+    public void serviceRegistered(ComponentInstance instance, ProvidedService providedService) {
+        // Fire UPDATED event
+        Everest.postResource(ResourceEvent.UPDATED, this);
+    }
+
+    public void serviceModified(ComponentInstance instance, ProvidedService providedService) {
+        // Fire UPDATED event
+        Everest.postResource(ResourceEvent.UPDATED, this);
+    }
+
+    public void serviceUnregistered(ComponentInstance instance, ProvidedService providedService) {
+        // Fire UPDATED event
+        Everest.postResource(ResourceEvent.UPDATED, this);
+    }
+
+    public void cleanup() {
+        // Remove the listener
+        ProvidedServiceDescription p = m_description.get();
+        if (p != null) {
+            try {
+                p.removeListener(this);
+            } catch (NoSuchElementException e) {
+                // Swallow
+            }
+        }
+    }
+
+
 }

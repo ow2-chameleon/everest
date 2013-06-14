@@ -300,20 +300,26 @@ public class IpojoRootResource extends ResourceMap {
                 InstanceResource.class);
         // Post resource deletion event
         for(Resource rr : r.getProvidings().getResources()) {
+            ((ServiceProvidingResource) rr).cleanup();
             Everest.postResource(ResourceEvent.DELETED, rr);
         }
         Everest.postResource(ResourceEvent.DELETED, r.getProvidings());
+
         for(Resource rr : r.getDependencies().getResources()) {
+            ((ServiceDependencyResource) rr).cleanup();
             Everest.postResource(ResourceEvent.DELETED, rr);
         }
         Everest.postResource(ResourceEvent.DELETED, r.getDependencies());
+
+        r.cleanup();
         Everest.postResource(ResourceEvent.DELETED, r);
         Everest.postResource(ResourceEvent.UPDATED, m_instances);
+
         // Try to unbind factory to arriving instance
         Factory f = getComponentInstance(instance).getFactory();
         FactoryResource fr = getFactoryResource(f.getName(), f.getVersion());
         if (fr != null) {
-            // Factory resource should have one "instance[]" relation less
+            // Factory resource should have one "instance[?]" relation less
             Everest.postResource(ResourceEvent.UPDATED, fr);
         }
     }

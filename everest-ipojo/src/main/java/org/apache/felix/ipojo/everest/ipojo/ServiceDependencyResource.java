@@ -8,7 +8,7 @@ import org.apache.felix.ipojo.everest.services.*;
 import org.apache.felix.ipojo.handlers.dependency.Dependency;
 import org.apache.felix.ipojo.handlers.dependency.DependencyDescription;
 import org.apache.felix.ipojo.util.DependencyModel;
-import org.apache.felix.ipojo.util.DependencyStateListener;
+import org.apache.felix.ipojo.util.DependencyModelListener;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
 
@@ -17,6 +17,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import static org.apache.felix.ipojo.everest.ipojo.IpojoRootResource.PATH_TO_OSGI_SERVICES;
 import static org.apache.felix.ipojo.util.DependencyModel.*;
@@ -25,7 +26,7 @@ import static org.apache.felix.ipojo.util.DependencyModel.*;
  * '/ipojo/instance/$name/dependency/$id' resource.
  */
 // TODO Register as a dependency listener as soon as iPOJO permits it.
-public class ServiceDependencyResource extends DefaultReadOnlyResource implements DependencyStateListener {
+public class ServiceDependencyResource extends DefaultReadOnlyResource implements DependencyModelListener {
 
     private WeakReference<DependencyDescription> m_description;
 
@@ -40,6 +41,7 @@ public class ServiceDependencyResource extends DefaultReadOnlyResource implement
                                 // All other attributes are considered dynamic
                         .build());
         m_description = new WeakReference<DependencyDescription>(description);
+        description.addListener(this);
     }
 
     @Override
@@ -162,6 +164,48 @@ public class ServiceDependencyResource extends DefaultReadOnlyResource implement
         } finally {
             if (shunt != null) {
                 shunt.setAccessible(false);
+            }
+        }
+    }
+
+    public void matchingServiceArrived(DependencyModel dependency, ServiceReference<?> service) {
+        // Fire UPDATED event
+        Everest.postResource(ResourceEvent.UPDATED, this);
+    }
+
+    public void matchingServiceModified(DependencyModel dependency, ServiceReference<?> service) {
+        // Fire UPDATED event
+        Everest.postResource(ResourceEvent.UPDATED, this);
+    }
+
+    public void matchingServiceDeparted(DependencyModel dependency, ServiceReference<?> service) {
+        // Fire UPDATED event
+        Everest.postResource(ResourceEvent.UPDATED, this);
+    }
+
+    public void serviceBound(DependencyModel dependency, ServiceReference<?> service, Object object) {
+        // Fire UPDATED event
+        Everest.postResource(ResourceEvent.UPDATED, this);
+    }
+
+    public void serviceUnbound(DependencyModel dependency, ServiceReference<?> service, Object object) {
+        // Fire UPDATED event
+        Everest.postResource(ResourceEvent.UPDATED, this);
+    }
+
+    public void reconfigured(DependencyModel dependency) {
+        // Fire UPDATED event
+        Everest.postResource(ResourceEvent.UPDATED, this);
+    }
+
+    public void cleanup() {
+        // Remove the listener
+        DependencyDescription d = m_description.get();
+        if (d != null) {
+            try {
+                d.removeListener(this);
+            } catch (NoSuchElementException e) {
+                // Swallow
             }
         }
     }

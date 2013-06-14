@@ -53,10 +53,10 @@ public class InstanceResource extends ResourceMap implements InstanceStateListen
                         .set("factory.version", getComponentInstance(instance).getFactory().getVersion())
                         .build());
         m_instance = new WeakReference<Architecture>(instance);
-        // Set the immutable relations
         ComponentInstance ci = getComponentInstance(instance);
         ci.addInstanceStateListener(this);
         Factory factory = ci.getFactory();
+        // Set the immutable relations
         setRelations(
                 new DefaultRelation(
                         PATH_TO_OSGI_SERVICES.addElements(String.valueOf(ref.getProperty(Constants.SERVICE_ID))),
@@ -321,5 +321,13 @@ public class InstanceResource extends ResourceMap implements InstanceStateListen
             }
         }
         return props.build();
+    }
+
+    public void cleanup() {
+        Architecture a = m_instance.get();
+        if (a == null) {
+            return;
+        }
+        getComponentInstance(a).removeInstanceStateListener(this);
     }
 }
