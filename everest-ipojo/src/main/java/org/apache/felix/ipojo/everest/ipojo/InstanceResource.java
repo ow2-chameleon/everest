@@ -12,6 +12,7 @@ import org.apache.felix.ipojo.everest.impl.DefaultRelation;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.services.*;
 import org.apache.felix.ipojo.handlers.configuration.ConfigurationHandlerDescription;
+import org.apache.felix.ipojo.handlers.configuration.ConfigurationListener;
 import org.apache.felix.ipojo.handlers.dependency.DependencyDescription;
 import org.apache.felix.ipojo.handlers.dependency.DependencyHandlerDescription;
 import org.apache.felix.ipojo.handlers.providedservice.ProvidedServiceDescription;
@@ -28,7 +29,7 @@ import static org.apache.felix.ipojo.everest.ipojo.IpojoRootResource.*;
 /**
  * '/ipojo/instance/$name' resource.
  */
-public class InstanceResource extends ResourceMap implements InstanceStateListener {
+public class InstanceResource extends ResourceMap implements InstanceStateListener, ConfigurationListener {
 
     /**
      * The service dependencies of this iPOJO component instance, index by id.
@@ -56,6 +57,11 @@ public class InstanceResource extends ResourceMap implements InstanceStateListen
         ComponentInstance ci = getComponentInstance(instance);
         ci.addInstanceStateListener(this);
         Factory factory = ci.getFactory();
+        ConfigurationHandlerDescription chd = (ConfigurationHandlerDescription)
+                instance.getInstanceDescription().getHandlerDescription("org.apache.felix.ipojo:properties");
+        if (chd != null) {
+            chd.addListener(this);
+        }
         // Set the immutable relations
         setRelations(
                 new DefaultRelation(
@@ -309,6 +315,11 @@ public class InstanceResource extends ResourceMap implements InstanceStateListen
         Everest.postResource(ResourceEvent.UPDATED, this);
     }
 
+    public void configurationChanged(ComponentInstance instance, Map<String, Object> configuration) {
+        // Fire UPDATED event
+        Everest.postResource(ResourceEvent.UPDATED, this);
+    }
+
     private static ResourceMetadata getInstanceConfiguration(InstanceDescription instanceDescription) {
         // Get the configuration
         ImmutableResourceMetadata.Builder props = new ImmutableResourceMetadata.Builder();
@@ -329,5 +340,11 @@ public class InstanceResource extends ResourceMap implements InstanceStateListen
             return;
         }
         getComponentInstance(a).removeInstanceStateListener(this);
+        ConfigurationHandlerDescription chd = (ConfigurationHandlerDescription)
+                a.getInstanceDescription().getHandlerDescription("org.apache.felix.ipojo:properties");
+        if (chd != null) {
+            chd.addListener(this);
+        }
     }
+
 }
