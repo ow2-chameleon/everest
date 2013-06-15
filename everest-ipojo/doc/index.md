@@ -8,7 +8,7 @@ This is the documentation of the everest iPOJO domain. This domain is a resource
 - Declarations
 
 # Requirements
-In order to use the everest iPOJO resource domain, you need an OSGi r4.3 compliant framework with the following bundles:
+In order to use the everest iPOJO resource domain, you need an [OSGi™](http://www.osgi.org "OSGi™ Alliance") r4.3 compliant framework with the following bundles:
 - [Apache Felix iPOJO](http://www.ipojo.org "iPOJO web site"), version 1.10.1 or above
 - everest-core, version ${everest.core.version}
 
