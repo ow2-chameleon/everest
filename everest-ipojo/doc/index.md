@@ -9,8 +9,10 @@ This is the documentation of the everest iPOJO domain. This domain is a resource
 
 ## Requirements
 In order to use the everest iPOJO resource domain, you need an [OSGi™](http://www.osgi.org "OSGi™ Alliance") r4.3 compliant framework with the following bundles:
-- [Apache Felix iPOJO](http://www.ipojo.org "iPOJO web site"), version 1.10.1 or above
+- [Apache Felix iPOJO](http://www.ipojo.org "iPOJO web site"), version **1.10.1** or above
 - everest-core, version ${everest.core.version}
+
+**WARNING:** The everest iPOJO domains uses the latest bug fixes and improvements of Apache Felix iPOJO, so it *won't work at all* on previous releases (<=1.10.0).
 
 Optional dependencies include:
 - everest-servlet, version ${everest.servlet.version} if you want to use HTTP binding on the iPOJO resources.
