@@ -28,10 +28,13 @@ Path
 - Child Resources
 - Relations
 *to be completed*
+
 ### Relation
 *to be completed*
+
 ### Request
 *to be completed*
+
 ## Domains
 The second thing that you would want to do with everest _(after admiring its name)_ is to create your own domain.
 
