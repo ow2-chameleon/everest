@@ -1,0 +1,37 @@
+everest iPOJO Instance Resources
+================================
+
+This is the documentation of the *Instance Resources* of the everest iPOJO domain. Each instance resource is a representation of an iPOJO component instance.
+
+## Supported operations
+- **READ**: get the current state of the component instance
+- **CREATE**: [create a new instance](#how-to-create-instances)
+- **UPDATE**: [reconfigure the instance](#how-to-reconfigure-instances) and/or [change its state](#how-to-change-instance-state)
+- **DELETE**: destroy the component instance
+
+*NOTE: This type of resource is* **observable**
+
+## Metadata
+- **name** *(string)*: The name of the instance.
+- **factory.name** *(string)*: The name of the factory that has created this instance.
+- **factory.version** *(string)*: The version of the factory that has created this instance. May be *null*.
+- **state** *(string)*: The current state of the instance. One of *{"valid", "invalid", "stopped", "disposed", "changing", "unknown"}*.
+- **configuration** *(map<string, ?>)*: The current configuration properties of the component.
+
+## Relations
+- **service**: to the Architecture OSGi service of the instance
+- **factory**: to the FactoryResource representing the factory that has created this instance.
+- **delete**: to destroy the component instance.
+- **reconfigure**: to reconfigure this component instance. See [reconfigure instance](#how-to-reconfigure-instances) and [change instance state](#how-to-change-instance-state)
+- **dependencies**: to the ServiceDependencyResources of the instance.
+- **providings**: to the ServiceProvidingResources of the instance.
+
+## HOW-TOs
+
+### How to create instances
+
+### How to reconfigure instances
+
+### How to change instance state
+
+### Fake instance resource! WTF?
