@@ -84,13 +84,15 @@ public class ServiceDependencyResource extends DefaultReadOnlyResource implement
             }
             @SuppressWarnings("unchecked")
             List<ServiceReference> used = d.getUsedServices();
-            for(ServiceReference<?> s : used) {
-                String id = String.valueOf(s.getProperty(Constants.SERVICE_ID));
-                r.add(new DefaultRelation(
-                        PATH_TO_OSGI_SERVICES.addElements(id),
-                        Action.READ,
-                        String.format("usedService[%s]", id),
-                        String.format("Used service with id '%s'", id)));
+            if (used != null) {
+                for(ServiceReference<?> s : used) {
+                    String id = String.valueOf(s.getProperty(Constants.SERVICE_ID));
+                    r.add(new DefaultRelation(
+                            PATH_TO_OSGI_SERVICES.addElements(id),
+                            Action.READ,
+                            String.format("usedService[%s]", id),
+                            String.format("Used service with id '%s'", id)));
+                }
             }
             return Collections.unmodifiableList(r);
         }
