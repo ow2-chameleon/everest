@@ -17,7 +17,7 @@ Optionally:
 
 ## Entities
 
-- [Osgi Root Resource](#osgi-root-resource)
+- [OSGi Root Resource](#osgi-root-resource)
 - [Bundle](#bundle)
 - [Bundle Headers](#bundle-headers)
 - [Bundle Capability](#bundle-capability)
@@ -59,14 +59,14 @@ Static relations:
 
 ### Sub-resources
 Static sub-resources:
-- **/bundles**: bundles on this framework
-- **/packages**: packages on this framework
-- **/services**: services on this framework
+- **[/bundles](#bundle)**: bundles on this framework
+- **[/packages](#package)**: packages on this framework
+- **[/services](#service)**: services on this framework
 
 Dynamic sub-resources:
-- **/configurations**: configurations on this framework
-- **/logs**: logs on this framework
-- **/deployments**: deployment packages on this framework
+- **[/configurations](#configuration)**: configurations on this framework
+- **[/logs](#log-entry)**: logs on this framework
+- **[/deployments](#deployment-package)**: deployment packages on this framework
 
 ### Adaptations
 - **org.osgi.framework.Bundle**: Framework bundle
@@ -109,48 +109,47 @@ Static relations:
 
 ### Sub-resources
 Static sub-resources:
-- **/headers**: [headers](#bundle-headers) of this OSGi bundle
-- **/capabilities**: [capabilities](#bundle-capability) of this OSGi bundle
-- **/requirements**: [requirements](#bundle-requirement) of this OSGi bundle
-- **/wires**: [wires](#bundle-wire) of this OSGi bundle
-- **/services**: [services](#bundle-services) that can be linked to this OSGi bundle
+- **[/headers](#bundle-headers)**: Bundle Headers of this OSGi bundle
+- **[/capabilities](#bundle-capability)**: Bundle Capabilities of this OSGi bundle
+- **[/requirements](#bundle-requirement)**: Bundle Requirement of this OSGi bundle
+- **[/wires](#bundle-wire)**: Bundle Wires of this OSGi bundle
+- **[/services](#bundle-services)**: Services that can be linked to this OSGi bundle
 
 ### Adaptations
 - **org.osgi.framework.Bundle**: Bundle object
 - **org.apache.felix.ipojo.everest.osgi.bundle.BundleResource**: BundleResource class that is used to represent this bundle
 
+### Events
+- **CREATED** : Arrival of a new bundle 
+- **UPDATED** : Update on bundle state
+- **DELETED** : Departure of a bundle
+
 ## Bundle Headers
 Bundle headers resources represent header information of a specific OSGi bundle.
 
 Path: **/osgi/bundles/[bundle-id]/headers**
-Observable: **true**
+Observable: **false**
 
 ### Operations
-- **CREATE**: 
-- **UPDATE**: 
-- **READ**: 
-- **DELETE**: 
+- **READ**: Get headers of this OSGi Bundle
 
 ### Metadata
-
-### Relations
+All the metadata information available on the Bundle
 
 ### Sub-resources
+- **[/export-package](#package)**: Package export headers
+- **/import-package**: Import package headers
+- **/dynamicimport-package**: Dynamic import package headers
+- **/require-bundle**: Require bundle headers
 
-### Adaptations
-
-*to be completed*
 ## Bundle Capability
 Bundle Capability resources represent bundle capability of a specific OSGi bundle.
 
-- Path: **/osgi/bundles/[bundle-id]/capabilities/[unique-capability-id]**
-- Observable: **true**
+Path: **/osgi/bundles/[bundle-id]/capabilities/[unique-capability-id]**  
+Observable: **false**  
 
 ### Operations
-- **CREATE**: 
-- **UPDATE**: 
 - **READ**: 
-- **DELETE**: 
 
 ### Metadata
 
