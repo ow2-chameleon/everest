@@ -25,7 +25,7 @@ This is the documentation of the *Factory Resources* of the everest iPOJO domain
 - **instance**\[$name\]: to the instances created by the factory. *$name* stands for the name of the targeted instance.
 
 ## Supported Adaptations
-- to **org.apache.felix.ipojo.Factory**.class
+- to **org.apache.felix.ipojo.Factory**.class: to the Factory service object.
 
 ## HOW-TOs
 
