@@ -9,15 +9,11 @@ import org.apache.felix.ipojo.handlers.dependency.Dependency;
 import org.apache.felix.ipojo.handlers.dependency.DependencyDescription;
 import org.apache.felix.ipojo.util.DependencyModel;
 import org.apache.felix.ipojo.util.DependencyModelListener;
-import org.osgi.framework.Constants;
-import org.osgi.framework.ServiceReference;
+import org.osgi.framework.*;
 
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 import static org.apache.felix.ipojo.everest.ipojo.IpojoRootResource.PATH_TO_OSGI_SERVICES;
 import static org.apache.felix.ipojo.util.DependencyModel.*;
@@ -150,6 +146,88 @@ public class ServiceDependencyResource extends DefaultReadOnlyResource implement
         }
     }
 
+    @Override
+    public Resource update(Request request) throws IllegalActionOnResourceException {
+
+        DependencyDescription d = m_description.get();
+        if (d == null) {
+            throw new IllegalActionOnResourceException(request, this, "Dependency description has gone");
+        }
+        BundleContext bc = d.getDependency().getBundleContext();
+
+        String f = request.get("filter", String.class);
+        if (f != null) {
+            // Requested to change the filter of the dependency.
+            try {
+                if (!f.isEmpty()) {
+                    d.setFilter(bc.createFilter(f));
+                } else {
+                    d.setFilter(null);
+                }
+            } catch (InvalidSyntaxException e) {
+                IllegalActionOnResourceException ee = new IllegalActionOnResourceException(
+                        request,
+                        this,
+                        "Bad filter: " + f);
+                ee.initCause(e);
+                throw ee;
+            } catch (Exception e) {
+                IllegalActionOnResourceException ee = new IllegalActionOnResourceException(
+                        request,
+                        this,
+                        "Cannot reconfigure filter");
+                ee.initCause(e);
+                throw ee;
+            }
+        }
+
+        Boolean aa = getBooleanParameter(request, "isAggregate");
+        System.err.println(">>>isAggregate: " + aa);
+        if (aa != null) {
+            try {
+                d.setAggregate(aa);
+            } catch (Exception e) {
+                IllegalActionOnResourceException ee = new IllegalActionOnResourceException(
+                        request,
+                        this,
+                        "Cannot reconfigure isAggregate flag");
+                ee.initCause(e);
+                throw ee;
+            }
+        }
+
+        Boolean oo = getBooleanParameter(request, "isOptional");
+        System.err.println(">>>isOptional: " + oo);
+        if (oo != null) {
+            try {
+                d.setOptional(oo);
+            } catch (Exception e) {
+                IllegalActionOnResourceException ee = new IllegalActionOnResourceException(
+                        request,
+                        this,
+                        "Cannot reconfigure isOptional flag");
+                ee.initCause(e);
+                throw ee;
+            }
+        }
+
+        Comparator<?> cc = request.get("comparator", Comparator.class);
+        if (cc != null ) {
+            try {
+                d.setComparator(cc);
+            } catch (Exception e) {
+                IllegalActionOnResourceException ee = new IllegalActionOnResourceException(
+                        request,
+                        this,
+                        "Cannot reconfigure comparator");
+                ee.initCause(e);
+                throw ee;
+            }
+        }
+
+        return this;
+    }
+
     // WARN: This is a hack!
     private static Dependency getDependency(DependencyDescription description) {
         if (description == null) {
@@ -166,6 +244,23 @@ public class ServiceDependencyResource extends DefaultReadOnlyResource implement
             if (shunt != null) {
                 shunt.setAccessible(false);
             }
+        }
+    }
+
+    private Boolean getBooleanParameter(Request request, String key) throws IllegalActionOnResourceException {
+        String s = request.get(key, String.class);
+        if (s != null && !s.isEmpty()) {
+            if (s.equalsIgnoreCase("true")) {
+                return true;
+            } else if (s.equalsIgnoreCase("false")) {
+                return false;
+            } else {
+                throw new IllegalActionOnResourceException(request, this,
+                        String.format("Invalid value for parameter '%s': %s",
+                                key, s));
+            }
+        } else {
+            return null;
         }
     }
 
