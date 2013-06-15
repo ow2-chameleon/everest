@@ -3,6 +3,10 @@ everest iPOJO Reference Card
 
 This documentation details the layout of the everest iPOJO domain and the different type of resources you may find inside.
 
+In the following structured list, some resources are special (those with a link on it) : they contain metadata, relation and support operations that represent/impact an underlying iPOJO entity.
+
+The other resources (w/out a link) have no special meaning, they just act as containers and defines relations to their child resources.
+
 - [/ipojo](Root.md "everest iPOJO domain") - The root of the everest iPOJO domain.
     - /instance - The iPOJO component instances.
         - [/$name](Instances.md "everest iPOJO Instance Resouces") The component instance named *$name*.
