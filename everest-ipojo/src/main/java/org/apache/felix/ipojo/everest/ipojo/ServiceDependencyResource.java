@@ -25,7 +25,6 @@ import static org.apache.felix.ipojo.util.DependencyModel.*;
 /**
  * '/ipojo/instance/$name/dependency/$id' resource.
  */
-// TODO Register as a dependency listener as soon as iPOJO permits it.
 public class ServiceDependencyResource extends DefaultReadOnlyResource implements DependencyModelListener {
 
     private WeakReference<DependencyDescription> m_description;
