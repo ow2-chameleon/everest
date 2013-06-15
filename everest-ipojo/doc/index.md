@@ -77,6 +77,9 @@ You should obtain something like this:
 
 You should consider to use a REST client that can send different type of requests (GET, POST, ...), so you can have an almost total control on the everest iPOJO resources.
 
+The [everest iPOJO Reference Card](ReferenceCard.md "Reference Card") details the global layout of the everest iPOJO domain and the resources you can found inside. 
+
+
 ## Copyright and License
 
 everest iPOJO is part of the Apache Felix project, and thus is licensed to the Apache Software foundation with the following license information.
