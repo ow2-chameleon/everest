@@ -21,4 +21,4 @@ This is the documentation of the *Handler Resources* of the everest iPOJO domain
 - **requiredHandler**\[$fqn\]: to the handlers required by the handler. *$fqn* stands for the fully qualified name of the targeted HandlerResource.
 
 ## Supported Adaptations
-- to **org.apache.felix.ipojo.HandlerFactory**.class
+- to **org.apache.felix.ipojo.HandlerFactory**.class: to the HandlerFactory service object.
