@@ -29,237 +29,281 @@ Optionally:
 - [Log Entry](#log-entry)
 - [Deployment Package](#deployment-package)
 
-### OSGi Root Resource
-Root resource is the starting point for OSGi domain and represents the OSGi Framework.
+## OSGi Root Resource
+Root resource is the starting point for OSGi domain and represents the OSGi Framework.  
 
-Path: **/osgi**
-Observable: **true**
+Path: **/osgi**  
+Observable: **true**  
 
-#### Operations
+### Operations
 - **UPDATE**: Update initial bundle startlevel, framework startlevel or Restart the framework.
 - **READ**: Get the current state of OSGi framework
 - **DELETE**: Stop the OSGi framework
 
-#### Metadata
-Static metadata:
+### Metadata
 - **org.osgi.framework.version** *(string)*: Framework version
-- ...
 *to be completed*
-Dynamic metadata:
+- ...
 - **startlevel.bundle** *(int)*: Initial bundle start level
 - **startlevel** *(int)*: Framework start level
 
-#### Relations
+### Relations
 Static relations:
-- *(UPDATE)* **update**: Update initial bundle startlevel, framework startlevel.
-- *(UPDATE)* **restart**: Restart the framework.
-- *(DELETE)* **stop**: Stops the OSGi framework.
+- **(UPDATE)** "update": Update initial bundle startlevel, framework startlevel.  
+**Parameter** ("startlevel.bundle"): **Type**: Integer, **Optional**: true  
+**Parameter** ("startlevel"): **Type**: Integer, **Optional**: true
 
-#### Sub-resources
+- **(UPDATE)** "restart": Restart the framework.  
+**Parameter** ("restart"), **Type**: Boolean, **Optional**: true
+- **(DELETE)** "stop": Stops the OSGi framework.
+
+### Sub-resources
 Static sub-resources:
-- **bundles**: bundles on this framework
-- **packages**: packages on this framework
-- **services**: services on this framework
+- **/bundles**: bundles on this framework
+- **/packages**: packages on this framework
+- **/services**: services on this framework
+
 Dynamic sub-resources:
-- **configurations**: configurations on this framework
-- **logs**: logs on this framework
-- **deployments**: deployment packages on this framework
-#### Adaptations
+- **/configurations**: configurations on this framework
+- **/logs**: logs on this framework
+- **/deployments**: deployment packages on this framework
+
+### Adaptations
 - **org.osgi.framework.Bundle**: Framework bundle
 - **org.osgi.framework.wiring.FrameworkWiring**: Framework Wiring object
 - **org.osgi.framework.startlevel.FrameworkStartLevel**: Framework StartLevel object
 
-#### Events
+### Events
 - **UPDATED**: Startlevel changed, packages refreshed, one of the dynamic sub-resources arrived/disappeared
 
-### Bundle
-Bundle resources represent a OSGi bundle.
+## Bundle
+Bundle resources represent a OSGi bundle.  
 
-Path: **/osgi/bundles/[bundle-id]**
-Observable: **true**
+Path: **/osgi/bundles/[bundle-id]**  
+Observable: **true**  
 
-#### Operations
-- **CREATE**: 
-- **UPDATE**: 
-- **READ**: 
-- **DELETE**: 
+### Operations
+- **UPDATE**: Update start level parameter and/or bundle state, refresh/update bundle
+- **READ**: Get the current state of the bundle
+- **DELETE**: Uninstall the bundle
 
-#### Metadata
+### Metadata
+- **bundle-id** *(long)*: Bundle id
+- **bundle-state** *(string)*: Bundle state as string {"ACTIVE",...}
+- **bundle-symbolic-name** *(string)*: Bundle Symbolic Name
+- **bundle-version** *(version)*: Bundle Version
+- **bundle-location** *(string)*: Bundle Location
+- **bundle-last-modified** *(long)*: Bundle Last Modified
+- **bundle-fragment** *(boolean)*: is this bundle a fragment
 
-#### Relations
+### Relations
+Static relations:
+- **(UPDATE)** "update": Update initial bundle startlevel, framework startlevel.  
+**Parameter** ("newState"): **Type**: String, **Optional**: true  
+**Parameter** ("startlevel"): **Type**: Integer, **Optional**: true  
+**Parameter** ("update"): **Type**: Boolean, **Optional**: true  
+**Parameter** ("refresh"): **Type**: Boolean, **Optional**: true  
+**Parameter** ("input"): **Type**: ByteArrayInputStream, **Optional**: true  
 
-#### Sub-resources
+- **(DELETE)** "stop": Stops the OSGi framework.
 
-#### Adaptations
+### Sub-resources
+Static sub-resources:
+- **/headers**: [headers](#bundle-headers) of this OSGi bundle
+- **/capabilities**: [capabilities](#bundle-capability) of this OSGi bundle
+- **/requirements**: [requirements](#bundle-requirement) of this OSGi bundle
+- **/wires**: [wires](#bundle-wire) of this OSGi bundle
+- **/services**: [services](#bundle-services) that can be linked to this OSGi bundle
 
+### Adaptations
+- **org.osgi.framework.Bundle**: Bundle object
+- **org.apache.felix.ipojo.everest.osgi.bundle.BundleResource**: BundleResource class that is used to represent this bundle
 
-*to be completed*
-### Bundle Headers
+## Bundle Headers
 Bundle headers resources represent header information of a specific OSGi bundle.
 
 Path: **/osgi/bundles/[bundle-id]/headers**
 Observable: **true**
 
-#### Operations
+### Operations
 - **CREATE**: 
 - **UPDATE**: 
 - **READ**: 
 - **DELETE**: 
 
-#### Metadata
+### Metadata
 
-#### Relations
+### Relations
 
-#### Sub-resources
+### Sub-resources
 
-#### Adaptations
+### Adaptations
 
 *to be completed*
-### Bundle Capability
+## Bundle Capability
 Bundle Capability resources represent bundle capability of a specific OSGi bundle.
 
-Path: **/osgi/bundles/[bundle-id]/capabilities/[unique-capability-id]**
-Observable: **true**
+- Path: **/osgi/bundles/[bundle-id]/capabilities/[unique-capability-id]**
+- Observable: **true**
 
-#### Operations
+### Operations
 - **CREATE**: 
 - **UPDATE**: 
 - **READ**: 
 - **DELETE**: 
 
-#### Metadata
+### Metadata
 
-#### Relations
+### Relations
 
-#### Sub-resources
+### Sub-resources
 
-#### Adaptations
+### Adaptations
 
 *to be completed*
-### Bundle Requirement
+## Bundle Requirement
 Bundle Requirement resources represent bundle requirement of a specific OSGi bundle.
 
-Path: **/osgi/bundles/[bundle-id]/requirements/[unique-requirement-id]**
-Observable: **true**
+- Path: **/osgi/bundles/[bundle-id]/requirements/[unique-requirement-id]**
+- Observable: **true**
 
-#### Operations
+### Operations
 - **CREATE**: 
 - **UPDATE**: 
 - **READ**: 
 - **DELETE**: 
 
-#### Metadata
+### Metadata
 
-#### Relations
+### Relations
 
-#### Sub-resources
+### Sub-resources
 
-#### Adaptations
+### Adaptations
 
 *to be completed*
-### Bundle Wire
+## Bundle Wire
 Bundle wire resources represent a bundle wire between a capability and a requirement.
 
-Path: **/osgi/bundles/[bundle-id]/wires/[unique-wire-id]**
-Observable: **true**
+- Path: **/osgi/bundles/[bundle-id]/wires/[unique-wire-id]**
+- Observable: **true**
 
-#### Operations
+### Operations
 - **CREATE**: 
 - **UPDATE**: 
 - **READ**: 
 - **DELETE**: 
 
-#### Metadata
+### Metadata
 
-#### Relations
+### Relations
 
-#### Sub-resources
+### Sub-resources
 
-#### Adaptations
+### Adaptations
 
 *to be completed*
-### Package
+
+## Bundle Services
+Services that can be linked to an OSGi bundle
+
+- Path: **/osgi/bundles/[bundle-id]/services**
+
+### Operations
+- **READ**: 
+
+### Metadata
+
+### Relations
+
+### Sub-resources
+
+### Adaptations
+
+*to be completed*
+
+## Package
 Package resource represents a package provided by an OSGi bundle.
 
-Path: **/osgi/packages/[unique-capability-id]**
-Observable: **true**
+- Path: **/osgi/packages/[unique-capability-id]**
+- Observable: **true**
 
-#### Operations
+### Operations
 - **CREATE**: 
 - **UPDATE**: 
 - **READ**: 
 - **DELETE**: 
 
-#### Metadata
+### Metadata
 
-#### Relations
+### Relations
 
-#### Sub-resources
+### Sub-resources
 
-#### Adaptations
+### Adaptations
 
 *to be completed*
-### Service
+## Service
 Service resource represents an OSGi service published in the service registry.
 
-Path: **/osgi/services/[service.id]**
-Observable: **true**
+- Path: **/osgi/services/[service.id]**
+- Observable: **true**
 
-#### Operations
+### Operations
 - **CREATE**: 
 - **UPDATE**: 
 - **READ**: 
 - **DELETE**: 
 
-#### Metadata
+### Metadata
 
-#### Relations
+### Relations
 
-#### Sub-resources
+### Sub-resources
 
-#### Adaptations
+### Adaptations
 
 *to be completed*
-### Configuration
+## Configuration
 Configuration resource represents a Config Admin configuration.
 
-Path: **/osgi/configurations/[configuration-pid]**
-Observable: **true**
+- Path: **/osgi/configurations/[configuration-pid]**
+- Observable: **true**
 
-#### Operations
+### Operations
 - **CREATE**: 
 - **UPDATE**: 
 - **READ**: 
 - **DELETE**: 
 
-#### Metadata
+### Metadata
 
-#### Relations
+### Relations
 
-#### Sub-resources
+### Sub-resources
 
-#### Adaptations
+### Adaptations
 
 *to be completed*
-### Log Entries
+## Log Entries
 Log Entry resource represents a Log Entry of OSGi Log Service
 
-Path: **/osgi/logs/[log-time]**
-Observable: **true**
+- Path: **/osgi/logs/[log-time]**
+- Observable: **true**
 
-#### Operations
+### Operations
 - **CREATE**: 
 - **UPDATE**: 
 - **READ**: 
 - **DELETE**: 
 
-#### Metadata
+### Metadata
 
-#### Relations
+### Relations
 
-#### Sub-resources
+### Sub-resources
 
-#### Adaptations
+### Adaptations
 
 *to be completed*
 
