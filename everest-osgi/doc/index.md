@@ -19,6 +19,7 @@ Optionally:
 
 - [OSGi Root Resource](#osgi-root-resource)
 - [Bundle](#bundle)
+- [Bundles](#bundles)
 - [Bundle Headers](#bundle-headers)
 - [Bundle Capability](#bundle-capability)
 - [Bundle Requirement](#bundle-requirement)
@@ -26,6 +27,7 @@ Optionally:
 - [Bundle Services](#bundle-services)
 - [Package](#package)
 - [Service](#service)
+- [Configurations](#configurations)
 - [Configuration](#configuration)
 - [Log Entry](#log-entry)
 - [Deployment Package](#deployment-package)
@@ -76,6 +78,26 @@ Dynamic sub-resources:
 
 ### Events
 - **UPDATED**: Startlevel changed, packages refreshed, one of the dynamic sub-resources arrived/disappeared
+
+## Bundles
+Root of all bundles
+
+Path: **/osgi/bundles**  
+Observable: **false**
+
+### Operations
+- **CREATE**: Install bundle
+
+### Relations
+- **(CREATE)** "install": Install new bundle.  
+**Parameter** ("location"): **Type**: String, **Optional**: false  
+**Parameter** ("input"): **Type**: Integer, **Optional**: true  
+- **(UPDATE)** "update": Update state of bundles.  
+**Parameter** ("refresh"): **Type**: List, **Optional**: true  
+**Parameter** ("resolve"): **Type**: List, **Optional**: true  
+
+### Sub-resources
+- **[/[bundle-id]](#bundle)**: bundles
 
 ## Bundle
 Bundle resources represent a OSGi bundle.  
@@ -150,7 +172,7 @@ Path: **/osgi/bundles/[bundle-id]/capabilities/[unique-capability-id]**
 Observable: **false**  
 
 ### Operations
-- **READ**: Get Bundle Capability of this OSGi Bundle
+- **READ**: Get current state of this bundle capability
 
 ### Metadata
 All capability attributes and directives
@@ -172,7 +194,7 @@ Bundle Requirement resources represent bundle requirement of a specific OSGi bun
 - Observable: **false**
 
 ### Operations
-- **READ**: 
+- **READ**: Get current state of the bundle requirement
 
 ### Metadata
 All requirement attributes and directives
@@ -193,7 +215,7 @@ Bundle wire resources represent a bundle wire between a capability and a require
 - Observable: **false**
 
 ### Operations
-- **READ**: 
+- **READ**: Get current state of bundle wire
 
 ### Metadata
 - **requirement** *(string)*: [unique-requirement-id] of linked Bundle Requirement
@@ -212,7 +234,7 @@ Services that can be linked to an OSGi bundle
 - Path: **/osgi/bundles/[bundle-id]/services**
 
 ### Operations
-- **READ**: 
+- **READ**: get current state of the bundle services
 
 ### Sub-resources
 - **[/registered](#service)**: Services registered by this OSGi bundle
@@ -225,7 +247,7 @@ Package resource represents a package provided by an OSGi bundle.
 - Observable: **true**
 
 ### Operations
-- **READ**: 
+- **READ**: Get current state of the package
 
 ### Metadata
 - **osgi.wiring.package** *(string)*: Package Name
@@ -245,8 +267,8 @@ Package resource represents a package provided by an OSGi bundle.
 - **org.apache.felix.ipojo.everest.osgi.package.PackageResource**: PackageResource class used to represent this package 
 
 ### Events
-- **CREATED**: 
-- **DELETED**:
+- **CREATED**: Package available
+- **DELETED**: Package unavailable
 
 ## Service
 Service resource represents an OSGi service published in the service registry.
@@ -255,12 +277,10 @@ Service resource represents an OSGi service published in the service registry.
 - Observable: **true**
 
 ### Operations
-- **READ**: 
+- **READ**: Get current state of the service
 
 ### Metadata
 All service properties  
-
-### Relations
 
 ### Sub-resources
 - **[/using-bundles](#bundle)**: A collection of relations to bundles using this service 
@@ -269,27 +289,56 @@ All service properties
 - **org.osgi.framework.ServiceReference**: ServiceReference object of this service
 - **org.apache.felix.ipojo.everest.osgi.service.ServiceResource**: ServiceResource class used to represent this service
 
+### Events
+- **CREATED**: Service registered
+- **UPDATED**: Service modified
+- **DELETED**: Service unregistered
+
+## Configurations
+Root of all configurations 
+
+Path: **/osgi/configurations**
+Observable: **false**
+
+### Operations
+- **CREATE**: Create a new configuration
+
+### Sub-resources
+- **[/[configuration-pid]](#configuration)**: configurations by pid
+
+### Relations
+- **(CREATE)** "create": Create a new configuration  
+**Parameter** ("location"): **Type**: String, **Optional**: false  
+**Parameter** ("pid"): **Type**: String, **Optional**: true  
+**Parameter** ("factoryPid"): **Type**: String, **Optional**: true  
+
 ## Configuration
 Configuration resource represents a Config Admin configuration.
 
-- Path: **/osgi/configurations/[configuration-pid]**
-- Observable: **true**
+Path: **/osgi/configurations/[configuration-pid]**  
+Observable: **true**  
 
 ### Operations
-- **CREATE**: 
-- **UPDATE**: 
-- **READ**: 
-- **DELETE**: 
+- **UPDATE**: Update configuration
+- **READ**: Get current state of the configuration
+- **DELETE**: Delete this configuration
 
 ### Metadata
+- **service.pid** *(string)*: Configuration pid
+- **location** *(string)*: Bundle location attributed by this configuration
+- **serviceFactory.pid** *(string)*: Factory configuration pid
+- All proprties of this configuration
 
 ### Relations
-
-### Sub-resources
+- **(UPDATE)** "update": update properties of this configuration  
+**Parameter** ("properties"): **Type**: Dictionary, **Optional**: true  
+**Parameter** ("location"): **Type**: String, **Optional**: true  
+- **(DELETE)** "delete": delete this configuration
 
 ### Adaptations
+- **org.osgi.service.cm.Configuration**: Configuration object
+- **org.apache.felix.ipojo.everest.osgi.config.ConfigurationResource**: ConfigurationResource class used to represent this resource
 
-*to be completed*
 ## Log Entry
 Log Entry resource represents a Log Entry of OSGi Log Service
 
@@ -297,20 +346,23 @@ Log Entry resource represents a Log Entry of OSGi Log Service
 - Observable: **true**
 
 ### Operations
-- **CREATE**: 
-- **UPDATE**: 
 - **READ**: 
-- **DELETE**: 
 
 ### Metadata
+- **log level** *(string)*: log level as string
+- **time** *(long)*: log time
+- **message** *(string)*: message of this log 
+- **bundle** *(long)*: bundle id that sent this log
+- **service** *(long): service id that sent this log
+- **exception** *(StackTraceElement)*: stack trace of the exception associated by this log
 
 ### Relations
-
-### Sub-resources
+- **[/bundle](#bundle)**: Link to the OSGi bundle that sent this log
+- **[/service](#service)**: Link to the OSGi service that sent this log
 
 ### Adaptations
-
-*to be completed*
+- **org.osgi.service.log.LogEntry**: LogEntry object
+- **org.apache.felix.ipojo.everest.osgi.log.LogEntryResource**: LogEntryResource class used to represent this resource
 
 ## Deployment Package
 Deployment Package resource represents a Deployment Package deployed by the OSGi Deployment Package Admin
@@ -319,8 +371,6 @@ Deployment Package resource represents a Deployment Package deployed by the OSGi
 - Observable: **true**
 
 ### Operations
-- **CREATE**: 
-- **UPDATE**: 
 - **READ**: 
 - **DELETE**: 
 
