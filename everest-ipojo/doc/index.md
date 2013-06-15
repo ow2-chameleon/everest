@@ -61,7 +61,7 @@ Here is a quick programmatic usage example:
 
 If you have chosen to install the optional **everest-servlet** dependency (which needs an HTTP service), then you can access to the everest iPOJO domain from your browser.
 
-Considering that the framework is running on *localhost*, and that the HTPP service listens to the *8080* port, you just have to enter the following URL in your favorite browser:
+Considering that the framework is running on *localhost*, and that the HTTP service listens to the *8080* port, you just have to enter the following URL in your favorite browser:
 
     http://localhost:8080/everest/ipojo
 
@@ -75,7 +75,7 @@ You should obtain something like this:
 }
 ```
 
-You should consider to use a REST client that can send different type of requests (GET, POST, ...), so you can have an almost total control on the everest iPOJO resources.
+You should consider using a REST client that can send different type of requests (GET, POST, ...), so you can have (almost) total control on the everest iPOJO resources.
 
 The [everest iPOJO Reference Card](ReferenceCard.md "Reference Card") details the global layout of the everest iPOJO domain and the resources you can found inside. 
 
