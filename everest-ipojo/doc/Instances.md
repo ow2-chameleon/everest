@@ -23,8 +23,12 @@ This is the documentation of the *Instance Resources* of the everest iPOJO domai
 - **factory**: to the FactoryResource representing the factory that has created this instance.
 - **delete**: to destroy the component instance.
 - **reconfigure**: to reconfigure this component instance. See [reconfigure instance](#how-to-reconfigure-instances) and [change instance state](#how-to-change-instance-state)
-- **dependencies**: to the ServiceDependencyResources of the instance.
-- **providings**: to the ServiceProvidingResources of the instance.
+- **dependencies**: to the ServiceDependencyResources of the instance (i.e. the */dependency* sub-resource).
+- **providings**: to the ServiceProvidingResources of the instance (i.e. the */providing* sub-resource).
+
+## Sub-resources
+- **/dependency**: the service dependencies of the instance.
+- **/provinding**: the service providings of the instance.
 
 ## Supported Adaptations
 - to **org.apache.felix.ipojo.architecture.Architecture**.class: to the Architecture service object.
