@@ -26,6 +26,12 @@ This is the documentation of the *Instance Resources* of the everest iPOJO domai
 - **dependencies**: to the ServiceDependencyResources of the instance.
 - **providings**: to the ServiceProvidingResources of the instance.
 
+## Supported Adaptations
+- to **org.apache.felix.ipojo.architecture.Architecture**.class
+- to **org.apache.felix.ipojo.ComponentInstance**.class
+- to **java.util.Map**.class
+- to **java.util.Collection**.class
+
 ## HOW-TOs
 
 ### How to create instances
