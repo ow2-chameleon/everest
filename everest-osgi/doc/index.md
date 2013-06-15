@@ -23,6 +23,7 @@ Optionally:
 - [Bundle Capability](#bundle-capability)
 - [Bundle Requirement](#bundle-requirement)
 - [Bundle Wire](#bundle-wire)
+- [Bundle Services](#bundle-services)
 - [Package](#package)
 - [Service](#service)
 - [Configuration](#configuration)
@@ -149,59 +150,61 @@ Path: **/osgi/bundles/[bundle-id]/capabilities/[unique-capability-id]**
 Observable: **false**  
 
 ### Operations
-- **READ**: 
+- **READ**: Get Bundle Capability of this OSGi Bundle
 
 ### Metadata
+All capability attributes and directives
 
 ### Relations
-
-### Sub-resources
+Dynamic Relations:
+- **[/package](#package)**: Link to the package resource if this capability is a package
+- **[/export-package](#bundle-headers)**: Link to the bundle header if this capability is a package 
+- **[/[unique-wire-id]](#bundle-wire)**: Links to the wires connected to this capability
 
 ### Adaptations
+- **org.osgi.wiring.framework.BundleCapability**: BundleCapability object
+- **org.apache.felix.ipojo.everest.osgi.bundle.BundleCapabilityResource**: BundleCapabilityResource class used to represent this capability  
 
-*to be completed*
 ## Bundle Requirement
 Bundle Requirement resources represent bundle requirement of a specific OSGi bundle.
 
 - Path: **/osgi/bundles/[bundle-id]/requirements/[unique-requirement-id]**
-- Observable: **true**
+- Observable: **false**
 
 ### Operations
-- **CREATE**: 
-- **UPDATE**: 
 - **READ**: 
-- **DELETE**: 
 
 ### Metadata
+All requirement attributes and directives
 
 ### Relations
-
-### Sub-resources
+- **[/dynamicimport-package](#bundle-headers)**: Link to the bundle header if this requirement is a dynamic import package
+- **[/require-bundle](#bundle-headers)**: Link to the bundle header if this requirement is a require bundle
+- **[/[unique-wire-id]](#bundle-wire)**: Links to the wires connected to this requirement  
 
 ### Adaptations
+- **org.osgi.wiring.framework.BundleRequirement**: BundleRequirement object
+- **org.apache.felix.ipojo.everest.osgi.bundle.BundleRequirementResource**: BundleRequirementResource class used to represent this requirement  
 
-*to be completed*
 ## Bundle Wire
 Bundle wire resources represent a bundle wire between a capability and a requirement.
 
 - Path: **/osgi/bundles/[bundle-id]/wires/[unique-wire-id]**
-- Observable: **true**
+- Observable: **false**
 
 ### Operations
-- **CREATE**: 
-- **UPDATE**: 
 - **READ**: 
-- **DELETE**: 
 
 ### Metadata
+- **requirement** *(string)*: [unique-requirement-id] of linked Bundle Requirement
+- **capability** *(string)*: [unique-capability-id] of linked Bundle Capability
 
 ### Relations
-
-### Sub-resources
+- **[/requirement](#bundle-requirement)**: Bundle Requirement linked by this wire
+- **[/capability](#bundle-capability)**: Bundle Capability linked by this wire
 
 ### Adaptations
-
-*to be completed*
+- **org.osgi.wiring.framework.BundleWire**: BundleWire object  
 
 ## Bundle Services
 Services that can be linked to an OSGi bundle
@@ -211,15 +214,9 @@ Services that can be linked to an OSGi bundle
 ### Operations
 - **READ**: 
 
-### Metadata
-
-### Relations
-
 ### Sub-resources
-
-### Adaptations
-
-*to be completed*
+- **[/registered](#service)**: Services registered by this OSGi bundle
+- **[/uses](#service)**: Services used by this OSGi bundle
 
 ## Package
 Package resource represents a package provided by an OSGi bundle.
@@ -228,20 +225,29 @@ Package resource represents a package provided by an OSGi bundle.
 - Observable: **true**
 
 ### Operations
-- **CREATE**: 
-- **UPDATE**: 
 - **READ**: 
-- **DELETE**: 
 
 ### Metadata
+- **osgi.wiring.package** *(string)*: Package Name
+- **version** *(version)*: Package Version
+- **bundle-symbolic-name** *(string)*: Symbolic name of the provider bundle
+- **bundle-version** *(version)*: Version of the provider bundle
+- **in-use** *(boolean)*: Is this packages is used by anyone?
 
 ### Relations
+- **[/provider-bundle](#bundle): OSGi Bundle providing this package
 
 ### Sub-resources
+- **[/importer-bundles](#bundle): A collection of relations to OSGi bundles that import this package
 
 ### Adaptations
+- **org.osgi.wiring.framework.BundleCapability**: BundleCapability object
+- **org.apache.felix.ipojo.everest.osgi.package.PackageResource**: PackageResource class used to represent this package 
 
-*to be completed*
+### Events
+- **CREATED**: 
+- **DELETED**:
+
 ## Service
 Service resource represents an OSGi service published in the service registry.
 
@@ -249,20 +255,20 @@ Service resource represents an OSGi service published in the service registry.
 - Observable: **true**
 
 ### Operations
-- **CREATE**: 
-- **UPDATE**: 
 - **READ**: 
-- **DELETE**: 
 
 ### Metadata
+All service properties  
 
 ### Relations
 
 ### Sub-resources
+- **[/using-bundles](#bundle)**: A collection of relations to bundles using this service 
 
 ### Adaptations
+- **org.osgi.framework.ServiceReference**: ServiceReference object of this service
+- **org.apache.felix.ipojo.everest.osgi.service.ServiceResource**: ServiceResource class used to represent this service
 
-*to be completed*
 ## Configuration
 Configuration resource represents a Config Admin configuration.
 
@@ -284,7 +290,7 @@ Configuration resource represents a Config Admin configuration.
 ### Adaptations
 
 *to be completed*
-## Log Entries
+## Log Entry
 Log Entry resource represents a Log Entry of OSGi Log Service
 
 - Path: **/osgi/logs/[log-time]**
@@ -305,5 +311,28 @@ Log Entry resource represents a Log Entry of OSGi Log Service
 ### Adaptations
 
 *to be completed*
+
+## Deployment Package
+Deployment Package resource represents a Deployment Package deployed by the OSGi Deployment Package Admin
+
+- Path: **/osgi/deployments/[deployment-package-name]**
+- Observable: **true**
+
+### Operations
+- **CREATE**: 
+- **UPDATE**: 
+- **READ**: 
+- **DELETE**: 
+
+### Metadata
+
+### Relations
+
+### Sub-resources
+
+### Adaptations
+
+*to be completed*
+
 
 [1]:  www.ipojo.org
