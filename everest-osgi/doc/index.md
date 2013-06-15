@@ -36,20 +36,42 @@ Path: **/osgi**
 Observable: **true**
 
 #### Operations
-- **CREATE**: 
-- **UPDATE**: 
-- **READ**: 
-- **DELETE**: 
+- **UPDATE**: Update initial bundle startlevel, framework startlevel or Restart the framework.
+- **READ**: Get the current state of OSGi framework
+- **DELETE**: Stop the OSGi framework
 
 #### Metadata
+Static metadata:
+- **org.osgi.framework.version** *(string)*: Framework version
+- ...
+*to be completed*
+Dynamic metadata:
+- **startlevel.bundle** *(int)*: Initial bundle start level
+- **startlevel** *(int)*: Framework start level
 
 #### Relations
+Static relations:
+- *(UPDATE)* **update**: Update initial bundle startlevel, framework startlevel.
+- *(UPDATE)* **restart**: Restart the framework.
+- *(DELETE)* **stop**: Stops the OSGi framework.
 
 #### Sub-resources
-
+Static sub-resources:
+- **bundles**: bundles on this framework
+- **packages**: packages on this framework
+- **services**: services on this framework
+Dynamic sub-resources:
+- **configurations**: configurations on this framework
+- **logs**: logs on this framework
+- **deployments**: deployment packages on this framework
 #### Adaptations
+- **org.osgi.framework.Bundle**: Framework bundle
+- **org.osgi.framework.wiring.FrameworkWiring**: Framework Wiring object
+- **org.osgi.framework.startlevel.FrameworkStartLevel**: Framework StartLevel object
 
-*to be completed*
+#### Events
+- **UPDATED**: Startlevel changed, packages refreshed, one of the dynamic sub-resources arrived/disappeared
+
 ### Bundle
 Bundle resources represent a OSGi bundle.
 
