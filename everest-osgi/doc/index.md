@@ -400,7 +400,8 @@ Observable: **true**
 - **(DELETE)** "uninstall": Uninstall this deployment package
 
 ### Sub-resources
-- **[/bundles](#bundle)** : A collection of links to the OSGi bundles deployed with this deployment package
+- **[/bundles](#bundle)** : A collection of links to the OSGi bundles deployed with this deployment package  
+
 ### Adaptations
 - **org.osgi.service.deploymentadmin.DeploymentPackage**: DeploymentPackage object
 
