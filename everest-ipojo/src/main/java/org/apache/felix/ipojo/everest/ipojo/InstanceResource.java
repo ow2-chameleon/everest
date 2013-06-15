@@ -150,10 +150,8 @@ public class InstanceResource extends ResourceMap implements InstanceStateListen
     public static Resource fakeInstanceResource(ComponentInstance instance) {
         String name = instance.getInstanceName();
         Factory factory = instance.getFactory();
-
-
         try {
-            return new Builder()
+            Builder r = new Builder()
                     .fromPath(INSTANCES.addElements(name))
                     .with(new ImmutableResourceMetadata.Builder()
                             .set("name", name)
@@ -167,6 +165,55 @@ public class InstanceResource extends ResourceMap implements InstanceStateListen
                             Action.READ,
                             "factory",
                             "The factory of this component instance"))
+                    .with(new DefaultRelation(
+                            INSTANCES.addElements(name, "dependency"),
+                            Action.READ,
+                            "dependencies",
+                            "The service dependencies of this component instance"))
+                    .with(new DefaultRelation(
+                            INSTANCES.addElements(name, "providing"),
+                            Action.READ,
+                            "providings",
+                            "The service providings of this component instance"));
+            // Add service dependencies
+            ResourceMap d = new ResourceMap(INSTANCES.addElements(name, "dependency"), false);
+            @SuppressWarnings("unchecked")
+            DependencyHandlerDescription dhd = (DependencyHandlerDescription)
+                    instance.getInstanceDescription().getHandlerDescription("org.apache.felix.ipojo:requires");
+            if (dhd != null) {
+                for (DependencyDescription dd : dhd.getDependencies()) {
+                    String id = dd.getId();
+                    d.addResource(
+                            ServiceDependencyResource.fakeServiceDependencyResource(
+                                    INSTANCES.addElements(name),
+                                    dd),
+                            "dependency[" + id + "]",
+                            String.format("Service dependency '%s'", id));
+                }
+            }
+            // Add service providings
+            ResourceMap p = new ResourceMap(INSTANCES.addElements(name, "providing"), false);
+            @SuppressWarnings("unchecked")
+            ProvidedServiceHandlerDescription phd = (ProvidedServiceHandlerDescription)
+                    instance.getInstanceDescription().getHandlerDescription("org.apache.felix.ipojo:provides");
+            if (phd != null) {
+                ProvidedServiceDescription[] providedServices = phd.getProvidedServices();
+                for (int i = 0; i < providedServices.length; i++) {
+                    ProvidedServiceDescription psd = providedServices[i];
+                    String id = Integer.toString(i);
+                    p.addResource(
+                            ServiceProvidingResource.fakeServiceProvidingResource(
+                                    INSTANCES.addElements(name),
+                                    id,
+                                    psd),
+                            "providing[" + id + "]",
+                            String.format("Service providing '%s'", id));
+                }
+            }
+
+            return r
+                    .with(d)
+                    .with(p)
                     .build();
         } catch (IllegalResourceException e) {
             // Should never happen!

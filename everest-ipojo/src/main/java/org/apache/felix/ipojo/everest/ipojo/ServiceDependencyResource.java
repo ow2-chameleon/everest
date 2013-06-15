@@ -305,4 +305,60 @@ public class ServiceDependencyResource extends DefaultReadOnlyResource implement
             }
         }
     }
+
+    /**
+     * Create a fake service dependency resource for the given service dependency.
+     *
+     * @param instance path to grand-parent instance resource
+     * @param d service dependency to represent
+     * @return fake resource representing the given service dependency
+     */
+    public static Resource fakeServiceDependencyResource(Path instance, DependencyDescription d) {
+        try {
+            Builder r = new Builder()
+                    .fromPath(instance.addElements("dependency", d.getId()))
+                    .with(new ImmutableResourceMetadata.Builder()
+                            .set("id", d.getId())
+                            .set("specification", d.getSpecification()) // May become mutable is future iPOJO releases?
+                            .set("isNullable", d.supportsNullable())
+                            .set("isProxy", d.isProxy())
+                            .set("defaultImplementation", d.getDefaultImplementation())
+                            .set("state", stateToString(d.getState()))
+                            .set("filter", d.getFilter())
+                            .set("policy", policyToString(d.getPolicy()))
+                            .set("comparator", d.getComparator())
+                            .set("isAggregate", d.isMultiple())
+                            .set("isOptional", d.isOptional())
+                            .set("isFrozen", d.isFrozen())
+                            .build());
+            @SuppressWarnings("unchecked")
+            List<ServiceReference> matching = d.getServiceReferences();
+            if (matching != null) {
+                for(ServiceReference<?> s : matching) {
+                    String id = String.valueOf(s.getProperty(Constants.SERVICE_ID));
+                    r.with(new DefaultRelation(
+                            PATH_TO_OSGI_SERVICES.addElements(id),
+                            Action.READ,
+                            String.format("matchingService[%s]", id),
+                            String.format("Matching service with id '%s'", id)));
+                }
+            }
+            @SuppressWarnings("unchecked")
+            List<ServiceReference> used = d.getUsedServices();
+            if (used != null) {
+                for(ServiceReference<?> s : used) {
+                    String id = String.valueOf(s.getProperty(Constants.SERVICE_ID));
+                    r.with(new DefaultRelation(
+                            PATH_TO_OSGI_SERVICES.addElements(id),
+                            Action.READ,
+                            String.format("usedService[%s]", id),
+                            String.format("Used service with id '%s'", id)));
+                }
+            }
+            return r.build();
+        } catch (IllegalResourceException e) {
+            // Should never happen!
+            throw new AssertionError(e);
+        }
+    }
 }

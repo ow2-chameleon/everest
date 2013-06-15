@@ -227,4 +227,40 @@ public class ServiceProvidingResource extends DefaultReadOnlyResource implements
         }
     }
 
+    /**
+     * Create a fake service providing resource for the given service providing.
+     *
+     * @param instance path to grand-parent instance resource
+     * @param index index of the service providing
+     * @param providing service providing to represent
+     * @return fake resource representing the given service providing
+     */
+    public static Resource fakeServiceProvidingResource(Path instance, String index,
+                                                ProvidedServiceDescription providing) {
+        try {
+            Builder r = new Builder()
+                    .fromPath(instance.addElements("providing", index))
+                    .with(new ImmutableResourceMetadata.Builder()
+                            .set("serviceSpecifications", providing.getServiceSpecifications())
+                            .set("policy", policyToString(providing.getPolicy()))
+                            .set("creationStrategy", providing.getCreationStrategy().getName())
+                            .set("controller", providing.getController())
+                            .set("state", stateToString(providing.getState()))
+                            .set("properties", providing.getProperties())
+                            .build());
+            ServiceReference<?> ref = providing.getServiceReference();
+            if (ref != null) {
+                r.with(new DefaultRelation(
+                        PATH_TO_OSGI_SERVICES.addElements(String.valueOf(ref.getProperty(Constants.SERVICE_ID))),
+                        Action.READ,
+                        "service",
+                        "Provided service"));
+            }
+            return r.build();
+        } catch (IllegalResourceException e) {
+            // Should never happen!
+            throw new AssertionError(e);
+        }
+    }
+
 }
