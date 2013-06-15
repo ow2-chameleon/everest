@@ -26,7 +26,6 @@ import static org.apache.felix.ipojo.handlers.providedservice.ProvidedService.*;
 /**
  * '/ipojo/instance/$name/providing/$id' resource.
  */
-// TODO Register as a providing listener as soon as iPOJO defines this interface
 public class ServiceProvidingResource extends DefaultReadOnlyResource implements ProvidedServiceListener {
 
     private WeakReference<ProvidedServiceDescription> m_description;
