@@ -27,10 +27,10 @@ This is the documentation of the *Instance Resources* of the everest iPOJO domai
 - **providings**: to the ServiceProvidingResources of the instance.
 
 ## Supported Adaptations
-- to **org.apache.felix.ipojo.architecture.Architecture**.class
-- to **org.apache.felix.ipojo.ComponentInstance**.class
-- to **java.util.Map**.class
-- to **java.util.Collection**.class
+- to **org.apache.felix.ipojo.architecture.Architecture**.class: to the Architecture service object.
+- to **org.apache.felix.ipojo.ComponentInstance**.class: to the iPOJO ComponentInstance object.
+- to **java.util.Map**.class: to the contained sub-resources, indexed by path.
+- to **java.util.Collection**.class: to the contained sub-resources.
 
 ## HOW-TOs
 
