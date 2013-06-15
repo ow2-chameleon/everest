@@ -346,7 +346,7 @@ Log Entry resource represents a Log Entry of OSGi Log Service
 - Observable: **true**
 
 ### Operations
-- **READ**: 
+- **READ**: Get the current state of this log entry
 
 ### Metadata
 - **log level** *(string)*: log level as string
@@ -364,25 +364,44 @@ Log Entry resource represents a Log Entry of OSGi Log Service
 - **org.osgi.service.log.LogEntry**: LogEntry object
 - **org.apache.felix.ipojo.everest.osgi.log.LogEntryResource**: LogEntryResource class used to represent this resource
 
+## Deployment Packages
+Root of all deployment packages
+
+Path: **/osgi/deployments**
+Observable: **false**
+
+### Operations
+- **CREATE**: Install new deployment package
+
+### Relations
+- **(CREATE)** "install": Install new deployment package
+**Parameter** ("input"): **Type**: InputStream, **Optional**: false  
+
+### Sub-resources
+- **[/[deployment-package-name]](#deployment-package)**: deployment pakcages
+
 ## Deployment Package
 Deployment Package resource represents a Deployment Package deployed by the OSGi Deployment Package Admin
 
-- Path: **/osgi/deployments/[deployment-package-name]**
-- Observable: **true**
+Path: **/osgi/deployments/[deployment-package-name]**   
+Observable: **true**  
 
 ### Operations
-- **READ**: 
-- **DELETE**: 
+- **READ**: Get the current state of this deployment package
+- **DELETE**: Uninstall this deployment package
 
 ### Metadata
+- **Name** *(string)*: Name of this deployment package
+- **DisplayName** *(string)*: display name of this deployment package
+- **Version** *(Version)*: version of this deployment package
+- **isStale** *(boolean)*: is this deployment package stale?
 
 ### Relations
+- **(DELETE)** "uninstall": Uninstall this deployment package
 
 ### Sub-resources
-
+- **[/bundles](#bundle)** : A collection of links to the OSGi bundles deployed with this deployment package
 ### Adaptations
-
-*to be completed*
-
+- **org.osgi.service.deploymentadmin.DeploymentPackage**: DeploymentPackage object
 
 [1]:  www.ipojo.org
