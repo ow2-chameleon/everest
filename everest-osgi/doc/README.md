@@ -2,9 +2,8 @@
 
 This domain is a resource-base representation of OSGi entities, including framework, bundles, packages, services, configurations, log entries and deployment packages.
 
-- [OSGi Root Resource](#osgi-root-resource)
+- [OSGi Framework](#osgi-root-resource)
 - [Bundle](#bundle)
-- [Bundles](#bundles)
 - [Bundle Headers](#bundle-headers)
 - [Bundle Capability](#bundle-capability)
 - [Bundle Requirement](#bundle-requirement)
@@ -12,7 +11,6 @@ This domain is a resource-base representation of OSGi entities, including framew
 - [Bundle Services](#bundle-services)
 - [Package](#package)
 - [Service](#service)
-- [Configurations](#configurations)
 - [Configuration](#configuration)
 - [Log Entry](#log-entry)
 - [Deployment Package](#deployment-package)
@@ -109,6 +107,8 @@ Observable: **true**
 - **UPDATE**: Update start level parameter and/or bundle state, refresh/update bundle
 - **READ**: Get the current state of the bundle
 - **DELETE**: Uninstall the bundle
+
+***Note:*** CREATE operation on bundles (which basically installs a bundle) is done in [Bundles](#bundles) resource.  
 
 ### Metadata
 - **bundle-id** *(long)*: Bundle id
@@ -323,6 +323,8 @@ Observable: **true**
 - **READ**: Get current state of the configuration
 - **DELETE**: Delete this configuration
 
+***Note:*** CREATE operation for configurations (which creates a new configuration) is done in [Configurations](#configurations) resource.   
+
 ### Metadata
 - **service.pid** *(string)*: Configuration pid
 - **location** *(string)*: Bundle location attributed by this configuration
@@ -389,6 +391,8 @@ Observable: **true**
 ### Operations
 - **READ**: Get the current state of this deployment package
 - **DELETE**: Uninstall this deployment package
+
+***Note:*** CREATE opearation for Deployment Packages is done in [Deployment Packages](#deployment-packages) resource.
 
 ### Metadata
 - **Name** *(string)*: Name of this deployment package
