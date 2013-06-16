@@ -182,7 +182,6 @@ public class ServiceDependencyResource extends DefaultReadOnlyResource implement
         }
 
         Boolean aa = getBooleanParameter(request, "isAggregate");
-        System.err.println(">>>isAggregate: " + aa);
         if (aa != null) {
             try {
                 d.setAggregate(aa);
@@ -197,7 +196,6 @@ public class ServiceDependencyResource extends DefaultReadOnlyResource implement
         }
 
         Boolean oo = getBooleanParameter(request, "isOptional");
-        System.err.println(">>>isOptional: " + oo);
         if (oo != null) {
             try {
                 d.setOptional(oo);
