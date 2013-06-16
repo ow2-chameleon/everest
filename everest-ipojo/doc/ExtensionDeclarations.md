@@ -4,7 +4,7 @@ everest iPOJO Extension Declaration Resources
 This is the documentation of the *Extension Declaration Resources* of the everest iPOJO domain. Each extension declaraion resource is a representation of an iPOJO extension.
 
 ## Path
-[/ipojo/extension/declaration/$name](ReferenceCard.md "everest iPOJO Reference Card") - Where *$name* stand for the name of the extension (e.g. *"component"*).
+[/ipojo/declaration/extension/$name](ReferenceCard.md "everest iPOJO Reference Card") - Where *$name* stand for the name of the extension (e.g. *"component"*).
 
 ## Supported operations
 - **READ**: get the current state of the extension declaration
