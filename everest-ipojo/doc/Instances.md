@@ -24,6 +24,7 @@ This is the documentation of the *Instance Resources* of the everest iPOJO domai
 - **factory.version** *(string)*: The version of the factory that has created this instance. May be *null*.
 - **state** *(string)*: The current state of the instance. One of *{"valid", "invalid", "stopped", "disposed", "changing", "unknown"}*.
 - **configuration** *(map<string, ?>)*: The current configuration properties of the component.
+- **__isFake** *(boolean)*: Set to *true* if the resource is a [fake instance resource](Instances.md#fake-instance-resource-wtf "Fake instance resource! WTF?"). Unset otherwise.
 
 ## Relations
 - **service**: to the Architecture OSGi service of the instance
@@ -70,13 +71,27 @@ Result:
 }
 ```
 
-
+Beware that if the created instance does not expose the *Architecture* service, the returned resource will be a [fake instance resource](Instances.md#fake-instance-resource-wtf "Fake instance resource! WTF?").
 
 ### How to reconfigure instances
 
 ### How to change instance state
 
 ### Fake instance resource! WTF?
+Fake instance resource are maybe the most bizarre thing you will encounter when using the everest iPOJO domain. The principle is quite simple : a fake instance resource represents something that exists, but that is not accessible by the everest iPOJO domain.
+
+Technically, iPOJO component instances usually expose an *Architecture* service, to introspect their state. The everest iPOJO domain uses this service to detect instance and represent them as resources.
+
+But sometimes, some instances don't provide this service... and everest cannot detect those instance. That should not be an issue: you just can't see any resource representing those instance.
+
+The point is that: *yes you can* create such instances, e.g. by [sending a CREATE request on a factory resource](Factories.md#how-to-create-instances "How to create instances"). When such a case happens, instead of returning nothing, the everest iPOJO domain creates a snapshot of the instance that it just has created and return this resource.
+
+Fake instance resources are very limited, compared to real instance resource:
+- they only support **READ** operations.
+- they are **not observable**
+- once they are returned, they **cannot** be retrieved with a READ operation on their path.
+
+To identify if an instance resource is fake or not, just check the presence of the **"__isFake"** metadata. If it is set to *true*, then the resource is fake and only supports a reduced set of operations.
 
 ## Example
 
