@@ -3,6 +3,9 @@ everest iPOJO Factory Resources
 
 This is the documentation of the *Factory Resources* of the everest iPOJO domain. Each factory resource is a representation of an iPOJO component factory.
 
+## Path
+[/ipojo/factory/$name/$version](ReferenceCard.md "everest iPOJO Reference Card") - Where *$name* stand for the name of the factory, and *$version* for its version (or *null* if the factory defines no version).
+
 ## Supported operations
 - **READ**: get the current state of the component factory
 - **CREATE**: [create a new instance](#how-to-create-instances) using the factory
@@ -32,3 +35,69 @@ This is the documentation of the *Factory Resources* of the everest iPOJO domain
 ### How to create instances
 
 ### Fake instance resource! WTF?
+
+## Example
+
+READ /ipojo/factory/Foo/1.2.3.foo
+```json
+{
+  "name":"Foo",
+  "version":"1.2.3.foo",
+  "className":"org.apache.felix.ipojo.everest.ipojo.test.b1.FooProviderImpl",
+  "state":"valid",
+  "missingHandlers":[],
+  "__relations": {
+    "service": {
+      "href":"http://localhost:8080/everest/osgi/services/66",
+      "action":"READ",
+      "name":"service",
+      "description":"The Factory OSGi service",
+      "parameters":[]
+    },
+    "bundle": {
+      "href":"http://localhost:8080/everest/osgi/bundles/23",
+      "action":"READ",
+      "name":"bundle",
+      "description":"The declaring OSGi bundle",
+      "parameters":[]
+    },
+    "declaration": {
+      "href":"http://localhost:8080/everest/ipojo/declaration/type/Foo/1.2.3.foo",
+      "action":"READ",
+      "name":"declaration",
+      "description":"The declaration of this factory",
+      "parameters":[]
+    },
+    
+    "requiredHandler[org.apache.felix.ipojo:properties]": {
+      "href":"http://localhost:8080/everest/ipojo/handler/org.apache.felix.ipojo/properties",
+      "action":"READ",
+      "name":"requiredHandler[org.apache.felix.ipojo:properties]",
+      "description":"Required handler 'org.apache.felix.ipojo:properties'",
+      "parameters":[]
+    },
+    "requiredHandler[org.apache.felix.ipojo:provides]": {
+      "href":"http://localhost:8080/everest/ipojo/handler/org.apache.felix.ipojo/provides",
+      "action":"READ",
+      "name":"requiredHandler[org.apache.felix.ipojo:provides]",
+      "description":"Required handler 'org.apache.felix.ipojo:provides'",
+      "parameters":[]
+    },
+    "requiredHandler[org.apache.felix.ipojo:architecture]": {
+      "href":"http://localhost:8080/everest/ipojo/handler/org.apache.felix.ipojo/architecture",
+      "action":"READ",
+      "name":"requiredHandler[org.apache.felix.ipojo:architecture]",
+      "description":"Required handler 'org.apache.felix.ipojo:architecture'",
+      "parameters":[]
+    },
+    
+    "instance[DeclaredFoo123]": {
+      "href":"http://localhost:8080/everest/ipojo/instance/DeclaredFoo123",
+      "action":"READ","name":"instance[DeclaredFoo123]",
+      "description":"Instance 'DeclaredFoo123'",
+      "parameters":[]
+    }
+  },
+  "__observable":true
+}
+```
