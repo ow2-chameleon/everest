@@ -75,8 +75,51 @@ Result:
 Beware that if the created instance does not expose the *Architecture* service, the returned resource will be a [fake instance resource](Instances.md#fake-instance-resource-wtf "Fake instance resource! WTF?").
 
 ### How to reconfigure instances
+You can dynamically reconfigure an iPOJO instance via its resource representation. To do that, you need to send an UPDATE request with the wanted configuration. For example:
+
+Request:
+```
+UPDATE /ipojo/instance/DeclaredFoo123
+- configuration={"fooPrefix":"__reconfigured"}
+```
+Result:
+```json
+{
+  "name":"DeclaredFoo123",
+  "factory.name":"Foo",
+  "factory.version":"1.2.3.foo",
+  "state":"valid",
+  "configuration": {
+    "fooPrefix":"__reconfigured"
+  },
+  ...
+}
+```
 
 ### How to change instance state
+You can change the state of an iPOJO component instance by sending an UPDATE request with the wanted state. The set of the accepted states is *{"valid", "invalid", "stopped", "disposed"}*. Note that setting the state to *disposed* has the same effect as sending a *DELETE* request on the instance.
+
+The *"valid"* and *"invalid"* states are here for convenience purpose. It is in fact impossible to force an instance to be in one of these states, as it is the role of iPOJO to resolve the validity of the instance according to its dependencies, handlers, etc. Here follows a concrete example:
+
+Request:
+```
+UPDATE /ipojo/instance/DeclaredFoo123
+- state="stopped"
+```
+Result:
+```json
+{
+  "name":"DeclaredFoo123",
+  "factory.name":"Foo",
+  "factory.version":"1.2.3.foo",
+  "state":"stopped",
+  "configuration": {
+    "fooPrefix":"__default"
+  },
+  ...
+}
+```
+
 
 ### Fake instance resource! WTF?
 Fake instance resource are maybe the most bizarre thing you will encounter when using the everest iPOJO domain. The principle is quite simple : a fake instance resource represents something that exists, but that is not accessible by the everest iPOJO domain.
