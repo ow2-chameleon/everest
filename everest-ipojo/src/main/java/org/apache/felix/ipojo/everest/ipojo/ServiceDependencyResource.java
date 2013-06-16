@@ -330,6 +330,7 @@ public class ServiceDependencyResource extends DefaultReadOnlyResource implement
                             .set("isAggregate", d.isMultiple())
                             .set("isOptional", d.isOptional())
                             .set("isFrozen", d.isFrozen())
+                            .set("__isFake", true)
                             .build());
             @SuppressWarnings("unchecked")
             List<ServiceReference> matching = d.getServiceReferences();

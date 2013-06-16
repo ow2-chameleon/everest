@@ -159,6 +159,7 @@ public class InstanceResource extends ResourceMap implements InstanceStateListen
                             .set("factory.version", factory.getVersion())
                             .set("state", stateAsString(instance.getState()))
                             .set("configuration", getInstanceConfiguration(instance.getInstanceDescription())) // ResourceMetadata
+                            .set("__isFake", true)
                             .build())
                     .with(new DefaultRelation(
                             FACTORIES.addElements(factory.getName(), String.valueOf(factory.getVersion())),

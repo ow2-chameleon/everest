@@ -247,6 +247,7 @@ public class ServiceProvidingResource extends DefaultReadOnlyResource implements
                             .set("controller", providing.getController())
                             .set("state", stateToString(providing.getState()))
                             .set("properties", providing.getProperties())
+                            .set("__isFake", true)
                             .build());
             ServiceReference<?> ref = providing.getServiceReference();
             if (ref != null) {
