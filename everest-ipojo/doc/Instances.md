@@ -3,6 +3,9 @@ everest iPOJO Instance Resources
 
 This is the documentation of the *Instance Resources* of the everest iPOJO domain. Each instance resource is a representation of an iPOJO component instance.
 
+## Path
+[/ipojo/instance/$name](ReferenceCard.md "everest iPOJO Reference Card") - Where *$name* stand for the name of the instance.
+
 ## Supported operations
 - **READ**: get the current state of the component instance
 - **CREATE**: [create a new instance](#how-to-create-instances)
@@ -45,3 +48,76 @@ This is the documentation of the *Instance Resources* of the everest iPOJO domai
 ### How to change instance state
 
 ### Fake instance resource! WTF?
+
+## Example
+
+READ /ipojo/instance/DeclaredFoo123
+```json
+{
+  "name":"DeclaredFoo123",
+  "factory.name":"Foo",
+  "factory.version":"1.2.3.foo",
+  "state":"valid",
+  "configuration": {
+    "fooPrefix":"__declared"
+  },
+  "__relations": {
+    "service": {
+      "href":"http://localhost:8080/everest/osgi/services/82",
+      "action":"READ",
+      "name":"service",
+      "description":"The Architecture OSGi service",
+      "parameters":[]
+    },
+    "factory": {
+      "href":"http://localhost:8080/everest/ipojo/factory/Foo/1.2.3.foo",
+      "action":"READ",
+      "name":"factory",
+      "description":"The factory of this component instance",
+      "parameters":[]
+    },
+    "delete": {
+      "href":"http://localhost:8080/everest/ipojo/instance/DeclaredFoo123",
+      "action":"DELETE",
+      "name":"delete",
+      "description":"Destroy this component instance",
+      "parameters":[]
+    },
+    "reconfigure": {
+      "href":"http://localhost:8080/everest/ipojo/instance/DeclaredFoo123",
+      "action":"UPDATE",
+      "name":"reconfigure",
+      "description":"Reconfigure this component instance",
+      "parameters": [
+        {
+          "name":"state",
+          "type":"java.lang.String",
+          "description":"The wanted state of the component instance",
+          "optional":true
+        },
+        {
+          "name":"configuration",
+          "type":"java.util.Map",
+          "description":"The wanted configuration of the component instance",
+          "optional":true
+        }
+      ]
+    },
+    "dependencies": {
+      "href":"http://localhost:8080/everest/ipojo/instance/DeclaredFoo123/dependency",
+      "action":"READ",
+      "name":"dependencies",
+      "description":"The service dependencies of this component instance",
+      "parameters":[]
+    },
+    "providings": {
+      "href":"http://localhost:8080/everest/ipojo/instance/DeclaredFoo123/providing",
+      "action":"READ",
+      "name":"providings",
+      "description":"The service providings of this component instance",
+      "parameters":[]
+    }
+  },
+  "__observable":true
+}
+```
