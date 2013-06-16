@@ -9,7 +9,11 @@ This is the documentation of the *Instance Resources* of the everest iPOJO domai
 ## Supported operations
 - **READ**: get the current state of the component instance
 - **CREATE**: [create a new instance](#how-to-create-instances)
+    - **factory.name** *(string)*: the name of the factory to use to create the instance.
+    - **factory.version** *(string)*: the version of the factory to use to create the instance. May be *null*.
 - **UPDATE**: [reconfigure the instance](#how-to-reconfigure-instances) and/or [change its state](#how-to-change-instance-state)
+    - **configuration** *(map)*: the wanted configuration of the instance.
+    - **state** *(string)* the wanted state of the instance. One of *{"valid", "invalid", "stopped", "disposed"}*.
 - **DELETE**: destroy the component instance
 
 *NOTE: This type of resource is* **observable**
@@ -42,6 +46,31 @@ This is the documentation of the *Instance Resources* of the everest iPOJO domai
 ## HOW-TOs
 
 ### How to create instances
+You can create iPOJO component instances by sending a **CREATE** request on an unexistent instance resource path. The request parameters are used as the configuration of the instance to create. However, everest iPOJO needs to know what kind of instance you want to create. That's why you need to specify the factory you want to use, by setting the *factory.name* parameter (and, optionally, *factory.version*). If the specified factory cannot be found, everest iPOJO will raise an *IllegalActionOnResource* error (HTTP code *405*).
+
+Here is an example:
+
+Request:
+```
+CREATE /ipojo/instance/CreatedFoo
+- factory.name="Foo"
+- factory.version="1.2.3.foo"
+```
+Result:
+```json
+{
+  "name":"CreatedFoo",
+  "factory.name":"Foo",
+  "factory.version":"1.2.3.foo",
+  "state":"valid",
+  "configuration": {
+    "fooPrefix":"__example"
+  },
+  ...
+}
+```
+
+
 
 ### How to reconfigure instances
 
