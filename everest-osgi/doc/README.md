@@ -2,21 +2,6 @@
 
 This domain is a resource-base representation of OSGi entities, including framework, bundles, packages, services, configurations, log entries and deployment packages.
 
-## Requirements
-
-everest OSGi domain needs an OSGi r4.3 compliant framework to represent its entities as resources.
-
-It depends on: 
-- [Apache Felix iPOJO][1], version 1.10.1 or above
-- everest-core, version ${everest.core.version}
-
-Optionally:
-- OSGi Configuration Admin, version *to be completed*
-- OSGi Log Service, version *to be completed*
-- OSGi Deployment Package Admin, version *to be completed*
-
-## Entities
-
 - [OSGi Root Resource](#osgi-root-resource)
 - [Bundle](#bundle)
 - [Bundles](#bundles)
@@ -31,6 +16,21 @@ Optionally:
 - [Configuration](#configuration)
 - [Log Entry](#log-entry)
 - [Deployment Package](#deployment-package)
+
+## Requirements
+
+everest OSGi domain needs an OSGi r4.3 compliant framework to represent its entities as resources.
+
+It depends on: 
+- [Apache Felix iPOJO][1], version 1.10.1 or above
+- everest-core, version ${everest.core.version}
+
+Optionally:
+- OSGi Configuration Admin, version *to be completed*
+- OSGi Log Service, version *to be completed*
+- OSGi Deployment Package Admin, version *to be completed*
+
+## Entities
 
 ## OSGi Root Resource
 Root resource is the starting point for OSGi domain and represents the OSGi Framework.  
