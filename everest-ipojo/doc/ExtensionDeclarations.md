@@ -3,6 +3,9 @@ everest iPOJO Extension Declaration Resources
 
 This is the documentation of the *Extension Declaration Resources* of the everest iPOJO domain. Each extension declaraion resource is a representation of an iPOJO extension.
 
+## Path
+[/ipojo/extension/declaration/$name](ReferenceCard.md "everest iPOJO Reference Card") - Where *$name* stand for the name of the extension (e.g. *"component"*).
+
 ## Supported operations
 - **READ**: get the current state of the extension declaration
 
@@ -20,3 +23,33 @@ This is the documentation of the *Extension Declaration Resources* of the everes
 
 ## Supported Adaptations
 - to **org.apache.felix.ipojo.extender.ExtensionDeclaration**.class: to the ExtensionDeclaration service object.
+
+## Example
+
+READ /ipojo/declaration/extension/component
+```json
+{
+  "name":"component",
+  "status.isBound":true,
+  "status.message":"Declaration bound",
+  "status.throwable":null,
+  "__relations": {
+    "service": {
+      "href":"http://localhost:8080/everest/osgi/services/24",
+      "action":"READ",
+      "name":"service",
+      "description":"The ExtensionDeclaration OSGi service",
+      "parameters":[]
+    },
+    "bundle": {
+      "href":"http://localhost:8080/everest/osgi/bundles/11",
+      "action":"READ",
+      "name":"bundle",
+      "description":"The declaring OSGi bundle",
+      "parameters":[]
+    }
+  },
+  "__observable":true
+}
+
+```
