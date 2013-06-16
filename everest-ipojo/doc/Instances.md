@@ -56,6 +56,7 @@ Request:
 CREATE /ipojo/instance/CreatedFoo
 - factory.name="Foo"
 - factory.version="1.2.3.foo"
+- fooPrefix="__example"
 ```
 Result:
 ```json
