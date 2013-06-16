@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import static org.apache.felix.ipojo.everest.core.Everest.DEBUG_REQUEST;
 import static org.apache.felix.ipojo.everest.servlet.HttpUtils.*;
 
 /**
@@ -46,7 +47,13 @@ public class EverestServlet extends HttpServlet {
 
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        System.out.println("Everest servlet called");
+
+        String debug = System.getProperty(DEBUG_REQUEST);
+        if (debug != null && debug.equalsIgnoreCase("true")) {
+            //Trace
+            System.out.println("Everest servlet called");
+            //End Trace
+        }
 
         // Translate request
         DefaultRequest request = translate(req);
@@ -138,7 +145,14 @@ public class EverestServlet extends HttpServlet {
     }
 
     public static DefaultRequest translate(HttpServletRequest request) {
-        System.out.println("Path info : " + request.getPathInfo());
+
+        String debug = System.getProperty(DEBUG_REQUEST);
+        if (debug != null && debug.equalsIgnoreCase("true")) {
+            //Trace
+            System.out.println("Path info : " + request.getPathInfo());
+            //End Trace
+        }
+
         Path path = Path.from(request.getPathInfo());
 
         Action action;
