@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project name="everest" xmlns="http://maven.apache.org/DECORATION/1.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/DECORATION/1.0.0 http://maven.apache.org/xsd/decoration-1.0.0.xsd">
+    <bannerLeft>
+        <name>everest</name>
+        <href>#</href>
+    </bannerLeft>
+
+    <skin>
+        <groupId>org.apache.maven.skins</groupId>
+        <artifactId>maven-fluido-skin</artifactId>
+        <version>1.3.0</version>
+    </skin>
+    <custom>
+        <fluidoSkin>
+            <sideBarEnabled>true</sideBarEnabled>
+        </fluidoSkin>
+    </custom>
+
+    <body>
+        <head>
+            <link rel="stylesheet" href="./css/site.css" type="text/css" />
+        </head>
+        
+        <menu name="everest-core">
+            <item name="Home" href="everest-core/index.html"/>
+        </menu>
+        
+        <menu name="everest-servlet">
+            <item name="Home" href="everest-servlet/Home.html"/>
+        </menu>
+
+        <menu name="everest-OSGi">
+            <item name="Home" href="everest-osgi/README.html"/>
+        </menu>
+        
+        <menu name="everest-iPOJO">
+            <item name="Home" href="everest-ipojo/Home.html"/>
+            <item name="Reference Card" href="everest-ipojo/ReferenceCard.html"/>
+            <item name="Root" href="everest-ipojo/Root.html"/>
+            <item name="Instances" href="everest-ipojo/Instances.html"/>
+            <item name="Instance service dependencies" href="everest-ipojo/ServiceDependencies.html"/>
+            <item name="Instance service providings" href="everest-ipojo/ServiceProvidings.html"/>
+            <item name="Factories" href="everest-ipojo/Factories.html"/>
+            <item name="Handlers" href="everest-ipojo/Handlers.html"/>
+            <item name="Instance declarations" href="everest-ipojo/InstanceDeclarations.html"/>
+            <item name="Type declarations" href="everest-ipojo/TypeDeclarations.html"/>
+            <item name="Extension declarations" href="everest-ipojo/ExtensionDeclarations.html"/>
+        </menu>
+
+        <menu ref="reports"/>
+    </body>
+</project>
