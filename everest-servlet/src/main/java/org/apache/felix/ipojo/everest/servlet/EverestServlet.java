@@ -1,6 +1,5 @@
 package org.apache.felix.ipojo.everest.servlet;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.felix.ipojo.annotations.*;
 import org.apache.felix.ipojo.everest.impl.DefaultRequest;
@@ -13,13 +12,11 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.Writer;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import static org.apache.felix.ipojo.everest.core.Everest.DEBUG_REQUEST;
 import static org.apache.felix.ipojo.everest.servlet.HttpUtils.*;
 
 /**
@@ -28,6 +25,11 @@ import static org.apache.felix.ipojo.everest.servlet.HttpUtils.*;
 @Component(immediate = true)
 @Instantiate
 public class EverestServlet extends HttpServlet {
+
+    /**
+     * The system property used to dump requests to System.out.
+     */
+    public static final String DEBUG_SERVLET = "everest.debug.servlet";
 
 
     public static final String EVEREST_SERVLET_PATH = "/everest";
@@ -48,7 +50,7 @@ public class EverestServlet extends HttpServlet {
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
-        String debug = System.getProperty(DEBUG_REQUEST);
+        String debug = System.getProperty(DEBUG_SERVLET);
         if (debug != null && debug.equalsIgnoreCase("true")) {
             //Trace
             System.out.println("Everest servlet called");
@@ -146,7 +148,7 @@ public class EverestServlet extends HttpServlet {
 
     public static DefaultRequest translate(HttpServletRequest request) {
 
-        String debug = System.getProperty(DEBUG_REQUEST);
+        String debug = System.getProperty(DEBUG_SERVLET);
         if (debug != null && debug.equalsIgnoreCase("true")) {
             //Trace
             System.out.println("Path info : " + request.getPathInfo());
