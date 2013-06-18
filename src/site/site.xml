@@ -28,15 +28,15 @@
         </menu>
         
         <menu name="everest-servlet">
-            <item name="Home" href="everest-servlet/Home.html"/>
+            <item name="Home" href="everest-servlet/index.html"/>
         </menu>
 
         <menu name="everest-OSGi">
-            <item name="Home" href="everest-osgi/README.html"/>
+            <item name="Home" href="everest-osgi/index.html"/>
         </menu>
         
         <menu name="everest-iPOJO">
-            <item name="Home" href="everest-ipojo/Home.html"/>
+            <item name="Home" href="everest-ipojo/index.html"/>
             <item name="Reference Card" href="everest-ipojo/ReferenceCard.html"/>
             <item name="Root" href="everest-ipojo/Root.html"/>
             <item name="Instances" href="everest-ipojo/Instances.html"/>
