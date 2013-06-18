@@ -235,14 +235,19 @@ public class BundleResource extends AbstractResourceCollection {
             List<BundleWire> providedWires = wiring.getProvidedWires(null);
             if (providedWires != null) {
                 for (BundleWire providedWire : providedWires) {
-                    builder.with(new BundleWireResource(wiresPath, providedWire));
+                    BundleWireResource bundleWireResource = new BundleWireResource(wiresPath, providedWire);
+                    builder.with(bundleWireResource);
+                    builder.with(new DefaultRelation(bundleWireResource.getPath(), Action.READ, bundleWireResource.getPath().getLast()));
+
                 }
             }
             // get required wires from all namespaces
             List<BundleWire> requiredWires = wiring.getRequiredWires(null);
             if (requiredWires != null) {
                 for (BundleWire requiredWire : requiredWires) {
-                    builder.with(new BundleWireResource(wiresPath, requiredWire));
+                    BundleWireResource bundleWireResource = new BundleWireResource(wiresPath, requiredWire);
+                    builder.with(bundleWireResource);
+                    builder.with(new DefaultRelation(bundleWireResource.getPath(), Action.READ, bundleWireResource.getPath().getLast()));
                 }
             }
         }

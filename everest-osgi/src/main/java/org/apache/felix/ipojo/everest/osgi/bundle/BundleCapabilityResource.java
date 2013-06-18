@@ -58,6 +58,7 @@ public class BundleCapabilityResource extends AbstractResourceCollection {
         List<Relation> relations = new ArrayList<Relation>();
         // calculate wires coming from this capability
         BundleRevision revision = m_capability.getRevision();
+        String bundleId = Long.toString(revision.getBundle().getBundleId());
         if (revision != null) {
             BundleWiring wiring = revision.getWiring();
             if (wiring != null) {
@@ -67,7 +68,7 @@ public class BundleCapabilityResource extends AbstractResourceCollection {
                         // and add a relation link
                         m_wires.add(wire);
                         String wireId = uniqueWireId(wire);
-                        Path wirePath = BundleResourceManager.getInstance().getPath().addElements(
+                        Path wirePath = BundleResourceManager.getInstance().getPath().addElements(bundleId,
                                 BundleResource.WIRES_PATH,
                                 wireId
                         );
@@ -82,9 +83,8 @@ public class BundleCapabilityResource extends AbstractResourceCollection {
                 Path packagePath = PackageResourceManager.getInstance().getPath().addElements(packageId);
                 relations.add(new DefaultRelation(packagePath, Action.READ, PACKAGE_RELATION));
                 // add relation to bundle export package header
-                long bundleId = revision.getBundle().getBundleId();
                 Path exportPackagePath = BundleResourceManager.getInstance().getPath()
-                        .addElements(Long.toString(bundleId), BundleHeadersResource.HEADERS_PATH, BundleHeadersResource.EXPORT_PACKAGE, packageId);
+                        .addElements(bundleId, BundleHeadersResource.HEADERS_PATH, BundleHeadersResource.EXPORT_PACKAGE, packageId);
                 relations.add(new DefaultRelation(exportPackagePath, Action.READ, BundleHeadersResource.EXPORT_PACKAGE));
             }
             setRelations(relations);

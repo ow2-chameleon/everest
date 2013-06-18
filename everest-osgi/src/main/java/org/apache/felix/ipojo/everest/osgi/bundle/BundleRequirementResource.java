@@ -62,6 +62,7 @@ public class BundleRequirementResource extends AbstractResourceCollection {
         List<Relation> relations = new ArrayList<Relation>();
         // calculate wires coming to this requirement
         BundleRevision revision = m_requirement.getRevision();
+        String bundleId = Long.toString(revision.getBundle().getBundleId());
         if (revision != null) {
             BundleWiring wiring = revision.getWiring();
             if (wiring != null) {
@@ -71,7 +72,7 @@ public class BundleRequirementResource extends AbstractResourceCollection {
                         // and add a relation link
                         m_wires.add(wire);
                         String wireId = uniqueWireId(wire);
-                        Path wirePath = BundleResourceManager.getInstance().getPath().addElements(
+                        Path wirePath = BundleResourceManager.getInstance().getPath().addElements(bundleId,
                                 BundleResource.WIRES_PATH,
                                 wireId
                         );
@@ -81,8 +82,7 @@ public class BundleRequirementResource extends AbstractResourceCollection {
             }
             String requirementId = OsgiResourceUtils.uniqueRequirementId(m_requirement);
             Relation relation = null;
-            long bundleId = revision.getBundle().getBundleId();
-            Path bundleHeadersPath = BundleResourceManager.getInstance().getPath().addElements(Long.toString(bundleId), BundleHeadersResource.HEADERS_PATH);
+            Path bundleHeadersPath = BundleResourceManager.getInstance().getPath().addElements(bundleId, BundleHeadersResource.HEADERS_PATH);
             // add relation to package import header
             if (isPackage) {
                 String dynamicOrNot = RESOLUTION_DYNAMIC.equals(m_requirement.getDirectives().get(Constants.RESOLUTION_DIRECTIVE)) ? BundleHeadersResource.DYNAMIC_IMPORT_PACKAGE : BundleHeadersResource.IMPORT_PACKAGE;
