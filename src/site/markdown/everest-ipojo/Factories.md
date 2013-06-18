@@ -40,6 +40,7 @@ All you have to do is to make a **CREATE** request **on the factory resource**. 
 Here is a short example to illustrate instance creation from factory resources:
 
 Request:
+
 ```
 CREATE /ipojo/factory/Foo/1.2.3.foo
 - instance.name="FooExample"
@@ -47,6 +48,7 @@ CREATE /ipojo/factory/Foo/1.2.3.foo
 ```
 
 Result:
+
 ```json
 {
   "name":"FooExample",
@@ -63,6 +65,7 @@ Result:
 ## Example
 
 READ /ipojo/factory/Foo/1.2.3.foo
+
 ```json
 {
   "name":"Foo",
