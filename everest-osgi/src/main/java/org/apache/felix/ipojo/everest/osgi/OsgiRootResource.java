@@ -296,7 +296,7 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
         if (startLevel != null) {
             frameworkStartLevel.setStartLevel(startLevel);
         }
-        Boolean restart = request.get("restart", Boolean.class);
+        Boolean restart = request.get(FRAMEWORK_RESTART_PARAMETER, Boolean.class);
         if (restart != null && restart) {
             try {
                 //restarting framework
@@ -322,6 +322,19 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
     @Override
     public boolean isObservable() {
         return true;
+    }
+
+    @Override
+    public <A> A adaptTo(Class<A> clazz) {
+        if (Bundle.class.equals(clazz)) {
+            return (A) m_frameworkBundle;
+        } else if (FrameworkWiring.class.equals(clazz)) {
+            return (A) m_frameworkBundle.adapt(FrameworkWiring.class);
+        } else if (FrameworkStartLevel.class.equals(clazz)) {
+            return (A) m_frameworkBundle.adapt(FrameworkStartLevel.class);
+        } else {
+            return null;
+        }
     }
 
     // Config Admin Bind / Unbind
