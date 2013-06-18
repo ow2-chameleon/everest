@@ -142,6 +142,9 @@ public class Everest extends DefaultReadOnlyResource implements EverestService {
             }
         } catch (SecurityException ex) {
             return false;
+        } catch (IllegalStateException ex) {
+            // The EventAdmin may be shutting down...
+            return false;
         }
         return true;
     }
