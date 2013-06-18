@@ -23,7 +23,7 @@ This is the documentation of the *Instance Resources* of the everest iPOJO domai
 - **factory.name** *(string)*: The name of the factory that has created this instance.
 - **factory.version** *(string)*: The version of the factory that has created this instance. May be *null*.
 - **state** *(string)*: The current state of the instance. One of *{"valid", "invalid", "stopped", "disposed", "changing", "unknown"}*.
-- **configuration** *(map<string, ?>)*: The current configuration properties of the component.
+- **configuration** *(map\<string, ?\>)*: The current configuration properties of the component.
 - **__isFake** *(boolean)*: Set to *true* if the resource is a [fake instance resource](Instances.md#fake-instance-resource-wtf "Fake instance resource! WTF?"). Unset otherwise.
 
 ## Relations

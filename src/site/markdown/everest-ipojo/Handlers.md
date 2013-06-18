@@ -15,7 +15,7 @@ This is the documentation of the *Handler Resources* of the everest iPOJO domain
 - **namespace** *(string)*: The namespace of the handler.
 - **name** *(string)*: The name of the handler.
 - **state** *(string)*: The current state of the handler. One of *{"valid", "invalid", "unknown"}*.
-- **missingHandlers** *(list<string>)*: The fully qualified names of the missing handlers that are required by the handler.
+- **missingHandlers** *(list\<string\>)*: The fully qualified names of the missing handlers that are required by the handler.
 
 ## Relations
 - **service**: to the HandlerFactory OSGi service of the factory

@@ -18,7 +18,7 @@ This is the documentation of the *Factory Resources* of the everest iPOJO domain
 - **version** *(string)*: The version of the factory.  May be *null*
 - **className** *(string)*: The name of the implementation class of the factory.
 - **state** *(string)*: The current state of the factory. One of *{"valid", "invalid", "unknown"}*.
-- **missingHandlers** *(list<string>)*: The fully qualified names of the missing handlers that are required by the factory.
+- **missingHandlers** *(list\<string\>)*: The fully qualified names of the missing handlers that are required by the factory.
 
 ## Relations
 - **service**: to the Factory OSGi service of the factory

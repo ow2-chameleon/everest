@@ -12,7 +12,7 @@ In order to use the everest iPOJO resource domain, you need an [OSGi™](http://
 - [Apache Felix iPOJO](http://www.ipojo.org "iPOJO web site"), version **1.10.1** or above
 - everest-core, version ${everest.core.version}
 
-**WARNING:** The everest iPOJO domains uses the latest bug fixes and improvements of Apache Felix iPOJO, so it *won't work at all* on previous releases (<=1.10.0).
+**WARNING:** The everest iPOJO domains uses the latest bug fixes and improvements of Apache Felix iPOJO, so it *won't work at all* on previous releases (\<=1.10.0).
 
 Optional dependencies include:
 - everest-servlet, version ${everest.servlet.version} if you want to use HTTP binding on the iPOJO resources.
@@ -47,7 +47,7 @@ Here is a quick programmatic usage example:
         
         // This is how you can get the Everest service.
         // Beware that the EverestService may not be present (i.e. ref == null)
-        ServiceReference<Everest> ref = bc.getServiceReference(EverestService.class);
+        ServiceReference\<Everest\> ref = bc.getServiceReference(EverestService.class);
         EverestService everest = bc.getService(ref);
         
         // This is how you can access the everest iPOJO domain.
