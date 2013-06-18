@@ -153,12 +153,12 @@ public class BundleResource extends AbstractResourceCollection {
                 new DefaultRelation(getPath(), Action.UPDATE, UPDATE_RELATION,
                         new DefaultParameter()
                                 .name(START_LEVEL_PARAMETER)
-                                .name(START_LEVEL_PARAMETER)
+                                .description(START_LEVEL_PARAMETER)
                                 .optional(true)
                                 .type(Integer.class),
                         new DefaultParameter()
                                 .name(UPDATE_PARAMETER)
-                                .name(UPDATE_PARAMETER)
+                                .description(UPDATE_PARAMETER)
                                 .optional(true)
                                 .type(Boolean.class),
                         new DefaultParameter()

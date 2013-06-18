@@ -69,8 +69,8 @@ public class BundleWireResource extends DefaultReadOnlyResource {
     @Override
     public ResourceMetadata getMetadata() {
         ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
-        metadataBuilder.set(BundleResource.REQUIREMENTS_PATH, uniqueRequirementId(m_wire.getRequirement()));
-        metadataBuilder.set(BundleResource.CAPABILITIES_PATH, uniqueCapabilityId(m_wire.getCapability()));
+        metadataBuilder.set(WIRE_REQUIREMENT, uniqueRequirementId(m_wire.getRequirement()));
+        metadataBuilder.set(WIRE_CAPABILITY, uniqueCapabilityId(m_wire.getCapability()));
         return metadataBuilder.build();
     }
 
