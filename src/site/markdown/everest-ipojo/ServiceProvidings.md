@@ -20,7 +20,7 @@ This is the documentation of the *Service Providing Resources* of the everest iP
 - **controller** *(string)*: The provided service controller.
 - **state** *(string)*: The current state of the provided service. One of *{"REGISTERED", "UNREGISTERED"}*.
 - **properties** *(map)*: The current properties exposed by the provided service.
-- **__isFake** *(boolean)*: Set to *true* if the resource is a [fake resource](Instances.md#fake-instance-resource-wtf "Fake instance resource! WTF?"). Unset otherwise.
+- __isFake *(boolean)*: Set to *true* if the resource is a [fake resource](Instances.md#fake-instance-resource-wtf "Fake instance resource! WTF?"). Unset otherwise.
 
 ## Relations
 - **service**: to the provided OSGi service.
@@ -36,12 +36,14 @@ This is the documentation of the *Service Providing Resources* of the everest iP
 You can reconfigure dynamically service providings by sending an **UPDATE** request on their resource representation. For now, the only possible action is to register/unregister the service. Here is a quick example:
 
 Request:
+
 ```
 UPDATE /ipojo/instance/org.apache.felix.ipojo.everest.core.Everest-0/providing/0
 - state="unregistered"
 ```
 
 Result:
+
 ```json
 {
   "state":"UNREGISTERED",
@@ -55,6 +57,7 @@ Result:
 
 ## Example
 READ /ipojo/instance/org.apache.felix.ipojo.everest.core.Everest-0/providing/0
+
 ```json
 {
   "state":"REGISTERED",

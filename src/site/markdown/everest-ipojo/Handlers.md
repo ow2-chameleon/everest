@@ -28,6 +28,7 @@ This is the documentation of the *Handler Resources* of the everest iPOJO domain
 
 ## Example
 READ /ipojo/handler/org.apache.felix.ipojo/requires
+
 ```json
 {
   "namespace":"org.apache.felix.ipojo",

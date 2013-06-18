@@ -31,8 +31,8 @@ This is the documentation of the *Type Declaration Resources* of the everest iPO
 - to **org.apache.felix.ipojo.extender.TypeDeclaration**.class: to the TypeDeclaration service object.
 
 ## Example
-
 READ /ipojo/declaration/type/Foo/1.2.3.foo
+
 ```json
 {
   "name":"Foo",

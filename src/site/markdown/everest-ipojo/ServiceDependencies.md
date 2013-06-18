@@ -27,7 +27,7 @@ This is the documentation of the *Service Dependency Resources* of the everest i
 - **isAggregate** *(boolean)*: The flag indicating if the dependency is aggregate.
 - **isOptional** *(boolean)*: The flag indicating if the dependency is optional.
 - **isFrozen** *(boolean)*: The flag indicating if the dependency is frozen.
-- **__isFake** *(boolean)*: Set to *true* if the resource is a [fake resource](Instances.md#fake-instance-resource-wtf "Fake instance resource! WTF?"). Unset otherwise.
+- __isFake *(boolean)*: Set to *true* if the resource is a [fake resource](Instances.md#fake-instance-resource-wtf "Fake instance resource! WTF?"). Unset otherwise.
 
 ## Relations
 - **matchingService**[$i]: to all the OSGi services that are currently **matching** the dependency. *$i* stands for the service identifier.
@@ -43,12 +43,14 @@ This is the documentation of the *Service Dependency Resources* of the everest i
 You can reconfigure dynamically service dependencies by sending an **UPDATE** request on their resource representation. Here is a quick example:
 
 Request:
+
 ```
 UPDATE /ipojo/instance/org.apache.felix.ipojo.everest.core.Everest-0/dependency/RootResource
 - filter="(type=ipojo)"
 ```
 
 Result:
+
 ```json
 {
   "state":"RESOLVED",
@@ -61,6 +63,7 @@ Result:
 
 ## Example
 READ /ipojo/instance/org.apache.felix.ipojo.everest.core.Everest-0/dependency/RootResource
+
 ```json
 {
   "state":"RESOLVED",

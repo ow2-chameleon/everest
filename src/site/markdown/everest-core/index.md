@@ -17,6 +17,7 @@ Optionally:
 ## Concepts
 Using everest to access resource representations is plain simple: 
 The only method of EverestService is
+
 ```java
  Resource process(Request request)  throws IllegalActionOnResourceException, ResourceNotFoundException;
 ```
@@ -39,6 +40,7 @@ Path
 The second thing that you would want to do with everest _(after admiring its name)_ is to create your own domain.
 
 Here are some links to existing domains:
+
 - everest OSGi
 - everest iPOJO
 - everest System
@@ -48,5 +50,5 @@ Here are some links to existing domains:
 everest servlet provides a nice and easy way for accessing any resource representation.
 
 [1]:  http://en.wikipedia.org/wiki/Representational_State_Transfer "REST"
-[2]:	www.osgi.org "OSGi"
-[3]:	www.ipojo.org
+[2]:  http://www.osgi.org "OSGi"
+[3]:  http://www.ipojo.org

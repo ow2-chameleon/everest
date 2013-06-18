@@ -24,7 +24,7 @@ This is the documentation of the *Instance Resources* of the everest iPOJO domai
 - **factory.version** *(string)*: The version of the factory that has created this instance. May be *null*.
 - **state** *(string)*: The current state of the instance. One of *{"valid", "invalid", "stopped", "disposed", "changing", "unknown"}*.
 - **configuration** *(map\<string, ?\>)*: The current configuration properties of the component.
-- **__isFake** *(boolean)*: Set to *true* if the resource is a [fake instance resource](Instances.md#fake-instance-resource-wtf "Fake instance resource! WTF?"). Unset otherwise.
+- __isFake *(boolean)*: Set to *true* if the resource is a [fake instance resource](Instances.md#fake-instance-resource-wtf "Fake instance resource! WTF?"). Unset otherwise.
 
 ## Relations
 - **service**: to the Architecture OSGi service of the instance
@@ -36,7 +36,7 @@ This is the documentation of the *Instance Resources* of the everest iPOJO domai
 
 ## Sub-resources
 - **/dependency**: the service dependencies of the instance.
-- **/provinding**: the service providings of the instance.
+- **/providing**: the service providings of the instance.
 
 ## Supported Adaptations
 - to **org.apache.felix.ipojo.architecture.Architecture**.class: to the Architecture service object.
@@ -52,13 +52,16 @@ You can create iPOJO component instances by sending a **CREATE** request on an u
 Here is an example:
 
 Request:
+
 ```
 CREATE /ipojo/instance/CreatedFoo
 - factory.name="Foo"
 - factory.version="1.2.3.foo"
 - fooPrefix="__example"
 ```
+
 Result:
+
 ```json
 {
   "name":"CreatedFoo",
@@ -78,11 +81,14 @@ Beware that if the created instance does not expose the *Architecture* service, 
 You can dynamically reconfigure an iPOJO instance via its resource representation. To do that, you need to send an UPDATE request with the wanted configuration. For example:
 
 Request:
+
 ```
 UPDATE /ipojo/instance/DeclaredFoo123
 - configuration={"fooPrefix":"__reconfigured"}
 ```
+
 Result:
+
 ```json
 {
   "name":"DeclaredFoo123",
@@ -102,11 +108,14 @@ You can change the state of an iPOJO component instance by sending an UPDATE req
 The *"valid"* and *"invalid"* states are here for convenience purpose. It is in fact impossible to force an instance to be in one of these states, as it is the role of iPOJO to resolve the validity of the instance according to its dependencies, handlers, etc. Here follows a concrete example:
 
 Request:
+
 ```
 UPDATE /ipojo/instance/DeclaredFoo123
 - state="stopped"
 ```
+
 Result:
+
 ```json
 {
   "name":"DeclaredFoo123",
@@ -120,7 +129,6 @@ Result:
 }
 ```
 
-
 ### Fake instance resource! WTF?
 Fake instance resource are maybe the most bizarre thing you will encounter when using the everest iPOJO domain. The principle is quite simple : a fake instance resource represents something that exists, but that is not accessible by the everest iPOJO domain.
 
@@ -131,6 +139,7 @@ But sometimes, some instances don't provide this service... and everest cannot d
 The point is that: *yes you can* create such instances, e.g. by [sending a CREATE request on a factory resource](Factories.md#how-to-create-instances "How to create instances"). When such a case happens, instead of returning nothing, the everest iPOJO domain creates a snapshot of the instance that it just has created and return this resource.
 
 Fake instance resources are very limited, compared to real instance resource:
+
 - they only support **READ** operations.
 - they are **not observable**
 - once they are returned, they **cannot** be retrieved with a READ operation on their path.
@@ -139,7 +148,8 @@ To identify if an instance resource is fake or not, just check the presence of t
 
 ## Example
 
-READ /ipojo/instance/DeclaredFoo123
+> READ /ipojo/instance/DeclaredFoo123
+
 ```json
 {
   "name":"DeclaredFoo123",

@@ -5,6 +5,7 @@ This is the documentation of the *Instance Declaration Resources* of the everest
 
 ## Path
 [/ipojo/declaration/instance/$name/$index](ReferenceCard.md "everest iPOJO Reference Card") - Where :
+
 - *$name* stand for the name of the instance declaration.
 - *$index* is a generated number, because several instances can be *declared* with the same name (while only one instance can be *created* with a specific name). Indexes are unique, start from 0 (zero) and are incremented automatically.
 
@@ -30,8 +31,8 @@ This is the documentation of the *Instance Declaration Resources* of the everest
 - to **org.apache.felix.ipojo.extender.InstanceDeclaration**.class: to the InstanceDeclaration service object.
 
 ## Example
-
 READ /ipojo/declaration/instance/DeclaredFoo123/0
+
 ```json
 {
   "name":"DeclaredFoo123",

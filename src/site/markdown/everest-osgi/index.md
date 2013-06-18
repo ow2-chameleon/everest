@@ -19,7 +19,8 @@ This domain is a resource-base representation of OSGi entities, including framew
 
 everest OSGi domain needs an OSGi r4.3 compliant framework to represent its entities as resources.
 
-It depends on: 
+It depends on:
+
 - [Apache Felix iPOJO][1], version 1.10.1 or above
 - everest-core, version ${everest.core.version}
 
@@ -50,21 +51,23 @@ Observable: **true**
 
 ### Relations
 Static relations:
-- **(UPDATE)** "update": Update initial bundle startlevel, framework startlevel.  
-**Parameter** ("startlevel.bundle"): **Type**: Integer, **Optional**: true  
-**Parameter** ("startlevel"): **Type**: Integer, **Optional**: true
 
+- **(UPDATE)** "update": Update initial bundle startlevel, framework startlevel.  
+    -**Parameter** ("startlevel.bundle"): **Type**: Integer, **Optional**: true
+    - **Parameter** ("startlevel"): **Type**: Integer, **Optional**: true
 - **(UPDATE)** "restart": Restart the framework.  
 **Parameter** ("restart"), **Type**: Boolean, **Optional**: true
 - **(DELETE)** "stop": Stops the OSGi framework.
 
 ### Sub-resources
 Static sub-resources:
+
 - **[/bundles](#bundle)**: bundles on this framework
 - **[/packages](#package)**: packages on this framework
 - **[/services](#service)**: services on this framework
 
 Dynamic sub-resources:
+
 - **[/configurations](#configuration)**: configurations on this framework
 - **[/logs](#log-entry)**: logs on this framework
 - **[/deployments](#deployment-package)**: deployment packages on this framework
@@ -88,11 +91,11 @@ Observable: **false**
 
 ### Relations
 - **(CREATE)** "install": Install new bundle.  
-**Parameter** ("location"): **Type**: String, **Optional**: false  
-**Parameter** ("input"): **Type**: Integer, **Optional**: true  
+    - **Parameter** ("location"): **Type**: String, **Optional**: false
+    - **Parameter** ("input"): **Type**: Integer, **Optional**: true
 - **(UPDATE)** "update": Update state of bundles.  
-**Parameter** ("refresh"): **Type**: List, **Optional**: true  
-**Parameter** ("resolve"): **Type**: List, **Optional**: true  
+    - **Parameter** ("refresh"): **Type**: List, **Optional**: true
+    - **Parameter** ("resolve"): **Type**: List, **Optional**: true
 
 ### Sub-resources
 - **[/[bundle-id]](#bundle)**: bundles
@@ -121,17 +124,19 @@ Observable: **true**
 
 ### Relations
 Static relations:
+
 - **(UPDATE)** "update": Update initial bundle startlevel, framework startlevel.  
-**Parameter** ("newState"): **Type**: String, **Optional**: true  
-**Parameter** ("startlevel"): **Type**: Integer, **Optional**: true  
-**Parameter** ("update"): **Type**: Boolean, **Optional**: true  
-**Parameter** ("refresh"): **Type**: Boolean, **Optional**: true  
-**Parameter** ("input"): **Type**: ByteArrayInputStream, **Optional**: true  
+    - **Parameter** ("newState"): **Type**: String, **Optional**: true
+    - **Parameter** ("startlevel"): **Type**: Integer, **Optional**: true
+    - **Parameter** ("update"): **Type**: Boolean, **Optional**: true
+    - **Parameter** ("refresh"): **Type**: Boolean, **Optional**: true
+    - **Parameter** ("input"): **Type**: ByteArrayInputStream, **Optional**: true
 
 - **(DELETE)** "stop": Stops the OSGi framework.
 
 ### Sub-resources
 Static sub-resources:
+
 - **[/headers](#bundle-headers)**: Bundle Headers of this OSGi bundle
 - **[/capabilities](#bundle-capability)**: Bundle Capabilities of this OSGi bundle
 - **[/requirements](#bundle-requirement)**: Bundle Requirement of this OSGi bundle
@@ -151,6 +156,7 @@ Static sub-resources:
 Bundle headers resources represent header information of a specific OSGi bundle.
 
 Path: **/osgi/bundles/[bundle-id]/headers**
+
 Observable: **false**
 
 ### Operations
@@ -169,7 +175,8 @@ All the metadata information available on the Bundle
 Bundle Capability resources represent bundle capability of a specific OSGi bundle.
 
 Path: **/osgi/bundles/[bundle-id]/capabilities/[unique-capability-id]**  
-Observable: **false**  
+
+Observable: **false**
 
 ### Operations
 - **READ**: Get current state of this bundle capability
@@ -179,6 +186,7 @@ All capability attributes and directives
 
 ### Relations
 Dynamic Relations:
+
 - **[/package](#package)**: Link to the package resource if this capability is a package
 - **[/export-package](#bundle-headers)**: Link to the bundle header if this capability is a package 
 - **[/[unique-wire-id]](#bundle-wire)**: Links to the wires connected to this capability
@@ -257,10 +265,10 @@ Package resource represents a package provided by an OSGi bundle.
 - **in-use** *(boolean)*: Is this packages is used by anyone?
 
 ### Relations
-- **[/provider-bundle](#bundle): OSGi Bundle providing this package
+- **[/provider-bundle](#bundle)**: OSGi Bundle providing this package
 
 ### Sub-resources
-- **[/importer-bundles](#bundle): A collection of relations to OSGi bundles that import this package
+- **[/importer-bundles](#bundle)**: A collection of relations to OSGi bundles that import this package
 
 ### Adaptations
 - **org.osgi.wiring.framework.BundleCapability**: BundleCapability object
@@ -308,9 +316,9 @@ Observable: **false**
 
 ### Relations
 - **(CREATE)** "create": Create a new configuration  
-**Parameter** ("location"): **Type**: String, **Optional**: false  
-**Parameter** ("pid"): **Type**: String, **Optional**: true  
-**Parameter** ("factoryPid"): **Type**: String, **Optional**: true  
+    - **Parameter** ("location"): **Type**: String, **Optional**: false
+    - **Parameter** ("pid"): **Type**: String, **Optional**: true
+    - **Parameter** ("factoryPid"): **Type**: String, **Optional**: true
 
 ## Configuration
 Configuration resource represents a Config Admin configuration.

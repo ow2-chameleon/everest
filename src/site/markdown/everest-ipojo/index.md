@@ -2,6 +2,7 @@ everest iPOJO
 =============
 
 This is the documentation of the everest iPOJO domain. This domain is a resource-base representation of Apache Felix iPOJO entities, including:
+
 - Component instances
 - Component factories
 - Handlers
@@ -9,12 +10,14 @@ This is the documentation of the everest iPOJO domain. This domain is a resource
 
 ## Requirements
 In order to use the everest iPOJO resource domain, you need an [OSGi™](http://www.osgi.org "OSGi™ Alliance") r4.3 compliant framework with the following bundles:
+
 - [Apache Felix iPOJO](http://www.ipojo.org "iPOJO web site"), version **1.10.1** or above
 - everest-core, version ${everest.core.version}
 
 **WARNING:** The everest iPOJO domains uses the latest bug fixes and improvements of Apache Felix iPOJO, so it *won't work at all* on previous releases (\<=1.10.0).
 
 Optional dependencies include:
+
 - everest-servlet, version ${everest.servlet.version} if you want to use HTTP binding on the iPOJO resources.
 - everest-osgi, version ${everest.osgi.version} because iPOJO resources are very often related to resources of the everest OSGi domain.
 
@@ -29,6 +32,7 @@ To install the everest iPOJO domain on your OSGi framework, you just have to ins
 To use the everest iPOJO domain, you need to get the *Everest* service and make requests on the "/ipojo" resources.
 
 Here is a quick programmatic usage example:
+
 ```java
   package example.everest.ipojo;
   
@@ -47,7 +51,7 @@ Here is a quick programmatic usage example:
         
         // This is how you can get the Everest service.
         // Beware that the EverestService may not be present (i.e. ref == null)
-        ServiceReference\<Everest\> ref = bc.getServiceReference(EverestService.class);
+        ServiceReference<Everest> ref = bc.getServiceReference(EverestService.class);
         EverestService everest = bc.getService(ref);
         
         // This is how you can access the everest iPOJO domain.
@@ -65,9 +69,10 @@ If you have chosen to install the optional **everest-servlet** dependency (which
 
 Considering that the framework is running on *localhost*, and that the HTTP service listens to the *8080* port, you just have to enter the following URL in your favorite browser:
 
-    http://localhost:8080/everest/ipojo
+> http://localhost:8080/everest/ipojo
 
 You should obtain something like this:
+
 ```json
 {
   "name":"ipojo",
@@ -85,15 +90,16 @@ The [everest iPOJO Reference Card](ReferenceCard.md "Reference Card") details th
 ## Copyright and License
 
 everest iPOJO is part of the Apache Felix project, and thus is licensed to the Apache Software foundation with the following license information.
-```
+
+```text
     Copyright 2006-2013 The Apache Software Foundation
-    
+
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
-    
+
         http://www.apache.org/licenses/LICENSE-2.0
-    
+
     Unless required by applicable law or agreed to in writing, software
     distributed under the License is distributed on an "AS IS" BASIS,
     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
