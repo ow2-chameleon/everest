@@ -12,7 +12,7 @@
     <properties>
         <everest.version>1.0-SNAPSHOT</everest.version>
         <osgi.version>4.3.1</osgi.version>
-        <ipojo.version>1.10.1-SNAPSHOT</ipojo.version>
+        <ipojo.version>1.10.1</ipojo.version>
     </properties>
 
     <modules>
@@ -24,6 +24,14 @@
         <module>everest-it</module>
         <module>everest-system</module>
     </modules>
+    
+    <repositories>
+        <repository>
+            <id>orgapachefelix-021</id>
+            <name>Apache Felix staging repository #021</name>
+            <url>https://repository.apache.org/content/repositories/orgapachefelix-021/</url>
+        </repository>
+    </repositories>
 
     <dependencyManagement>
         <dependencies>
