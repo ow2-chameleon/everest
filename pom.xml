@@ -8,6 +8,12 @@
     <artifactId>everest-project</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
+    
+    <properties>
+        <everest.version>1.0-SNAPSHOT</everest.version>
+        <osgi.version>4.3.1</osgi.version>
+        <ipojo.version>1.10.1-SNAPSHOT</ipojo.version>
+    </properties>
 
     <modules>
         <module>everest-core</module>
@@ -24,22 +30,22 @@
             <dependency>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>org.apache.felix.ipojo.annotations</artifactId>
-                <version>1.10.1-SNAPSHOT</version>
+                <version>${ipojo.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>org.apache.felix.ipojo</artifactId>
-                <version>1.10.1-SNAPSHOT</version>
+                <version>${ipojo.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.osgi</groupId>
                 <artifactId>org.osgi.compendium</artifactId>
-                <version>4.3.1</version>
+                <version>${osgi.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.osgi</groupId>
                 <artifactId>org.osgi.core</artifactId>
-                <version>4.3.1</version>
+                <version>${osgi.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
