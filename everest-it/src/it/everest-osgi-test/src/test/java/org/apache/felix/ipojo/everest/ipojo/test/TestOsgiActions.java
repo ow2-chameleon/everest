@@ -46,15 +46,15 @@ public class TestOsgiActions extends EverestOsgiTest {
         // limboo
     }
 
-    @Test
-    public void testOsgiRestart() throws ResourceNotFoundException, IllegalActionOnResourceException {
-        //BEHOLD this should break things!
-        Resource osgi = get("/osgi");
-        HashMap<String, Object> params = new HashMap<String, Object>();
-        params.put("restart", true);
-        update(osgi.getPath(), params);
-        // limboo
-    }
+//    @Test
+//    public void testOsgiRestart() throws ResourceNotFoundException, IllegalActionOnResourceException {
+//        //BEHOLD this should break things!
+//        Resource osgi = get("/osgi");
+//        HashMap<String, Object> params = new HashMap<String, Object>();
+//        params.put("restart", true);
+//        update(osgi.getPath(), params);
+//        // limboo
+//    }
 
     @Test
     public void testOsgiInitialBundleStartLevel() throws ResourceNotFoundException, IllegalActionOnResourceException {
