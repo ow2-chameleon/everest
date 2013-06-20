@@ -4,11 +4,11 @@ This domain is a resource-base representation of OSGi entities, including framew
 
 - [OSGi Framework](#osgi-root-resource)
 - [Bundle](#bundle)
-- [Bundle Headers](#bundle-headers)
-- [Bundle Capability](#bundle-capability)
-- [Bundle Requirement](#bundle-requirement)
-- [Bundle Wire](#bundle-wire)
-- [Bundle Services](#bundle-services)
+    - [Bundle Headers](#bundle-headers)
+    - [Bundle Capability](#bundle-capability)
+    - [Bundle Requirement](#bundle-requirement)
+    - [Bundle Wire](#bundle-wire)
+    - [Bundle Services](#bundle-services)
 - [Package](#package)
 - [Service](#service)
 - [Configuration](#configuration)
@@ -118,7 +118,7 @@ This resource is **observable**. It deliveres events for the following:
 - **bundle-id** *(long)*: Bundle id
 - **bundle-state** *(string)*: Bundle state as string {"ACTIVE",...}
 - **bundle-symbolic-name** *(string)*: Bundle Symbolic Name
-- **bundle-version** *(version)*: Bundle Version
+- **bundle-version** *(Version)*: Bundle Version
 - **bundle-location** *(string)*: Bundle Location
 - **bundle-last-modified** *(long)*: Bundle Last Modified
 - **bundle-fragment** *(boolean)*: is this bundle a fragment
@@ -258,9 +258,9 @@ This resource is observable. It delivers events for the following:
 
 ### Metadata
 - **osgi.wiring.package** *(string)*: Package Name
-- **version** *(version)*: Package Version
+- **version** *(Version)*: Package Version
 - **bundle-symbolic-name** *(string)*: Symbolic name of the provider bundle
-- **bundle-version** *(version)*: Version of the provider bundle
+- **bundle-version** *(Version)*: Version of the provider bundle
 - **in-use** *(boolean)*: Is this packages is used by anyone?
 
 ### Relations
@@ -281,7 +281,6 @@ Service resource represents an OSGi service published in the service registry.
 
 ### Observable
 This resource is **observable**. It delivers events for the following:
-
 
 ### Operations
 - **READ**: Get current state of the service
@@ -330,7 +329,7 @@ Configuration resource represents a Config Admin configuration.
 
 ### Observable  
 This resource is **observable**. It deliveres events for the following:
-- UPDATE
+- UPDATED
 
 ### Operations
 - **READ**: Get current state of the configuration
@@ -368,7 +367,7 @@ This resource is **not observable**.
 - **time** *(long)*: log time
 - **message** *(string)*: message of this log 
 - **bundle** *(long)*: bundle id that sent this log
-- **service** *(long): service id that sent this log
+- **service** *(long)*: service id that sent this log
 - **exception** *(StackTraceElement)*: stack trace of the exception associated by this log
 
 ### Relations
