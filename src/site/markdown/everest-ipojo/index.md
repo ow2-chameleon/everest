@@ -84,7 +84,7 @@ You should obtain something like this:
 
 You should consider using a REST client that can send different type of requests (GET, POST, ...), so you can have (almost) total control on the everest iPOJO resources.
 
-The [everest iPOJO Reference Card](ReferenceCard.md "Reference Card") details the global layout of the everest iPOJO domain and the resources you can found inside. 
+The [everest iPOJO Reference Card](ReferenceCard.html "Reference Card") details the global layout of the everest iPOJO domain and the resources you can found inside. 
 
 
 ## Copyright and License

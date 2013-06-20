@@ -4,7 +4,7 @@ everest iPOJO Instance Declaration Resources
 This is the documentation of the *Instance Declaration Resources* of the everest iPOJO domain. Each iPOJO instance declaration is represented by one instance declaration resource.
 
 ## Path
-[/ipojo/declaration/instance/$name/$index](ReferenceCard.md "everest iPOJO Reference Card") - Where :
+[/ipojo/declaration/instance/$name/$index](ReferenceCard.html "everest iPOJO Reference Card") - Where :
 
 - *$name* stand for the name of the instance declaration.
 - *$index* is a generated number, because several instances can be *declared* with the same name (while only one instance can be *created* with a specific name). Indexes are unique, start from 0 (zero) and are incremented automatically.

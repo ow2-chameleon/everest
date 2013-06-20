@@ -4,7 +4,7 @@ everest iPOJO Instance Resources
 This is the documentation of the *Instance Resources* of the everest iPOJO domain. Each instance resource is a representation of an iPOJO component instance.
 
 ## Path
-[/ipojo/instance/$name](ReferenceCard.md "everest iPOJO Reference Card") - Where *$name* stand for the name of the instance.
+[/ipojo/instance/$name](ReferenceCard.html "everest iPOJO Reference Card") - Where *$name* stand for the name of the instance.
 
 ## Supported operations
 - **READ**: get the current state of the component instance
@@ -24,7 +24,7 @@ This is the documentation of the *Instance Resources* of the everest iPOJO domai
 - **factory.version** *(string)*: The version of the factory that has created this instance. May be *null*.
 - **state** *(string)*: The current state of the instance. One of *{"valid", "invalid", "stopped", "disposed", "changing", "unknown"}*.
 - **configuration** *(map\<string, ?\>)*: The current configuration properties of the component.
-- __isFake *(boolean)*: Set to *true* if the resource is a [fake instance resource](Instances.md#fake-instance-resource-wtf "Fake instance resource! WTF?"). Unset otherwise.
+- __isFake *(boolean)*: Set to *true* if the resource is a [fake instance resource](#fake-instance-resource-wtf "Fake instance resource! WTF?"). Unset otherwise.
 
 ## Relations
 - **service**: to the Architecture OSGi service of the instance
@@ -46,7 +46,7 @@ This is the documentation of the *Instance Resources* of the everest iPOJO domai
 
 ## HOW-TOs
 
-### How to create instances
+### <a name="how-to-create-instances"></a>How to create instances
 You can create iPOJO component instances by sending a **CREATE** request on an unexistent instance resource path. The request parameters are used as the configuration of the instance to create. However, everest iPOJO needs to know what kind of instance you want to create. That's why you need to specify the factory you want to use, by setting the *factory.name* parameter (and, optionally, *factory.version*). If the specified factory cannot be found, everest iPOJO will raise an *IllegalActionOnResource* error (HTTP code *405*).
 
 Here is an example:
@@ -75,9 +75,9 @@ Result:
 }
 ```
 
-Beware that if the created instance does not expose the *Architecture* service, the returned resource will be a [fake instance resource](Instances.md#fake-instance-resource-wtf "Fake instance resource! WTF?").
+Beware that if the created instance does not expose the *Architecture* service, the returned resource will be a [fake instance resource](#fake-instance-resource-wtf "Fake instance resource! WTF?").
 
-### How to reconfigure instances
+### <a name="how-to-reconfigure-instances"></a>How to reconfigure instances
 You can dynamically reconfigure an iPOJO instance via its resource representation. To do that, you need to send an UPDATE request with the wanted configuration. For example:
 
 Request:
@@ -102,7 +102,7 @@ Result:
 }
 ```
 
-### How to change instance state
+### <a name="how-to-change-instance-state"></a>How to change instance state
 You can change the state of an iPOJO component instance by sending an UPDATE request with the wanted state. The set of the accepted states is *{"valid", "invalid", "stopped", "disposed"}*. Note that setting the state to *disposed* has the same effect as sending a *DELETE* request on the instance.
 
 The *"valid"* and *"invalid"* states are here for convenience purpose. It is in fact impossible to force an instance to be in one of these states, as it is the role of iPOJO to resolve the validity of the instance according to its dependencies, handlers, etc. Here follows a concrete example:
@@ -129,14 +129,14 @@ Result:
 }
 ```
 
-### Fake instance resource! WTF?
+### <a name="fake-instance-resource-wtf"></a>Fake instance resource! WTF?
 Fake instance resource are maybe the most bizarre thing you will encounter when using the everest iPOJO domain. The principle is quite simple : a fake instance resource represents something that exists, but that is not accessible by the everest iPOJO domain.
 
 Technically, iPOJO component instances usually expose an *Architecture* service, to introspect their state. The everest iPOJO domain uses this service to detect instance and represent them as resources.
 
 But sometimes, some instances don't provide this service... and everest cannot detect those instance. That should not be an issue: you just can't see any resource representing those instance.
 
-The point is that: *yes you can* create such instances, e.g. by [sending a CREATE request on a factory resource](Factories.md#how-to-create-instances "How to create instances"). When such a case happens, instead of returning nothing, the everest iPOJO domain creates a snapshot of the instance that it just has created and return this resource.
+The point is that: *yes you can* create such instances, e.g. by [sending a CREATE request on a factory resource](Factories.html#how-to-create-instances "How to create instances"). When such a case happens, instead of returning nothing, the everest iPOJO domain creates a snapshot of the instance that it just has created and return this resource.
 
 Fake instance resources are very limited, compared to real instance resource:
 

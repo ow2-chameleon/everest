@@ -4,7 +4,7 @@ everest iPOJO Factory Resources
 This is the documentation of the *Factory Resources* of the everest iPOJO domain. Each factory resource is a representation of an iPOJO component factory.
 
 ## Path
-[/ipojo/factory/$name/$version](ReferenceCard.md "everest iPOJO Reference Card") - Where *$name* stand for the name of the factory, and *$version* for its version (or *null* if the factory defines no version).
+[/ipojo/factory/$name/$version](ReferenceCard.html "everest iPOJO Reference Card") - Where *$name* stand for the name of the factory, and *$version* for its version (or *null* if the factory defines no version).
 
 ## Supported operations
 - **READ**: get the current state of the component factory
@@ -32,10 +32,10 @@ This is the documentation of the *Factory Resources* of the everest iPOJO domain
 
 ## HOW-TOs
 
-### How to create instances
+### <a name="how-to-create-instances"></a>How to create instances
 The factory resource allows to create component instance of the represented factory. While the semantic of the resource operation could appear a bit weird (from the CRUD's point of view), it allows you, when you hold the resource of a specific factory, to create an instance very easily.
 
-All you have to do is to make a **CREATE** request **on the factory resource**. The request parameters will be considered as the wanted configuration for the instance to create. The result of the request will be the resource representing the created instance. If the created instance does not expose the *Architecture* service (i.e. *architecture="false"*), the returned resource is a [fake instance resource](Instances.md#fake-instance-resource-wtf "Fake instance resource! WTF?").
+All you have to do is to make a **CREATE** request **on the factory resource**. The request parameters will be considered as the wanted configuration for the instance to create. The result of the request will be the resource representing the created instance. If the created instance does not expose the *Architecture* service (i.e. *architecture="false"*), the returned resource is a [fake instance resource](Instances.html#fake-instance-resource-wtf "Fake instance resource! WTF?").
 
 Here is a short example to illustrate instance creation from factory resources:
 

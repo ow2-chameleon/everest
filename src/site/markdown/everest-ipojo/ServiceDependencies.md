@@ -4,7 +4,7 @@ everest iPOJO Service Dependency Resources
 This is the documentation of the *Service Dependency Resources* of the everest iPOJO domain. Each service dependency of an iPOJO component instance is represented by an everest iPOJO service dependency resource.
 
 ## Path
-[/ipojo/instance/$name/dependency/$id](ReferenceCard.md "everest iPOJO Reference Card") - Where *$name* stand for the name of the instance and *$id* for the identifier of the dependency.
+[/ipojo/instance/$name/dependency/$id](ReferenceCard.html "everest iPOJO Reference Card") - Where *$name* stand for the name of the instance and *$id* for the identifier of the dependency.
 
 ## Supported operations
 - **READ**: get the current state of the service dependency.
@@ -27,7 +27,7 @@ This is the documentation of the *Service Dependency Resources* of the everest i
 - **isAggregate** *(boolean)*: The flag indicating if the dependency is aggregate.
 - **isOptional** *(boolean)*: The flag indicating if the dependency is optional.
 - **isFrozen** *(boolean)*: The flag indicating if the dependency is frozen.
-- __isFake *(boolean)*: Set to *true* if the resource is a [fake resource](Instances.md#fake-instance-resource-wtf "Fake instance resource! WTF?"). Unset otherwise.
+- __isFake *(boolean)*: Set to *true* if the resource is a [fake resource](Instances.html#fake-instance-resource-wtf "Fake instance resource! WTF?"). Unset otherwise.
 
 ## Relations
 - **matchingService**[$i]: to all the OSGi services that are currently **matching** the dependency. *$i* stands for the service identifier.
@@ -39,7 +39,7 @@ This is the documentation of the *Service Dependency Resources* of the everest i
 
 ## HOW-TOs
 
-### How to reconfigure dependencies
+### <a name="how-to-reconfigure-dependencies"></a>How to reconfigure dependencies
 You can reconfigure dynamically service dependencies by sending an **UPDATE** request on their resource representation. Here is a quick example:
 
 Request:

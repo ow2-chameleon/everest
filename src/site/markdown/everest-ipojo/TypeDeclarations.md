@@ -4,7 +4,7 @@ everest iPOJO Type Declaration Resources
 This is the documentation of the *Type Declaration Resources* of the everest iPOJO domain. Each type declaraion resource is a representation of one iPOJO type declaration.
 
 ## Path
-[/ipojo/declaration/type/$name/$version](ReferenceCard.md "everest iPOJO Reference Card") - Where *$name* stand for the name of the type and *$version* for its version (may be *null*).
+[/ipojo/declaration/type/$name/$version](ReferenceCard.html "everest iPOJO Reference Card") - Where *$name* stand for the name of the type and *$version* for its version (may be *null*).
 
 ## Supported operations
 - **READ**: get the current state of the type declaration

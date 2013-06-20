@@ -4,11 +4,11 @@ everest iPOJO Service Providing Resources
 This is the documentation of the *Service Providing Resources* of the everest iPOJO domain. Each service providing of an iPOJO component instance is represented by an everest iPOJO service providing resource.
 
 ## Path
-[/ipojo/instance/$name/providing/$index](ReferenceCard.md "everest iPOJO Reference Card") - Where *$name* stand for the name of the instance and *$index* for the index of the providing.
+[/ipojo/instance/$name/providing/$index](ReferenceCard.html "everest iPOJO Reference Card") - Where *$name* stand for the name of the instance and *$index* for the index of the providing.
 
 ## Supported operations
 - **READ**: get the current state of the service dependency.
-- **UPDATE**: [reconfigure the dependency](#how-to-reconfigure-providings)
+- **UPDATE**: [reconfigure the providing](#how-to-reconfigure-providings)
     - **state** *(string)*: the wanted state for the providing. One of *{"REGISTERED", "UNREGISTERED"}*. May be *null*.
 
 *NOTE: This type of resource is* **observable**
@@ -20,7 +20,7 @@ This is the documentation of the *Service Providing Resources* of the everest iP
 - **controller** *(string)*: The provided service controller.
 - **state** *(string)*: The current state of the provided service. One of *{"REGISTERED", "UNREGISTERED"}*.
 - **properties** *(map)*: The current properties exposed by the provided service.
-- __isFake *(boolean)*: Set to *true* if the resource is a [fake resource](Instances.md#fake-instance-resource-wtf "Fake instance resource! WTF?"). Unset otherwise.
+- __isFake *(boolean)*: Set to *true* if the resource is a [fake resource](Instances.html#fake-instance-resource-wtf "Fake instance resource! WTF?"). Unset otherwise.
 
 ## Relations
 - **service**: to the provided OSGi service.
@@ -32,7 +32,7 @@ This is the documentation of the *Service Providing Resources* of the everest iP
 
 ## HOW-TOs
 
-### How to reconfigure providings
+### <a name="how-to-reconfigure-providings"></a>How to reconfigure providings
 You can reconfigure dynamically service providings by sending an **UPDATE** request on their resource representation. For now, the only possible action is to register/unregister the service. Here is a quick example:
 
 Request:

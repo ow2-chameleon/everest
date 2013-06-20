@@ -4,7 +4,7 @@ everest iPOJO Handler Resources
 This is the documentation of the *Handler Resources* of the everest iPOJO domain. Each handler resource is a representation of an iPOJO handler factory.
 
 ## Path
-[/ipojo/handler/$ns/$name](ReferenceCard.md "everest iPOJO Reference Card") - Where *$ns* stand for the namespace of the handler (e.g. *"org.apache.felix.ipojo"*) and *$name* for its name (e.g. *"requires"*).
+[/ipojo/handler/$ns/$name](ReferenceCard.html "everest iPOJO Reference Card") - Where *$ns* stand for the namespace of the handler (e.g. *"org.apache.felix.ipojo"*) and *$name* for its name (e.g. *"requires"*).
 
 ## Supported operations
 - **READ**: get the current state of the handler factory
