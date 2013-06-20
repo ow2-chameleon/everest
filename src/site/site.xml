@@ -40,6 +40,13 @@
 
         <menu name="everest-OSGi">
             <item name="Home" href="everest-osgi/index.html"/>
+            <item name="Root" href="everest-osgi/index.html#osgi-root-resource"/>
+            <item name="Bundles" href="everest-osgi/index.html#bundle"/>
+            <item name="Packages" href="everest-osgi/index.html#package"/>
+            <item name="Services" href="everest-osgi/index.html#service"/>
+            <item name="Configurations" href="everest-osgi/index.html#configuration"/>
+            <item name="Logs" href="everest-osgi/index.html#log-entry"/>
+            <item name="Deployment Packages" href="everest-osgi/index.html#deployment-package"/>
         </menu>
         
         <menu name="everest-iPOJO">

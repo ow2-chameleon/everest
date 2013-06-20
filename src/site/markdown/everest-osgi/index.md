@@ -294,6 +294,7 @@ Package resource represents a package provided by an OSGi bundle.
 
 ### Observable: 
 This resource is observable. It delivers events for the following:
+
 - **CREATED**: Package available
 - **DELETED**: Package unavailable
 
