@@ -24,50 +24,43 @@ It depends on:
 - [Apache Felix iPOJO][1], version 1.10.1 or above
 - everest-core, version ${everest.core.version}
 
-Optionally:
-- OSGi Configuration Admin, version *to be completed*
+everest OSGi has **optional** dependencies on following OSGi services:
+- OSGi Configuration Admin Service, version *to be completed*
 - OSGi Log Service, version *to be completed*
-- OSGi Deployment Package Admin, version *to be completed*
+- OSGi Deployment Package Admin Service, version *to be completed*
 
 ## Entities
 
 ## OSGi Root Resource
 Root resource is the starting point for OSGi domain and represents the OSGi Framework.  
 
-Path: **/osgi**  
-Observable: **true**  
+### Path
+> /osgi  
 
-### Operations
-- **UPDATE**: Update initial bundle startlevel, framework startlevel or Restart the framework.
-- **READ**: Get the current state of OSGi framework
-- **DELETE**: Stop the OSGi framework
+###Observable 
+This resource is **observable**. It delivers events for the following:
+- **UPDATED**: Startlevel changed. 
+- **UPDATED**: Packages refreshed.
+- **UPDATED**: One of the dynamic sub-resources arrived/disappeared.
+
+### Operations  
+- **UPDATE** "update": Update initial bundle startlevel, framework startlevel.  
+    - **Parameter** ("startlevel.bundle"): **Type**: Integer, **Optional**: true
+    - **Parameter** ("startlevel"): **Type**: Integer, **Optional**: true
+- **UPDATE** "restart": Restart the framework.  
+    - **Parameter** ("restart"), **Type**: Boolean, **Optional**: true
+- **DELETE** "stop": Stops the OSGi framework.
 
 ### Metadata
-- **org.osgi.framework.version** *(string)*: Framework version
-*to be completed*
-- ...
 - **startlevel.bundle** *(int)*: Initial bundle start level
 - **startlevel** *(int)*: Framework start level
-
-### Relations
-Static relations:
-
-- **(UPDATE)** "update": Update initial bundle startlevel, framework startlevel.  
-    -**Parameter** ("startlevel.bundle"): **Type**: Integer, **Optional**: true
-    - **Parameter** ("startlevel"): **Type**: Integer, **Optional**: true
-- **(UPDATE)** "restart": Restart the framework.  
-**Parameter** ("restart"), **Type**: Boolean, **Optional**: true
-- **(DELETE)** "stop": Stops the OSGi framework.
+- **org.osgi.framework.version** *(string)*: Framework version
+- Other framework properties provided by the framework
 
 ### Sub-resources
-Static sub-resources:
-
 - **[/bundles](#bundle)**: bundles on this framework
 - **[/packages](#package)**: packages on this framework
 - **[/services](#service)**: services on this framework
-
-Dynamic sub-resources:
-
 - **[/configurations](#configuration)**: configurations on this framework
 - **[/logs](#log-entry)**: logs on this framework
 - **[/deployments](#deployment-package)**: deployment packages on this framework
@@ -77,39 +70,47 @@ Dynamic sub-resources:
 - **org.osgi.framework.wiring.FrameworkWiring**: Framework Wiring object
 - **org.osgi.framework.startlevel.FrameworkStartLevel**: Framework StartLevel object
 
-### Events
-- **UPDATED**: Startlevel changed, packages refreshed, one of the dynamic sub-resources arrived/disappeared
-
 ## Bundles
 Root of all bundles
 
-Path: **/osgi/bundles**  
-Observable: **false**
+### Path
+> /osgi/bundles 
+
+### Observable
+This resource is **not observable**.
 
 ### Operations
-- **CREATE**: Install bundle
-
-### Relations
-- **(CREATE)** "install": Install new bundle.  
+- **CREATE** "install": Install new bundle.  
     - **Parameter** ("location"): **Type**: String, **Optional**: false
-    - **Parameter** ("input"): **Type**: Integer, **Optional**: true
-- **(UPDATE)** "update": Update state of bundles.  
-    - **Parameter** ("refresh"): **Type**: List, **Optional**: true
+    - **Parameter** ("input"): **Type**: ByteArrayInputStream, **Optional**: true
+- **UPDATE** "update": Update state of bundles.  
+    - **Parameter** ("refresh"): **Type**: List<, **Optional**: true
     - **Parameter** ("resolve"): **Type**: List, **Optional**: true
 
 ### Sub-resources
 - **[/[bundle-id]](#bundle)**: bundles
 
 ## Bundle
-Bundle resources represent a OSGi bundle.  
+Bundle resources represent an OSGi bundle.  
 
-Path: **/osgi/bundles/[bundle-id]**  
-Observable: **true**  
+### Path
+> /osgi/bundles/[bundle-id]  
+
+### Observable
+This resource is **observable**. It deliveres events for the following:
+- **CREATED** : Arrival of a new bundle 
+- **UPDATED** : Update on bundle state
+- **DELETED** : Departure of a bundle
 
 ### Operations
-- **UPDATE**: Update start level parameter and/or bundle state, refresh/update bundle
 - **READ**: Get the current state of the bundle
-- **DELETE**: Uninstall the bundle
+- **UPDATE** "update": Update initial bundle startlevel, framework startlevel.  
+    - **Parameter** ("newState"): **Type**: String, **Optional**: true
+    - **Parameter** ("startlevel"): **Type**: Integer, **Optional**: true
+    - **Parameter** ("update"): **Type**: Boolean, **Optional**: true
+    - **Parameter** ("refresh"): **Type**: Boolean, **Optional**: true
+    - **Parameter** ("input"): **Type**: ByteArrayInputStream, **Optional**: true
+- **DELETE** "stop": Stops the OSGi framework.
 
 ***Note:*** CREATE operation on bundles (which basically installs a bundle) is done in [Bundles](#bundles) resource.  
 
@@ -122,21 +123,7 @@ Observable: **true**
 - **bundle-last-modified** *(long)*: Bundle Last Modified
 - **bundle-fragment** *(boolean)*: is this bundle a fragment
 
-### Relations
-Static relations:
-
-- **(UPDATE)** "update": Update initial bundle startlevel, framework startlevel.  
-    - **Parameter** ("newState"): **Type**: String, **Optional**: true
-    - **Parameter** ("startlevel"): **Type**: Integer, **Optional**: true
-    - **Parameter** ("update"): **Type**: Boolean, **Optional**: true
-    - **Parameter** ("refresh"): **Type**: Boolean, **Optional**: true
-    - **Parameter** ("input"): **Type**: ByteArrayInputStream, **Optional**: true
-
-- **(DELETE)** "stop": Stops the OSGi framework.
-
 ### Sub-resources
-Static sub-resources:
-
 - **[/headers](#bundle-headers)**: Bundle Headers of this OSGi bundle
 - **[/capabilities](#bundle-capability)**: Bundle Capabilities of this OSGi bundle
 - **[/requirements](#bundle-requirement)**: Bundle Requirement of this OSGi bundle
@@ -147,17 +134,14 @@ Static sub-resources:
 - **org.osgi.framework.Bundle**: Bundle object
 - **org.apache.felix.ipojo.everest.osgi.bundle.BundleResource**: BundleResource class that is used to represent this bundle
 
-### Events
-- **CREATED** : Arrival of a new bundle 
-- **UPDATED** : Update on bundle state
-- **DELETED** : Departure of a bundle
-
 ## Bundle Headers
 Bundle headers resources represent header information of a specific OSGi bundle.
 
-Path: **/osgi/bundles/[bundle-id]/headers**
+### Path
+> /osgi/bundles/[bundle-id]/headers
 
-Observable: **false**
+### Observable
+This resource is **not observable**.
 
 ### Operations
 - **READ**: Get headers of this OSGi Bundle
@@ -174,9 +158,11 @@ All the metadata information available on the Bundle
 ## Bundle Capability
 Bundle Capability resources represent bundle capability of a specific OSGi bundle.
 
-Path: **/osgi/bundles/[bundle-id]/capabilities/[unique-capability-id]**  
+### Path
+> /osgi/bundles/[bundle-id]/capabilities/[unique-capability-id]  
 
-Observable: **false**
+### Observable
+This resource is **not observable**
 
 ### Operations
 - **READ**: Get current state of this bundle capability
@@ -185,8 +171,6 @@ Observable: **false**
 All capability attributes and directives
 
 ### Relations
-Dynamic Relations:
-
 - **[/package](#package)**: Link to the package resource if this capability is a package
 - **[/export-package](#bundle-headers)**: Link to the bundle header if this capability is a package 
 - **[/[unique-wire-id]](#bundle-wire)**: Links to the wires connected to this capability
@@ -198,8 +182,11 @@ Dynamic Relations:
 ## Bundle Requirement
 Bundle Requirement resources represent bundle requirement of a specific OSGi bundle.
 
-- Path: **/osgi/bundles/[bundle-id]/requirements/[unique-requirement-id]**
-- Observable: **false**
+### Path
+> /osgi/bundles/[bundle-id]/requirements/[unique-requirement-id]
+
+### Observable
+This resource is **not observable**.
 
 ### Operations
 - **READ**: Get current state of the bundle requirement
@@ -219,8 +206,11 @@ All requirement attributes and directives
 ## Bundle Wire
 Bundle wire resources represent a bundle wire between a capability and a requirement.
 
-- Path: **/osgi/bundles/[bundle-id]/wires/[unique-wire-id]**
-- Observable: **false**
+### Path
+> /osgi/bundles/[bundle-id]/wires/[unique-wire-id]
+
+### Observable
+This resource is **not observable**.
 
 ### Operations
 - **READ**: Get current state of bundle wire
@@ -239,7 +229,11 @@ Bundle wire resources represent a bundle wire between a capability and a require
 ## Bundle Services
 Services that can be linked to an OSGi bundle
 
-- Path: **/osgi/bundles/[bundle-id]/services**
+### Path
+> /osgi/bundles/[bundle-id]/services
+
+### Observable
+This resource is **not observable**.
 
 ### Operations
 - **READ**: get current state of the bundle services
@@ -251,8 +245,13 @@ Services that can be linked to an OSGi bundle
 ## Package
 Package resource represents a package provided by an OSGi bundle.
 
-- Path: **/osgi/packages/[unique-capability-id]**
-- Observable: **true**
+### Path
+> /osgi/packages/[unique-capability-id]
+
+### Observable: 
+This resource is observable. It delivers events for the following:
+- **CREATED**: Package available
+- **DELETED**: Package unavailable
 
 ### Operations
 - **READ**: Get current state of the package
@@ -274,14 +273,11 @@ Package resource represents a package provided by an OSGi bundle.
 - **org.osgi.wiring.framework.BundleCapability**: BundleCapability object
 - **org.apache.felix.ipojo.everest.osgi.package.PackageResource**: PackageResource class used to represent this package 
 
-### Events
-- **CREATED**: Package available
-- **DELETED**: Package unavailable
-
 ## Service
 Service resource represents an OSGi service published in the service registry.
 
-- Path: **/osgi/services/[service.id]**
+### Path
+**/osgi/services/[service.id]**
 - Observable: **true**
 
 ### Operations
@@ -323,13 +319,19 @@ Observable: **false**
 ## Configuration
 Configuration resource represents a Config Admin configuration.
 
-Path: **/osgi/configurations/[configuration-pid]**  
-Observable: **true**  
+### Path 
+> /osgi/configurations/[configuration-pid]  
+
+### Observable  
+This resource is **observable**. It deliveres events for the following:
+- UPDATE
 
 ### Operations
-- **UPDATE**: Update configuration
 - **READ**: Get current state of the configuration
-- **DELETE**: Delete this configuration
+- **UPDATE** "update": update properties of this configuration  
+    - **Parameter** ("properties"): **Type**: Dictionary, **Optional**: true  
+    - **Parameter** ("location"): **Type**: String, **Optional**: true  
+- **DELETE** "delete": delete this configuration
 
 ***Note:*** CREATE operation for configurations (which creates a new configuration) is done in [Configurations](#configurations) resource.   
 
@@ -339,12 +341,6 @@ Observable: **true**
 - **serviceFactory.pid** *(string)*: Factory configuration pid
 - All proprties of this configuration
 
-### Relations
-- **(UPDATE)** "update": update properties of this configuration  
-**Parameter** ("properties"): **Type**: Dictionary, **Optional**: true  
-**Parameter** ("location"): **Type**: String, **Optional**: true  
-- **(DELETE)** "delete": delete this configuration
-
 ### Adaptations
 - **org.osgi.service.cm.Configuration**: Configuration object
 - **org.apache.felix.ipojo.everest.osgi.config.ConfigurationResource**: ConfigurationResource class used to represent this resource
@@ -352,8 +348,12 @@ Observable: **true**
 ## Log Entry
 Log Entry resource represents a Log Entry of OSGi Log Service
 
-- Path: **/osgi/logs/[log-time]**
-- Observable: **true**
+### Path
+> /osgi/logs/[log-time]
+
+### Observable
+This resource is **observable**. It delivers events for the following:
+
 
 ### Operations
 - **READ**: Get the current state of this log entry
