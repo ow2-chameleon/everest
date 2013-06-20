@@ -264,10 +264,10 @@ This resource is observable. It delivers events for the following:
 - **in-use** *(boolean)*: Is this packages is used by anyone?
 
 ### Relations
-- **[/provider-bundle](#bundle)**: OSGi Bundle providing this package
+- **[/provider-bundle](#bundle)**: OSGi Bundle providing this package.
 
 ### Sub-resources
-- **[/importer-bundles](#bundle)**: A collection of relations to OSGi bundles that import this package
+- **[/importer-bundles](#bundle)**: A collection of relations to OSGi bundles that import this package.
 
 ### Adaptations
 - **org.osgi.wiring.framework.BundleCapability**: BundleCapability object
@@ -277,8 +277,11 @@ This resource is observable. It delivers events for the following:
 Service resource represents an OSGi service published in the service registry.
 
 ### Path
-**/osgi/services/[service.id]**
-- Observable: **true**
+> /osgi/services/[service.id]
+
+### Observable
+This resource is **observable**. It delivers events for the following:
+
 
 ### Operations
 - **READ**: Get current state of the service
@@ -301,8 +304,11 @@ All service properties
 ## Configurations
 Root of all configurations 
 
-Path: **/osgi/configurations**
-Observable: **false**
+### Path
+> /osgi/configurations
+
+### Observable
+This resource is **not observable**. 
 
 ### Operations
 - **CREATE**: Create a new configuration
@@ -346,14 +352,13 @@ This resource is **observable**. It deliveres events for the following:
 - **org.apache.felix.ipojo.everest.osgi.config.ConfigurationResource**: ConfigurationResource class used to represent this resource
 
 ## Log Entry
-Log Entry resource represents a Log Entry of OSGi Log Service
+Log Entry resource represents a Log Entry of OSGi Log Service.
 
 ### Path
 > /osgi/logs/[log-time]
 
 ### Observable
-This resource is **observable**. It delivers events for the following:
-
+This resource is **not observable**.
 
 ### Operations
 - **READ**: Get the current state of this log entry
@@ -377,15 +382,15 @@ This resource is **observable**. It delivers events for the following:
 ## Deployment Packages
 Root of all deployment packages
 
-Path: **/osgi/deployments**
-Observable: **false**
+### Path
+> /osgi/deployments
+
+### Observable
+This resource is **not observable**.
 
 ### Operations
-- **CREATE**: Install new deployment package
-
-### Relations
-- **(CREATE)** "install": Install new deployment package
-**Parameter** ("input"): **Type**: InputStream, **Optional**: false  
+- **CREATE** "install": Install new deployment package
+    - **Parameter** ("input"): **Type**: InputStream, **Optional**: false
 
 ### Sub-resources
 - **[/[deployment-package-name]](#deployment-package)**: deployment pakcages
@@ -393,12 +398,15 @@ Observable: **false**
 ## Deployment Package
 Deployment Package resource represents a Deployment Package deployed by the OSGi Deployment Package Admin
 
-Path: **/osgi/deployments/[deployment-package-name]**   
-Observable: **true**  
+### Path
+> /osgi/deployments/[deployment-package-name]  
+
+### Observable
+This resource is **not observable**.
 
 ### Operations
 - **READ**: Get the current state of this deployment package
-- **DELETE**: Uninstall this deployment package
+- **DELETE** "uninstall": Uninstall this deployment package
 
 ***Note:*** CREATE opearation for Deployment Packages is done in [Deployment Packages](#deployment-packages) resource.
 
@@ -407,9 +415,6 @@ Observable: **true**
 - **DisplayName** *(string)*: display name of this deployment package
 - **Version** *(Version)*: version of this deployment package
 - **isStale** *(boolean)*: is this deployment package stale?
-
-### Relations
-- **(DELETE)** "uninstall": Uninstall this deployment package
 
 ### Sub-resources
 - **[/bundles](#bundle)** : A collection of links to the OSGi bundles deployed with this deployment package  
