@@ -1,19 +1,19 @@
+<a name="osgi"/>
 # everest OSGi
-
 This domain is a resource-base representation of OSGi entities, including framework, bundles, packages, services, configurations, log entries and deployment packages.
 
-- [OSGi Framework](#osgi-root-resource)
-- [Bundle](#bundle)
-    - [Bundle Headers](#bundle-headers)
-    - [Bundle Capability](#bundle-capability)
-    - [Bundle Requirement](#bundle-requirement)
-    - [Bundle Wire](#bundle-wire)
-    - [Bundle Services](#bundle-services)
-- [Package](#package)
-- [Service](#service)
-- [Configuration](#configuration)
-- [Log Entry](#log-entry)
-- [Deployment Package](#deployment-package)
+* [OSGi Framework](#osgi-root-resource)
+* [Bundle](#bundle)
+    * [Bundle Headers](#bundle-headers)
+    * [Bundle Capability](#bundle-capability)
+    * [Bundle Requirement](#bundle-requirement)
+    * [Bundle Wire](#bundle-wire)
+    * [Bundle Services](#bundle-services)
+* [Package](#package)
+* [Service](#service)
+* [Configuration](#configuration)
+* [Log Entry](#log-entry)
+* [Deployment Package](#deployment-package)
 
 ## Requirements
 
@@ -21,35 +21,38 @@ everest OSGi domain needs an OSGi r4.3 compliant framework to represent its enti
 
 It depends on:
 
-- [Apache Felix iPOJO][1], version 1.10.1 or above
-- everest-core, version ${everest.core.version}
+* [Apache Felix iPOJO][1], version 1.10.1 or above
+* everest-core, version ${everest.core.version}
 
-everest OSGi has **optional** dependencies on following OSGi services:
-- OSGi Configuration Admin Service, version *to be completed*
-- OSGi Log Service, version *to be completed*
-- OSGi Deployment Package Admin Service, version *to be completed*
+everest OSGi has **optional** dependencies on following OSGi services:   
 
-## Entities
+* OSGi Configuration Admin Service, version *to be completed*
+* OSGi Log Service, version *to be completed*
+* OSGi Deployment Package Admin Service, version *to be completed*
+   
+* * *
 
+<a name="osgi-root-resource"/>
 ## OSGi Root Resource
 Root resource is the starting point for OSGi domain and represents the OSGi Framework.  
 
 ### Path
 > /osgi  
 
-###Observable 
+### Observable 
 This resource is **observable**. It delivers events for the following:
-- **UPDATED**: Startlevel changed. 
-- **UPDATED**: Packages refreshed.
-- **UPDATED**: One of the dynamic sub-resources arrived/disappeared.
+
+* **UPDATED**: Startlevel changed.   
+* **UPDATED**: Packages refreshed.
+* **UPDATED**: One of the dynamic sub-resources arrived/disappeared.
 
 ### Operations  
-- **UPDATE** "update": Update initial bundle startlevel, framework startlevel.  
+- **UPDATE** *"update"*: Update initial bundle startlevel, framework startlevel.  
     - **Parameter** ("startlevel.bundle"): **Type**: Integer, **Optional**: true
     - **Parameter** ("startlevel"): **Type**: Integer, **Optional**: true
-- **UPDATE** "restart": Restart the framework.  
+- **UPDATE** *"restart"*: Restart the framework.  
     - **Parameter** ("restart"), **Type**: Boolean, **Optional**: true
-- **DELETE** "stop": Stops the OSGi framework.
+- **DELETE** *"stop"*: Stops the OSGi framework.
 
 ### Metadata
 - **startlevel.bundle** *(int)*: Initial bundle start level
@@ -70,47 +73,58 @@ This resource is **observable**. It delivers events for the following:
 - **org.osgi.framework.wiring.FrameworkWiring**: Framework Wiring object
 - **org.osgi.framework.startlevel.FrameworkStartLevel**: Framework StartLevel object
 
+[Scroll To Top ↑](#osgi)   
+
+* * *  
+
+<a name="bundles"/>
 ## Bundles
 Root of all bundles
 
 ### Path
-> /osgi/bundles 
+> /[osgi](#osgi-root-resource)/bundles 
 
 ### Observable
 This resource is **not observable**.
 
 ### Operations
-- **CREATE** "install": Install new bundle.  
+- **CREATE** *"install"*: Install new bundle.  
     - **Parameter** ("location"): **Type**: String, **Optional**: false
     - **Parameter** ("input"): **Type**: ByteArrayInputStream, **Optional**: true
-- **UPDATE** "update": Update state of bundles.  
+- **UPDATE** *"update"*: Update state of bundles.  
     - **Parameter** ("refresh"): **Type**: List<, **Optional**: true
     - **Parameter** ("resolve"): **Type**: List, **Optional**: true
 
 ### Sub-resources
 - **[/[bundle-id]](#bundle)**: bundles
 
+[Scroll To Top ↑](#osgi)
+
+* * *
+
+<a name="bundle"/>
 ## Bundle
 Bundle resources represent an OSGi bundle.  
 
 ### Path
-> /osgi/bundles/[bundle-id]  
+> /[osgi](#osgi-root-resource)/[bundles](#bundles)/[bundle-id]  
 
 ### Observable
 This resource is **observable**. It deliveres events for the following:
-- **CREATED** : Arrival of a new bundle 
-- **UPDATED** : Update on bundle state
-- **DELETED** : Departure of a bundle
+
+* **CREATED** : Arrival of a new bundle 
+* **UPDATED** : Update on bundle state
+* **DELETED** : Departure of a bundle
 
 ### Operations
 - **READ**: Get the current state of the bundle
-- **UPDATE** "update": Update initial bundle startlevel, framework startlevel.  
+- **UPDATE** *"update"*: Update initial bundle startlevel, framework startlevel.  
     - **Parameter** ("newState"): **Type**: String, **Optional**: true
     - **Parameter** ("startlevel"): **Type**: Integer, **Optional**: true
     - **Parameter** ("update"): **Type**: Boolean, **Optional**: true
     - **Parameter** ("refresh"): **Type**: Boolean, **Optional**: true
     - **Parameter** ("input"): **Type**: ByteArrayInputStream, **Optional**: true
-- **DELETE** "stop": Stops the OSGi framework.
+- **DELETE** *"stop"*: Stops the OSGi framework.
 
 ***Note:*** CREATE operation on bundles (which basically installs a bundle) is done in [Bundles](#bundles) resource.  
 
@@ -134,11 +148,16 @@ This resource is **observable**. It deliveres events for the following:
 - **org.osgi.framework.Bundle**: Bundle object
 - **org.apache.felix.ipojo.everest.osgi.bundle.BundleResource**: BundleResource class that is used to represent this bundle
 
+[Scroll To Top ↑](#osgi)
+
+* * *
+ 
+<a name="bundle-headers"/>
 ## Bundle Headers
 Bundle headers resources represent header information of a specific OSGi bundle.
 
 ### Path
-> /osgi/bundles/[bundle-id]/headers
+> /[osgi](#osgi-root-resource)/[bundles](#bundles)/[bundle-id](#bundle)/headers
 
 ### Observable
 This resource is **not observable**.
@@ -155,11 +174,16 @@ All the metadata information available on the Bundle
 - **/dynamicimport-package**: Dynamic import package headers
 - **/require-bundle**: Require bundle headers
 
+[Scroll To Top ↑](#osgi)
+
+* * *
+
+<a name="bundle-capability"/>
 ## Bundle Capability
 Bundle Capability resources represent bundle capability of a specific OSGi bundle.
 
 ### Path
-> /osgi/bundles/[bundle-id]/capabilities/[unique-capability-id]  
+> /[osgi](#osgi-root-resource)/[bundles](#bundles)/[bundle-id](#bundle)/capabilities/[unique-capability-id]  
 
 ### Observable
 This resource is **not observable**
@@ -179,11 +203,16 @@ All capability attributes and directives
 - **org.osgi.wiring.framework.BundleCapability**: BundleCapability object
 - **org.apache.felix.ipojo.everest.osgi.bundle.BundleCapabilityResource**: BundleCapabilityResource class used to represent this capability  
 
+[Scroll To Top ↑](#osgi)
+
+* * *
+
+<a name="bundle-requirement"/>
 ## Bundle Requirement
 Bundle Requirement resources represent bundle requirement of a specific OSGi bundle.
 
 ### Path
-> /osgi/bundles/[bundle-id]/requirements/[unique-requirement-id]
+> /[osgi](#osgi-root-resource)/[bundles](#bundles)/[bundle-id](#bundle)/requirements/[unique-requirement-id]
 
 ### Observable
 This resource is **not observable**.
@@ -203,11 +232,16 @@ All requirement attributes and directives
 - **org.osgi.wiring.framework.BundleRequirement**: BundleRequirement object
 - **org.apache.felix.ipojo.everest.osgi.bundle.BundleRequirementResource**: BundleRequirementResource class used to represent this requirement  
 
+[Scroll To Top ↑](#osgi)
+
+* * *
+
+<a name="bundle-wire"/>
 ## Bundle Wire
 Bundle wire resources represent a bundle wire between a capability and a requirement.
 
 ### Path
-> /osgi/bundles/[bundle-id]/wires/[unique-wire-id]
+> /[osgi](#osgi-root-resource)/[bundles](#bundles)/[bundle-id](#bundle)/wires/[unique-wire-id]
 
 ### Observable
 This resource is **not observable**.
@@ -226,11 +260,16 @@ This resource is **not observable**.
 ### Adaptations
 - **org.osgi.wiring.framework.BundleWire**: BundleWire object  
 
+[Scroll To Top ↑](#osgi)
+
+* * *
+ 
+<a name="bundle-services"/>
 ## Bundle Services
 Services that can be linked to an OSGi bundle
 
 ### Path
-> /osgi/bundles/[bundle-id]/services
+> /[osgi](#osgi-root-resource)/[bundles](#bundles)/[bundle-id](#bundle)/services
 
 ### Observable
 This resource is **not observable**.
@@ -242,11 +281,16 @@ This resource is **not observable**.
 - **[/registered](#service)**: Services registered by this OSGi bundle
 - **[/uses](#service)**: Services used by this OSGi bundle
 
+[Scroll To Top ↑](#osgi)   
+
+* * *
+ 
+<a name="package"/>
 ## Package
 Package resource represents a package provided by an OSGi bundle.
 
 ### Path
-> /osgi/packages/[unique-capability-id]
+> /[osgi](#osgi-root-resource)/packages/[unique-capability-id]
 
 ### Observable: 
 This resource is observable. It delivers events for the following:
@@ -273,17 +317,23 @@ This resource is observable. It delivers events for the following:
 - **org.osgi.wiring.framework.BundleCapability**: BundleCapability object
 - **org.apache.felix.ipojo.everest.osgi.package.PackageResource**: PackageResource class used to represent this package 
 
+[Scroll To Top ↑](#osgi)   
+
+* * *
+ 
+<a name="service"/>
 ## Service
 Service resource represents an OSGi service published in the service registry.
 
 ### Path
-> /osgi/services/[service.id]
+> /[osgi](#osgi-root-resource)/services/[service.id]
 
 ### Observable
 This resource is **observable**. It delivers events for the following:
-- **CREATED**: Service registered
-- **UPDATED**: Service modified
-- **DELETED**: Service unregistered
+
+* **CREATED**: Service registered
+* **UPDATED**: Service modified
+* **DELETED**: Service unregistered
 
 ### Operations
 - **READ**: Get current state of the service
@@ -298,11 +348,16 @@ All service properties
 - **org.osgi.framework.ServiceReference**: ServiceReference object of this service
 - **org.apache.felix.ipojo.everest.osgi.service.ServiceResource**: ServiceResource class used to represent this service
 
+[Scroll To Top ↑](#osgi)   
+
+* * *
+ 
+<a name="configurations"/>
 ## Configurations
 Root of all configurations 
 
 ### Path
-> /osgi/configurations
+> /[osgi](#osgi-root-resource)/configurations
 
 ### Observable
 This resource is **not observable**. 
@@ -319,22 +374,30 @@ This resource is **not observable**.
     - **Parameter** ("pid"): **Type**: String, **Optional**: true
     - **Parameter** ("factoryPid"): **Type**: String, **Optional**: true
 
+[Scroll To Top ↑](#osgi) 
+  
+* * *
+ 
+<a name="configuration"/>
 ## Configuration
 Configuration resource represents a Config Admin configuration.
 
 ### Path 
-> /osgi/configurations/[configuration-pid]  
+> /[osgi](#osgi-root-resource)/[configurations](#configurations)/[configuration-pid]  
 
 ### Observable  
 This resource is **observable**. It deliveres events for the following:
-- UPDATED
+
+* **CREATED**: A new configuration created.
+* **UPDATED**: Configuration reconfigured.
+* **DELETED**: Configuration deleted.
 
 ### Operations
 - **READ**: Get current state of the configuration
-- **UPDATE** "update": update properties of this configuration  
+- **UPDATE** *"update"*: update properties of this configuration  
     - **Parameter** ("properties"): **Type**: Dictionary, **Optional**: true  
     - **Parameter** ("location"): **Type**: String, **Optional**: true  
-- **DELETE** "delete": delete this configuration
+- **DELETE** *"delete"*: delete this configuration
 
 ***Note:*** CREATE operation for configurations (which creates a new configuration) is done in [Configurations](#configurations) resource.   
 
@@ -348,11 +411,16 @@ This resource is **observable**. It deliveres events for the following:
 - **org.osgi.service.cm.Configuration**: Configuration object
 - **org.apache.felix.ipojo.everest.osgi.config.ConfigurationResource**: ConfigurationResource class used to represent this resource
 
+[Scroll To Top ↑](#osgi)  
+ 
+* * *
+ 
+<a name="log-entry"/>
 ## Log Entry
 Log Entry resource represents a Log Entry of OSGi Log Service.
 
 ### Path
-> /osgi/logs/[log-time]
+> /[osgi](#osgi-root-resource)/logs/[log-time]
 
 ### Observable
 This resource is **not observable**.
@@ -376,34 +444,44 @@ This resource is **not observable**.
 - **org.osgi.service.log.LogEntry**: LogEntry object
 - **org.apache.felix.ipojo.everest.osgi.log.LogEntryResource**: LogEntryResource class used to represent this resource
 
+[Scroll To Top ↑](#osgi)  
+ 
+* * *
+
+<a name="deployement-packages"/>
 ## Deployment Packages
 Root of all deployment packages
 
 ### Path
-> /osgi/deployments
+> /[osgi](#osgi-root-resource)/deployments
 
 ### Observable
 This resource is **not observable**.
 
 ### Operations
-- **CREATE** "install": Install new deployment package
+- **CREATE** *"install"*: Install new deployment package
     - **Parameter** ("input"): **Type**: InputStream, **Optional**: false
 
 ### Sub-resources
 - **[/[deployment-package-name]](#deployment-package)**: deployment pakcages
 
+[Scroll To Top ↑](#osgi)   
+
+* * *
+
+<a name="deployment-package"/>
 ## Deployment Package
 Deployment Package resource represents a Deployment Package deployed by the OSGi Deployment Package Admin
 
 ### Path
-> /osgi/deployments/[deployment-package-name]  
+> /[osgi](#osgi-root-resource)/[deployments](#deployment-packages)/[deployment-package-name]  
 
 ### Observable
 This resource is **not observable**.
 
 ### Operations
 - **READ**: Get the current state of this deployment package
-- **DELETE** "uninstall": Uninstall this deployment package
+- **DELETE** *"uninstall"*: Uninstall this deployment package
 
 ***Note:*** CREATE opearation for Deployment Packages is done in [Deployment Packages](#deployment-packages) resource.
 
