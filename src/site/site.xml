@@ -40,6 +40,7 @@
 
         <menu name="everest-OSGi">
             <item name="Home" href="everest-osgi/index.html"/>
+            <item name="Tutorials" href="everest-osgi/index.html#tutorials"/>
             <item name="Root" href="everest-osgi/index.html#osgi-root-resource"/>
             <item name="Bundles" href="everest-osgi/index.html#bundle"/>
             <item name="Packages" href="everest-osgi/index.html#package"/>

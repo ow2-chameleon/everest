@@ -6,17 +6,16 @@ everest adopts [REST][1] principles for representing resources.
 *to be completed*
 
 ## Requirements
-everest resides in an [OSGi][2] r4.3 compliant framework. 
-
-It depends on:
-- [Apache Felix iPOJO][3], version 1.10.1 or above
+everest resides in an [OSGi][2] r4.3 compliant framework. Additionally, it depends on:
+* [Apache Felix iPOJO][3], version 1.10.1 or above
 
 Optionally:
-- OSGi Event Admin Service, version 1.3.2 for sending resource notifications
+- OSGi Event Admin Service, *version 1.3.2* for sending resource notifications
 
 ## Concepts
+
 Using everest to access resource representations is plain simple: 
-The only method of EverestService is
+The only method of `EverestService` is
 
 ```java
  Resource process(Request request)  throws IllegalActionOnResourceException, ResourceNotFoundException;

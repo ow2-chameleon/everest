@@ -2,6 +2,8 @@
 # everest OSGi
 This domain is a resource-base representation of OSGi entities, including framework, bundles, packages, services, configurations, log entries and deployment packages.
 
+#### Entity Index:
+
 * [OSGi Framework](#osgi-root-resource)
 * [Bundle](#bundle)
     * [Bundle Headers](#bundle-headers)
@@ -17,18 +19,90 @@ This domain is a resource-base representation of OSGi entities, including framew
 
 ## Requirements
 
-everest OSGi domain needs an OSGi r4.3 compliant framework to represent its entities as resources.
+everest OSGi domain needs an OSGi r4.3 compliant framework to represent its entities as resources. Additionally, it depends on:
 
-It depends on:
-
-* [Apache Felix iPOJO][1], version 1.10.1 or above
+* [Apache Felix iPOJO][1], *version 1.10.1* or above
 * everest-core, version ${everest.core.version}
 
 everest OSGi has **optional** dependencies on following OSGi services:   
 
-* OSGi Configuration Admin Service, version *to be completed*
-* OSGi Log Service, version *to be completed*
-* OSGi Deployment Package Admin Service, version *to be completed*
+* org.osgi.service.log, *version 1.3* or above (OSGi Log Service)
+* org.osgi.service.cm, *version 1.4* or above (OSGi Configuration Admin Service)
+* org.osgi.service.deploymentadmin, *version 1.1* or above (OSGi Deployment Package Admin)
+
+* * * 
+
+## Installation
+
+For a quick start, here is a minimal OSGi framework that will let you test everest and everest OSGi domain. 
+
+```console
+g! 
+g! lb
+START LEVEL 1
+   ID|State      |Level|Name
+    0|Active     |    0|System Bundle (4.2.1)
+    1|Active     |    1|Java Servlet API (2.5.0)
+    2|Active     |    1|Commons IO (2.4.0)
+    3|Active     |    1|everest-core (1.0.0.SNAPSHOT)
+    4|Active     |    1|everest-osgi (1.0.0.SNAPSHOT)
+    5|Active     |    1|everest-servlet (1.0.0.SNAPSHOT)
+    6|Active     |    1|Apache Felix Gogo Command (0.12.0)
+    7|Active     |    1|Apache Felix Gogo Runtime (0.10.0)
+    8|Active     |    1|Apache Felix Gogo Shell (0.10.0)
+    9|Active     |    1|Apache Felix Http Jetty (2.2.0)
+   10|Active     |    1|Apache Felix iPOJO (1.10.1)
+   11|Active     |    1|osgi.cmpn (4.3.1.201210102024)
+g! 
+``` 
+
+* * * 
+
+## Usage
+
+Considering that you have the framework mentioned above, running on localhost and listening on 8080 port, you can test the OSGi domain by entering the following URL on your browser
+
+> http://localhost:8080/everest/osgi
+
+With the help of a little formatting, you should have a result, similar to this:
+
+```json
+{
+    name: "osgi"
+    description: "This root represents osgi framework and its subresources"
+    org.osgi.framework.version: "1.5"
+    org.osgi.framework.vendor: "Apache Software Foundation"
+    ...
+    startlevel.bundle: 1
+    startlevel: 1
+    __relations: {
+        everest:bundles: {
+        href: "http://localhost:8080/everest/osgi/bundles"
+        action: "READ"
+        name: "everest:bundles"
+        description: "Get bundles"
+    ...
+}
+```
+
+We recommend using a REST client browser extension for easily "browsing" the resources of in your platform.
+
+Of course, you can always access the resources represented by the everest OSGi domain programmatically on your OSGi framework. For this you need to acquire the `EverestService` and make requests on `/osgi` resource, such as:
+
+```java
+ // This is how you can get the Everest service.
+ // Beware that the EverestService may not be present (i.e. ref == null)
+ ServiceReference<EverestService> ref = bundleContext.getServiceReference(EverestService.class);
+ EverestService everest = bc.getService(ref);
+ 
+ // This is how you can access the everest OSGi domain.
+ // The process() method throws a ResourceNotFoundException exception
+ // if the OSGi domain is not active.
+ Resource osgiRootResource = everest.process(new DefaultRequest(Action.READ, Path.from("/osgi"), null));
+```
+
+You can continue with [OSGi Root Resource](#osgi-root-resource) and start discovering the resources on everest OSGi domain.   
+Or, you can head out to [Tutorials](#tutorials) and find out how to manipulate OSGi resources in a RESTful way.
    
 * * *
 
@@ -497,5 +571,32 @@ This resource is **not observable**.
 
 ### Adaptations
 - **org.osgi.service.deploymentadmin.DeploymentPackage**: DeploymentPackage object
+
+[Scroll To Top ↑](#osgi)   
+
+* * *
+
+<a name="tutorials"/>
+## Tutorials
+
+Here you will find some tutorials on how to change some of the resource states on OSGi domain.
+
+### Installing a bundle
+
+
+
+### Changing the state of a bundle
+
+
+
+### Working with Config Admin 
+
+
+
+### Installing/Uninstalling Deployment Packages
+
+
+[Scroll To Top ↑](#osgi)   
+
 
 [1]:  www.ipojo.org
