@@ -1,0 +1,181 @@
+Downloads
+=========
+
+Everest is made of several different modules you need to deploy on your OSGi framework.
+This page lists all the downloadable artifacts for Everest.
+
+Maven repository
+----------------
+
+Everest **stable** bundles are accessible from the "OW2 Releases" maven repository:
+
+```xml
+  <repositories>
+    <repository>
+      <id>ow2.releases</id>
+      <name>OW2 Repository</name>
+      <url>http://repository.ow2.org/nexus/content/repositories/releases</url>
+    </repository>
+  </repositories>
+```
+
+Releases
+--------
+
+<table>
+<thead>
+<tr>
+<th>Artifact</th>
+<th>Latest Version</th>
+<th>Binary</th>
+<th>Source</th>
+<th>Description &amp; Documentation</th>
+</tr>
+</thead>
+<tbody>
+
+## everest core
+#set( $url = "http://path/to/everest-core-${everestCoreVersion}" )
+<tr>
+<td><b>everest-core</b></td>
+<td>${everestCoreVersion}</td>
+<td>
+<b><a href="${url}.jar">jar</a></b><br/><a href="${url}.jar.asc">asc</a> <a href="${url}.jar.md5">md5</a>
+</td>
+<td>
+<b><a href="${url}-project.zip">zip</a></b><br/><a href="${url}-project.zip.asc">asc</a> <a href="${url}-project.zip.md5">md5</a>
+</td>
+<td>Everest core bundle. <a href="everest-core/home.html">more...</a></td>
+</tr>
+
+## everest servlet
+#set( $url = "http://path/to/everest-servlet-${everestServletVersion}" )
+<tr>
+<td><b>everest-servlet</b></td>
+<td>${everestServletVersion}</td>
+<td>
+<b><a href="${url}.jar">jar</a></b><br/><a href="${url}.jar.asc">asc</a> <a href="${url}.jar.md5">md5</a>
+</td>
+<td>
+<b><a href="${url}-project.zip">zip</a></b><br/><a href="${url}-project.zip.asc">asc</a> <a href="${url}-project.zip.md5">md5</a>
+</td>
+<td>HTTP mapping for Everest. <a href="everest-servlet/home.html">more...</a></td>
+</tr>
+
+## everest system
+#set( $url = "http://path/to/everest-system-${everestSystemVersion}" )
+<tr>
+<td><b>everest-system</b></td>
+<td>${everestSystemVersion}</td>
+<td>
+<b><a href="${url}.jar">jar</a></b><br/><a href="${url}.jar.asc">asc</a> <a href="${url}.jar.md5">md5</a>
+</td>
+<td>
+<b><a href="${url}-project.zip">zip</a></b><br/><a href="${url}-project.zip.asc">asc</a> <a href="${url}-project.zip.md5">md5</a>
+</td>
+<td>System resources. <a href="everest-system/home.html">more...</a></td>
+</tr>
+
+## everest osgi
+#set( $url = "http://path/to/everest-osgi-${everestOsgiVersion}" )
+<tr>
+<td><b>everest-osgi</b></td>
+<td>${everestOsgiVersion}</td>
+<td>
+<b><a href="${url}.jar">jar</a></b><br/><a href="${url}.jar.asc">asc</a> <a href="${url}.jar.md5">md5</a>
+</td>
+<td>
+<b><a href="${url}-project.zip">zip</a></b><br/><a href="${url}-project.zip.asc">asc</a> <a href="${url}-project.zip.md5">md5</a>
+</td>
+<td>OSGi resources. <a href="everest-osgi/home.html">more...</a></td>
+</tr>
+
+## everest ipojo
+#set( $url = "http://path/to/everest-osgi-${everestIpojoVersion}" )
+<tr>
+<td><b>everest-ipojo</b></td>
+<td>${everestIpojoVersion}</td>
+<td>
+<b><a href="${url}.jar">jar</a></b><br/><a href="${url}.jar.asc">asc</a> <a href="${url}.jar.md5">md5</a>
+</td>
+<td>
+<b><a href="${url}-project.zip">zip</a></b><br/><a href="${url}-project.zip.asc">asc</a> <a href="${url}-project.zip.md5">md5</a>
+</td>
+<td>iPOJO resources. <a href="everest-ipojo/home.html">more...</a></td>
+</tr>
+
+</tbody>
+</table>
+
+
+
+Development Snapshots
+---------------------
+
+Everest **unstable** bundles are accessible from the "OW2 Snapshots" maven repository:
+
+```xml
+  <repositories>
+    <repository>
+      <id>ow2.snapshots</id>
+      <name>OW2 Snapshots Repository</name>
+      <url>http://repository.ow2.org/nexus/content/repositories/snapshots</url>
+    </repository>
+  </repositories>
+```
+
+
+
+From the source
+---------------
+
+At last, you can checkout the everest source code using [Git](http://git-scm.com/ "Git"):
+
+```bash
+  $ git clone http://github.com/ow2-chameleon/everest.git
+```
+
+
+
+License
+-------
+
+Everest is part of the
+**[OW2 Chameleon project](http://chameleon.ow2.org "OW2 Chameleon")**
+and is licensed under the
+**[Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html "Apache License, Version 2.0")**.
+
+> Copyright 2013 OW2 Chameleon
+> 
+> Licensed under the Apache License, Version 2.0 (the "License");
+> you may not use this file except in compliance with the License.
+> You may obtain a copy of the License at
+> 
+>   http://www.apache.org/licenses/LICENSE-2.0
+> 
+> Unless required by applicable law or agreed to in writing, software
+> distributed under the License is distributed on an "AS IS" BASIS,
+> WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+> See the License for the specific language governing permissions and
+> limitations under the License.
+
+---------------------------------------
+
+
+
+Everest Logo
+------------
+
+The Everest logo is an original creation of **Morgan Martinet**.
+
+**Download:**
+
+- [PNG small](everest-logo-small.png) (200x117 bitmap)
+- [PNG](everest-logo.png) (600x350 bitmap)
+- [SVG](everest-logo.svg) (standard SVG format)
+- [SVG Inkscape](everest-logo-inkscape.svg) (contains hints for Inkscape)
+
+!["The Everest Logo"](everest-small.png "The Everest Logo")
+
+<!-- Copied from http://creativecommons.org/choose/results-one?license_code=by-sa&jurisdiction=&version=3.0&lang=en -->
+<a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>.

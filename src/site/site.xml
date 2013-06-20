@@ -1,9 +1,10 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <project name="everest" xmlns="http://maven.apache.org/DECORATION/1.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/DECORATION/1.0.0 http://maven.apache.org/xsd/decoration-1.0.0.xsd">
     <bannerLeft>
         <name>everest</name>
+        <src>everest-logo-small.png</src>
         <href>#</href>
     </bannerLeft>
 
@@ -22,6 +23,12 @@
         <head>
             <link rel="stylesheet" href="./css/site.css" type="text/css" />
         </head>
+
+        <menu name="everest">
+            <item name="About" href="about.html"/>
+            <item name="Downloads" href="downloads.html"/>
+            <item name="Documentation" href="documentation.html"/>
+        </menu>
         
         <menu name="everest-core">
             <item name="Home" href="everest-core/index.html"/>

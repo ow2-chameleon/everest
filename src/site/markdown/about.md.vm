@@ -1,0 +1,19 @@
+everest
+=======
+
+**TODO: button "Download everest"**
+
+everest come from *EVErything as REST*. Its goal is to provide an uniform
+resource-based presentation layer for a very wide variety of resources. everest
+offers:
+
+- an abstract, generic universal and simple resource model,
+- a native support of heterogeneous and dynamic environments,
+- navigability: from one resource you can discover all related stuffs,
+- extensibility: you can write you own kind of resources,
+- the simplest API ever\...
+
+Concepts
+--------
+
+**TODO: everest's concepts**
