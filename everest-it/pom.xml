@@ -100,13 +100,13 @@
         <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.ipojo.manipulator</artifactId>
-            <version>${ipojo.version}</version>
+            <version>${ipojoVersion}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.ipojo</artifactId>
-            <version>${ipojo.version}</version>
+            <version>${ipojoVersion}</version>
         </dependency>
 
         <dependency>
@@ -156,27 +156,27 @@
         <dependency>
             <groupId>org.apache.felix.ipojo</groupId>
             <artifactId>everest-core</artifactId>
-            <version>${everest.version}</version>
+            <version>${everestCoreVersion}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.felix.ipojo</groupId>
             <artifactId>everest-ipojo</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>${everestIpojoVersion}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.felix.ipojo</groupId>
             <artifactId>everest-osgi</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>${everestOsgiVersion}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.felix.ipojo</groupId>
             <artifactId>everest-servlet</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>${everestServletVersion}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.felix.ipojo</groupId>
             <artifactId>everest-system</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>${everestSystemVersion}</version>
         </dependency>
 
         <dependency>

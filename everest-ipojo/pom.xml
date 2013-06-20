@@ -19,7 +19,7 @@
         <dependency>
             <groupId>org.apache.felix.ipojo</groupId>
             <artifactId>everest-core</artifactId>
-            <version>${everest.version}</version>
+            <version>${everestCoreVersion}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.felix</groupId>

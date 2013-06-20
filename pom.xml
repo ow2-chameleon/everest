@@ -8,11 +8,26 @@
     <artifactId>everest-project</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
-    
+
     <properties>
-        <everest.version>1.0-SNAPSHOT</everest.version>
-        <osgi.version>4.3.1</osgi.version>
-        <ipojo.version>1.10.1</ipojo.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    
+        <!-- Defined here: 
+              * the latest stable versions of everest sub-projects
+              * the used version of OSGi & iPOJO
+             This properties are used in the generated site.
+             They *cannot* contain dots ('.') because it is a Velocity reserved character. -->
+        <everestVersion>1.0-SNAPSHOT</everestVersion>
+        <everestDistributionVersion>1.0-SNAPSHOT</everestDistributionVersion>
+
+        <everestCoreVersion>1.0-SNAPSHOT</everestCoreVersion>
+        <everestServletVersion>1.0-SNAPSHOT</everestServletVersion>
+        <everestSystemVersion>1.0-SNAPSHOT</everestSystemVersion>
+        <everestOsgiVersion>1.0-SNAPSHOT</everestOsgiVersion>
+        <everestIpojoVersion>1.0-SNAPSHOT</everestIpojoVersion>
+
+        <osgiVersion>4.3.1</osgiVersion>
+        <ipojoVersion>1.10.1</ipojoVersion>
     </properties>
 
     <modules>
@@ -29,7 +44,7 @@
         <repository>
             <id>orgapachefelix-021</id>
             <name>Apache Felix staging repository #021</name>
-            <url>https://repository.apache.org/content/repositories/orgapachefelix-021/</url>
+            <url>https://repository.apache.org/content/repositories/orgapachefelix-021</url>
         </repository>
     </repositories>
 
@@ -38,22 +53,22 @@
             <dependency>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>org.apache.felix.ipojo.annotations</artifactId>
-                <version>${ipojo.version}</version>
+                <version>${ipojoVersion}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>org.apache.felix.ipojo</artifactId>
-                <version>${ipojo.version}</version>
+                <version>${ipojoVersion}</version>
             </dependency>
             <dependency>
                 <groupId>org.osgi</groupId>
                 <artifactId>org.osgi.compendium</artifactId>
-                <version>${osgi.version}</version>
+                <version>${osgiVersion}</version>
             </dependency>
             <dependency>
                 <groupId>org.osgi</groupId>
                 <artifactId>org.osgi.core</artifactId>
-                <version>${osgi.version}</version>
+                <version>${osgiVersion}</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>

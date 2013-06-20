@@ -23,14 +23,14 @@
     </parent>
 
     <artifactId>everest-servlet</artifactId>
-
+    <version>1.0-SNAPSHOT</version>
     <packaging>bundle</packaging>
 
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>everest-core</artifactId>
-            <version>${everest.version}</version>
+            <version>${everestCoreVersion}</version>
         </dependency>
 
         <dependency>
