@@ -40,6 +40,7 @@
         <module>everest-system</module>
     </modules>
     
+    <!-- TO BE REMOVED, when iPOJO 1.10.1 release is deployed on Maven central -->
     <repositories>
         <repository>
             <id>orgapachefelix-021</id>
@@ -47,6 +48,13 @@
             <url>https://repository.apache.org/content/repositories/orgapachefelix-021</url>
         </repository>
     </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>orgapachefelix-021</id>
+            <name>Apache Felix staging repository #021</name>
+            <url>https://repository.apache.org/content/repositories/orgapachefelix-021</url>
+        </pluginRepository>
+    </pluginRepositories>
 
     <dependencyManagement>
         <dependencies>
@@ -118,7 +126,7 @@
                 <plugin>
                     <groupId>org.apache.felix</groupId>
                     <artifactId>maven-ipojo-plugin</artifactId>
-                    <version>1.8.6</version>
+                    <version>${ipojoVersion}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -134,7 +142,7 @@
                     <version>3.0</version>
                     <configuration>
                         <skipDeploy>true</skipDeploy>
-                        <!--<reportPlugins>
+                        <reportPlugins>
                             <plugin>
                                 <groupId>org.apache.maven.plugins</groupId>
                                 <artifactId>maven-project-info-reports-plugin</artifactId>
@@ -149,7 +157,7 @@
                                 <artifactId>maven-surefire-report-plugin</artifactId>
                                 <version>2.5</version>
                             </plugin>
-                        </reportPlugins>-->
+                        </reportPlugins>
                     </configuration>
                     <dependencies>
                         <dependency>
