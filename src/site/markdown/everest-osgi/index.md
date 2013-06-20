@@ -281,6 +281,9 @@ Service resource represents an OSGi service published in the service registry.
 
 ### Observable
 This resource is **observable**. It delivers events for the following:
+- **CREATED**: Service registered
+- **UPDATED**: Service modified
+- **DELETED**: Service unregistered
 
 ### Operations
 - **READ**: Get current state of the service
@@ -294,11 +297,6 @@ All service properties
 ### Adaptations
 - **org.osgi.framework.ServiceReference**: ServiceReference object of this service
 - **org.apache.felix.ipojo.everest.osgi.service.ServiceResource**: ServiceResource class used to represent this service
-
-### Events
-- **CREATED**: Service registered
-- **UPDATED**: Service modified
-- **DELETED**: Service unregistered
 
 ## Configurations
 Root of all configurations 
