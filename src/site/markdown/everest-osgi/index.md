@@ -1,4 +1,4 @@
-<a name="osgi"/>
+<a name="osgi"></a>
 # everest OSGi
 This domain is a resource-base representation of OSGi entities, including framework, bundles, packages, services, configurations, log entries and deployment packages.
 
@@ -24,7 +24,7 @@ everest OSGi domain needs an OSGi r4.3 compliant framework to represent its enti
 * [Apache Felix iPOJO][1], *version 1.10.1* or above
 * everest-core, version ${everest.core.version}
 
-everest OSGi has **optional** dependencies on following OSGi services:   
+everest OSGi has **optional** dependencies on following OSGi services:
 
 * org.osgi.service.log, *version 1.3* or above (OSGi Log Service)
 * org.osgi.service.cm, *version 1.4* or above (OSGi Configuration Admin Service)
