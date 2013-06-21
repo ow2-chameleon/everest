@@ -10,6 +10,17 @@
     margin:20px auto;
 }
 
+/*Thin divider*/
+.row-fluid div.thin-divider {
+    background-color: rgb(229, 229, 229);
+    display: block;
+    float: left;
+    height: 1px;
+    margin-bottom: 20px;
+    margin-top: 10px;
+    min-height: 1px;
+}
+
 /* Default */
 @media (min-width: 980px) {
     #out_container.boxed, #out_container.boxed-attached {
@@ -1582,7 +1593,7 @@ div.alert {
     text-align: center;
 }
 .hero-list img {
-    padding: 0 11px;
+/*    padding: 0 11px;  */
 }
 .index1 .hero-list img {
     padding: 0;
