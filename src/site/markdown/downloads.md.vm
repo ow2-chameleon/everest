@@ -22,7 +22,7 @@ Everest **stable** bundles are accessible from the "OW2 Releases" maven reposito
 Releases
 --------
 
-<table>
+<table class="table table-striped table-bordered">
 <thead>
 <tr>
 <th>Artifact</th>
