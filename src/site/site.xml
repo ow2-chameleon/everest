@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/DECORATION/1.0.0 http://maven.apache.org/xsd/decoration-1.0.0.xsd">
     <bannerLeft>
         <name>everest</name>
-        <src>everest-logo-small.png</src>
+        <src>images/everest-logo.png</src>
         <href>#</href>
     </bannerLeft>
 
@@ -15,13 +15,24 @@
     </skin>
     <custom>
         <fluidoSkin>
+            <topBarEnabled>false</topBarEnabled>
             <sideBarEnabled>true</sideBarEnabled>
+
+            <gitHub>
+                <projectId>99soft/backport-spi</projectId>
+                <ribbonOrientation>right</ribbonOrientation>
+                <ribbonColor>black</ribbonColor>
+            </gitHub>
         </fluidoSkin>
     </custom>
 
     <body>
         <head>
             <link rel="stylesheet" href="./css/site.css" type="text/css" />
+            <link rel="stylesheet" href="./css/bootstrap.css" type="text/css" />
+            <link rel="stylesheet" href="./css/custom.css" type="text/css" />
+            <link rel="stylesheet" href="./css/fonts.css" type="text/css" />
+            <link rel="stylesheet" href="./css/color_schemes.css" type="text/css" />
         </head>
 
         <menu name="everest">
