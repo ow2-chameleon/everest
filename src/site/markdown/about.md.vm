@@ -85,15 +85,23 @@
 
 <div class="offset1 span3 info-stick stick">
 	<h3>OSGi</h3>
-	<p>bundles, packages, services, system packages, framework...</p>
+	<p>
+	bundles, packages, services<br/>
+	system packages, start levels,<br/>
+	framework, package admin...
+	</p>
 </div>
 
 <div class="span3 attention-stick stick">
 	<h3>iPOJO</h3>
-	<p>components, factories, instances, service dependencies, declarations, handlers...</p>
+	<p>components, factories, instances,<br/>
+	service dependencies, declarations, 
+	handlers...</p>
 </div>
 
 <div class="span3 success-stick stick">
-	<h3>Compendium and others</h3>
-	<p>configuration, log, deployment package, everest it-self, and much more</p>
+	<h3>Compendium &amp; others</h3>
+	<p>configuration admin, log service,</br>
+	deployment packages,<br/>
+	everest it-self, and much more</p>
 </div>
