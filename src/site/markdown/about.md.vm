@@ -6,9 +6,9 @@
 <div class="row-fluid">
 	<div class="span7">
 	    <h2>An elegant approach to represent dynamic systems</h2>
-	    <p>OSGi-based system are very powerfull, but terribly hard to analyze. Understanding what's going on,
-	    unresolved bundles, unresolved service dependencies and so on, is the key to masterize the power of OSGi.</p>
-	    <p>Everest is a framework building a uniform resource-based representation for a very wide variety of resources composing your system. It's RestFul, implements HATEOS, is extensible and malleable.</p>
+	    <p>OSGi-based systems are very powerful, but terribly hard to analyze. Understanding what's going on, analyzing
+	    unresolved bundles, unresolved service dependencies and so on, is the key to mastering the power of OSGi.</p>
+	    <p>Everest is a framework that builds a uniform resource-based representation for a very wide variety of resources composing your system. It's RESTFul, implements HATEOS, extensible and malleable.</p>
 	</div>
 	<div class="span5 home-block">
 	    <div class="grey-box hero-block-2">
@@ -30,7 +30,7 @@
         </div>
 		<div class="image-text">
             <h2>Clean Design</h2>
-            <p>Everest implement a pur-RESTful representation. Resources have metadata and releations on other resources. That's it.
+            <p>Everest implements a pur-RESTful representation. Resources have metadata and releations on other resources. That's it.
                 <a href="#">Learn more&nbsp;»</a>
             </p>
 		</div>
@@ -54,7 +54,7 @@
         </div>
 		<div class="image-text">
             <h2>HATEOS</h2>
-            <p>Everest embrace the HATEOS paradigm. Resources have relations. This powerful abstraction makes navigating in your system easy as pie.
+            <p>Everest embrace the HATEOS paradigm. Resources have relations. This powerful abstraction makes navigating in your system as easy as pie.
                 <a href="#">Learn more&nbsp;»</a>
             </p>
 		</div>
@@ -66,7 +66,7 @@
         </div>
 		<div class="image-text">
             <h2>Extensible</h2>
-			<p>Wanna your own resources, extends existing ? Yes, you can!
+			<p>Wanna build your own resources, or extend existing ones? Yes, you can!
                 <a href="#">Learn more&nbsp;»</a>
             </p>
 		</div>
