@@ -200,12 +200,16 @@ public class OsgiResourceUtils {
      * @return the passed builder object with modifications
      */
     public static ImmutableResourceMetadata.Builder metadataFrom(ImmutableResourceMetadata.Builder metadataBuilder, BundleRequirement bundleRequirement) {
+        ImmutableResourceMetadata.Builder builder = new ImmutableResourceMetadata.Builder();
         for (Map.Entry<String, Object> att : bundleRequirement.getAttributes().entrySet()) {
-            metadataBuilder.set(att.getKey(), att.getValue());
+            builder.set(att.getKey(), att.getValue());
         }
+        metadataBuilder.set("attributes",builder.build());
+        builder = new ImmutableResourceMetadata.Builder();
         for (Map.Entry<String, String> dir : bundleRequirement.getDirectives().entrySet()) {
-            metadataBuilder.set(dir.getKey(), dir.getValue());
+            builder.set(dir.getKey(), dir.getValue());
         }
+        metadataBuilder.set("directives",builder.build());
         return metadataBuilder;
     }
 
@@ -217,12 +221,16 @@ public class OsgiResourceUtils {
      * @return the passed builder object with modifications
      */
     public static ImmutableResourceMetadata.Builder metadataFrom(ImmutableResourceMetadata.Builder metadataBuilder, BundleCapability bundleCapability) {
+        ImmutableResourceMetadata.Builder builder = new ImmutableResourceMetadata.Builder();
         for (Map.Entry<String, Object> att : bundleCapability.getAttributes().entrySet()) {
-            metadataBuilder.set(att.getKey(), att.getValue());
+            builder.set(att.getKey(), att.getValue());
         }
+        metadataBuilder.set("attributes",builder.build());
+        builder = new ImmutableResourceMetadata.Builder();
         for (Map.Entry<String, String> dir : bundleCapability.getDirectives().entrySet()) {
-            metadataBuilder.set(dir.getKey(), dir.getValue());
+            builder.set(dir.getKey(), dir.getValue());
         }
+        metadataBuilder.set("directives",builder.build());
         return metadataBuilder;
     }
 
@@ -254,6 +262,8 @@ public class OsgiResourceUtils {
         public static final String BUNDLE_LOCATION = "bundle-location";
 
         public static final String BUNDLE_LAST_MODIFIED = "bundle-last-modified";
+
+        public static final String HOST_NAMESPACE = "osgi.wiring.host";
     }
 
     /**
