@@ -202,14 +202,15 @@ public class TestInstances extends EverestIpojoTestCommon {
      */
     @Test
     public void testReconfiguration() throws ResourceNotFoundException, IllegalActionOnResourceException {
-        Resource r = read("/ipojo/instance/Foo-2001");
+        // Wait because sometime... once upon a time...
+        osgiHelper.waitForService(Architecture.class.getName(), "(architecture.instance=Foo-2001)", 1000, true);
 
         // Reconfigure the instance and check
         Map<String, Object> configuration = new HashMap<String, Object>();
         configuration.put("fooPrefix", "__reconfigured");
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("configuration", configuration);
-        r = everest.process(new DefaultRequest(UPDATE, Path.from("/ipojo/instance/Foo-2001"), params));
+        Resource r = everest.process(new DefaultRequest(UPDATE, Path.from("/ipojo/instance/Foo-2001"), params));
         assertThat(r.getMetadata().get("configuration", Map.class).get("fooPrefix")).isEqualTo("__reconfigured");
     }
 
@@ -218,6 +219,9 @@ public class TestInstances extends EverestIpojoTestCommon {
      */
     @Test
     public void testStateChange() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        // Wait because sometime... once upon a time...
+        osgiHelper.waitForService(Architecture.class.getName(), "(architecture.instance=Foo-2001)", 1000, true);
+
         Resource r = read("/ipojo/instance/Foo-2001");
 
         // Check state is "valid"
