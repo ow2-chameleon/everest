@@ -120,11 +120,12 @@ public class EverestIpojoTestCommon extends BaseTest {
      */
     @Override
     protected Option[] getCustomOptions() {
+        // Because sometime we need more time...
+        System.setProperty("TIME_FACTOR", "2");
+
         return options(
                 // Enable iPOJO synchronous mode
                 systemProperty("ipojo.processing.synchronous").value("true"),
-                // Because sometime we need more time...
-                systemProperty("TIME_FACTOR").value("2"),
                 // Enable everest synchronous event processing + debug of requests
                 systemProperty("everest.processing.synchronous").value("true"),
                 systemProperty("everest.debug.request").value("true"),
