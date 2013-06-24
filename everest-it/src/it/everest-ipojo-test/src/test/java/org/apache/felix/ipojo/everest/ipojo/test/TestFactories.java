@@ -70,6 +70,10 @@ public class TestFactories extends EverestIpojoTestCommon {
      */
     @Test
     public void testReadBarFactories() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        // We need to wait for the Bar factory service v2.0.0
+        // It seems that sometimes
+        osgiHelper.waitForService(Factory.class.getName(), "(&(factory.name=" + BAR + ")(factory.version=2.0.0))", 1000, true);
+
         Resource r = read("/ipojo/factory/" + BAR);
         // Resource should be observable
         assertThat(r.isObservable()).isTrue();
