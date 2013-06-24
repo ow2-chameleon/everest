@@ -7,6 +7,8 @@ import org.apache.felix.ipojo.everest.ipojo.test.b1.FooService;
 import org.apache.felix.ipojo.everest.services.*;
 import org.junit.Before;
 import org.junit.Test;
+import org.ops4j.pax.exam.spi.reactors.ExamReactorStrategy;
+import org.ops4j.pax.exam.spi.reactors.PerMethod;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
 
@@ -24,17 +26,8 @@ import static org.osgi.framework.Constants.SERVICE_ID;
 /**
  * Test /ipojo/factory and sons
  */
+@ExamReactorStrategy(PerMethod.class)
 public class TestFactories extends EverestIpojoTestCommon {
-
-
-    @Before
-    public void commonSetUp() {
-        super.commonSetUp();
-        // We need to wait for the Bar factory service v2.0.0
-        // It seems that sometimes
-        System.out.println("Waiting for factory");
-        osgiHelper.waitForService(Factory.class.getName(), "(&(factory.name=" + BAR + ")(factory.version=2.0.0))", 0, false);
-    }
 
     /**
      * Read /ipojo/factory
@@ -339,6 +332,9 @@ public class TestFactories extends EverestIpojoTestCommon {
      */
     @Test
     public void testCreateOnBar2Factory() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        // First create an instance with the null factory
+        everest.process(new DefaultRequest(CREATE, Path.from("/ipojo/factory/" + BAR + "/null"), null));
+        // Then craete an instance with factory version 2.0.0...
         Resource r = everest.process(new DefaultRequest(CREATE, Path.from("/ipojo/factory/" + BAR + "/2.0.0"), null));
         // Check name, factory
         ResourceMetadata m = r.getMetadata();
