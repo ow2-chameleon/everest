@@ -129,15 +129,15 @@ public class EverestIpojoTestCommon extends BaseTest {
                 // Enable everest synchronous event processing + debug of requests
                 systemProperty("everest.processing.synchronous").value("true"),
                 systemProperty("everest.debug.request").value("true"),
+                // Generated test bundles
+                generateTestBundle(TEST_BUNDLE_SYMBOLIC_NAME, IPOJO + ".everest.ipojo.test.b1", "metadata.1.xml", null),
+                generateTestBundle(TEST_BUNDLE_2_SYMBOLIC_NAME, IPOJO + ".everest.ipojo.test.b2", "metadata.2.xml", null),
                 // everest bundles
                 mavenBundle(IPOJO, "everest-core").versionAsInProject(),
                 mavenBundle(IPOJO, "everest-ipojo").versionAsInProject(),
                 mavenBundle(IPOJO, "everest-osgi").versionAsInProject(),
                 // The EventAdmin service
                 mavenBundle("org.apache.felix", "org.apache.felix.eventadmin").versionAsInProject(),
-                // Generated test bundles
-                generateTestBundle(TEST_BUNDLE_SYMBOLIC_NAME, IPOJO + ".everest.ipojo.test.b1", "metadata.1.xml", null),
-                generateTestBundle(TEST_BUNDLE_2_SYMBOLIC_NAME, IPOJO + ".everest.ipojo.test.b2", "metadata.2.xml", null),
                 // Fest assert JARs wrapped as bundles
                 wrappedBundle(mavenBundle("org.easytesting", "fest-util").versionAsInProject()),
                 wrappedBundle(mavenBundle("org.easytesting", "fest-assert").versionAsInProject())
