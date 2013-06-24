@@ -5,6 +5,7 @@ import org.apache.felix.ipojo.everest.filters.RelationFilters;
 import org.apache.felix.ipojo.everest.impl.DefaultRequest;
 import org.apache.felix.ipojo.everest.ipojo.test.b1.FooService;
 import org.apache.felix.ipojo.everest.services.*;
+import org.junit.Before;
 import org.junit.Test;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
@@ -24,6 +25,16 @@ import static org.osgi.framework.Constants.SERVICE_ID;
  * Test /ipojo/factory and sons
  */
 public class TestFactories extends EverestIpojoTestCommon {
+
+
+    @Before
+    public void commonSetUp() {
+        super.commonSetUp();
+        // We need to wait for the Bar factory service v2.0.0
+        // It seems that sometimes
+        System.out.println("Waiting for factory");
+        osgiHelper.waitForService(Factory.class.getName(), "(&(factory.name=" + BAR + ")(factory.version=2.0.0))", 0, false);
+    }
 
     /**
      * Read /ipojo/factory
@@ -70,10 +81,6 @@ public class TestFactories extends EverestIpojoTestCommon {
      */
     @Test
     public void testReadBarFactories() throws ResourceNotFoundException, IllegalActionOnResourceException {
-        // We need to wait for the Bar factory service v2.0.0
-        // It seems that sometimes
-        osgiHelper.waitForService(Factory.class.getName(), "(&(factory.name=" + BAR + ")(factory.version=2.0.0))", 1000, true);
-
         Resource r = read("/ipojo/factory/" + BAR);
         // Resource should be observable
         assertThat(r.isObservable()).isTrue();
