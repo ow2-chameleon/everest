@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.BundleNamespace.BUNDLE_NAMESPACE;
+import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.BundleNamespace.HOST_NAMESPACE;
 import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.PackageNamespace.PACKAGE_NAMESPACE;
 import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.PackageNamespace.RESOLUTION_DYNAMIC;
 import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.*;
@@ -49,6 +50,11 @@ public class BundleRequirementResource extends AbstractResourceCollection {
     private final boolean isBundle;
 
     /**
+     * if this requirement is a host requirement
+     */
+    private final boolean isFragment;
+
+    /**
      * Constructor for this bundle requirement resource
      *
      * @param path
@@ -59,11 +65,12 @@ public class BundleRequirementResource extends AbstractResourceCollection {
         m_requirement = bundleRequirement;
         isPackage = m_requirement.getNamespace().equals(PACKAGE_NAMESPACE);
         isBundle = m_requirement.getNamespace().equals(BUNDLE_NAMESPACE);
+        isFragment = m_requirement.getNamespace().equals(HOST_NAMESPACE);
         List<Relation> relations = new ArrayList<Relation>();
         // calculate wires coming to this requirement
         BundleRevision revision = m_requirement.getRevision();
-        String bundleId = Long.toString(revision.getBundle().getBundleId());
         if (revision != null) {
+            String bundleId = Long.toString(revision.getBundle().getBundleId());
             BundleWiring wiring = revision.getWiring();
             if (wiring != null) {
                 List<BundleWire> allWires = wiring.getRequiredWires(m_requirement.getNamespace());
@@ -93,6 +100,10 @@ public class BundleRequirementResource extends AbstractResourceCollection {
             if (isBundle) {
                 Path requirementPath = bundleHeadersPath.addElements(BundleHeadersResource.REQUIRE_BUNDLE, requirementId);
                 relation = new DefaultRelation(requirementPath, Action.READ, BundleHeadersResource.REQUIRE_BUNDLE);
+            }
+            if (isFragment) {
+                Path requirementPath = bundleHeadersPath.addElements(BundleHeadersResource.FRAGMENT_HOST, requirementId);
+                relation = new DefaultRelation(requirementPath, Action.READ, BundleHeadersResource.FRAGMENT_HOST);
             }
             relations.add(relation);
             setRelations(relations);

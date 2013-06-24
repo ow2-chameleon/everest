@@ -52,6 +52,11 @@ public class BundleHeadersResource extends AbstractResourceCollection {
     public static final String REQUIRE_BUNDLE = "require-bundle";
 
     /**
+     * Name for fragment hosts
+     */
+    public static final String FRAGMENT_HOST = "fragment-host";
+
+    /**
      * Bundle having the headers
      */
     private final Bundle m_bundle;
@@ -81,7 +86,8 @@ public class BundleHeadersResource extends AbstractResourceCollection {
                     key.equals(Constants.IMPORT_PACKAGE) ||
                     key.equals(Constants.DYNAMICIMPORT_PACKAGE) ||
                     key.equals(Constants.REQUIRE_BUNDLE) ||
-                    key.equals(Constants.BUNDLE_NATIVECODE))) {
+                    key.equals(Constants.BUNDLE_NATIVECODE) ||
+                    key.equals(Constants.FRAGMENT_HOST))) {
                 metadataBuilder.set(key, headers.get(key));
             }
         }
@@ -132,6 +138,13 @@ public class BundleHeadersResource extends AbstractResourceCollection {
             bundleRequires.put(uniqueRequirementId(req), metadataFrom(new ImmutableResourceMetadata.Builder(), req).build());
         }
         resources.add(new ReadOnlyLeafCollectionResource(getPath().addElements(REQUIRE_BUNDLE), bundleRequires));
+        //fragment host requirements
+        List<BundleRequirement> fragmentRequirements = rev.getDeclaredRequirements(BundleRevision.HOST_NAMESPACE);
+        Map<String, ResourceMetadata> hosts = new HashMap<String, ResourceMetadata>();
+        for (BundleRequirement fragmentRequirement : fragmentRequirements) {
+            hosts.put(uniqueRequirementId(fragmentRequirement), metadataFrom(new ImmutableResourceMetadata.Builder(),fragmentRequirement).build());
+        }
+        resources.add(new ReadOnlyLeafCollectionResource(getPath().addElements(FRAGMENT_HOST), hosts));
 
         // TODO Native-Code
 
