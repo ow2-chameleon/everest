@@ -138,6 +138,9 @@ public class OsgiResourceUtils {
         // crossing fingers :: Version can also be list of versions
         String versionString = "";
         Object version = bundleCapability.getAttributes().get(PACKAGE_VERSION_ATTRIBUTE);
+        if(version==null){
+            version = bundleCapability.getAttributes().get(CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
+        }
         if (version != null) { // never know
             if (version instanceof Collection) {
                 for (Object v : (Collection) version) {
