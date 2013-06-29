@@ -47,7 +47,7 @@ public class BundleWireResource extends DefaultReadOnlyResource {
         BundleCapability capability = m_wire.getCapability();
         String capabilityId = OsgiResourceUtils.uniqueCapabilityId(capability);
         Path capabilityPath = BundleResourceManager.getInstance().getPath().addElements(
-                Long.toString(capability.getRevision().getBundle().getBundleId()),
+                Long.toString(m_wire.getProviderWiring().getBundle().getBundleId()),
                 BundleResource.CAPABILITIES_PATH,
                 capabilityId
         );
@@ -56,7 +56,7 @@ public class BundleWireResource extends DefaultReadOnlyResource {
         BundleRequirement requirement = m_wire.getRequirement();
         String requirementId = OsgiResourceUtils.uniqueRequirementId(requirement);
         Path requirementPath = BundleResourceManager.getInstance().getPath().addElements(
-                Long.toString(requirement.getRevision().getBundle().getBundleId()),
+                Long.toString(m_wire.getRequirerWiring().getBundle().getBundleId()),
                 BundleResource.REQUIREMENTS_PATH,
                 requirementId
         );

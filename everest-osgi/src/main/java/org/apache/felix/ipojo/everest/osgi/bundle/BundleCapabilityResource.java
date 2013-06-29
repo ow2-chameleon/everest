@@ -51,16 +51,17 @@ public class BundleCapabilityResource extends AbstractResourceCollection {
      * @param path
      * @param bundleCapability
      */
-    public BundleCapabilityResource(Path path, BundleCapability bundleCapability) {
+    public BundleCapabilityResource(Path path, BundleWiring hostWiring, BundleCapability bundleCapability) {
         super(path.addElements(uniqueCapabilityId(bundleCapability)));
         m_capability = bundleCapability;
         isPackage = m_capability.getNamespace().equals(OsgiResourceUtils.PackageNamespace.PACKAGE_NAMESPACE);
         List<Relation> relations = new ArrayList<Relation>();
         // calculate wires coming from this capability
         BundleRevision revision = m_capability.getRevision();
-        String bundleId = Long.toString(revision.getBundle().getBundleId());
         if (revision != null) {
-            BundleWiring wiring = revision.getWiring();
+            String bundleId = Long.toString(revision.getBundle().getBundleId());
+            //BundleWiring wiring = revision.getWiring();
+            BundleWiring wiring = hostWiring;
             if (wiring != null) {
                 List<BundleWire> allWires = wiring.getProvidedWires(m_capability.getNamespace());
                 for (BundleWire wire : allWires) {
@@ -68,7 +69,7 @@ public class BundleCapabilityResource extends AbstractResourceCollection {
                         // and add a relation link
                         m_wires.add(wire);
                         String wireId = uniqueWireId(wire);
-                        Path wirePath = BundleResourceManager.getInstance().getPath().addElements(bundleId,
+                        Path wirePath = BundleResourceManager.getInstance().getPath().addElements(Long.toString(hostWiring.getBundle().getBundleId()),
                                 BundleResource.WIRES_PATH,
                                 wireId
                         );

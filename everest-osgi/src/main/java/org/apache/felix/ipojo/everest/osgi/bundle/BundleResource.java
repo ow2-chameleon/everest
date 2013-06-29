@@ -430,14 +430,14 @@ public class BundleResource extends AbstractResourceCollection {
             List<BundleCapability> capabilities = wiring.getCapabilities(null);
             if (capabilities != null) {
                 for (BundleCapability capability : capabilities) {
-                    BundleCapabilityResource bundleCapabilityResource = new BundleCapabilityResource(capabilitiesPath, capability);
+                    BundleCapabilityResource bundleCapabilityResource = new BundleCapabilityResource(capabilitiesPath, wiring, capability);
                     m_capabilitiesResourceMap.put(uniqueCapabilityId(capability), bundleCapabilityResource);
                 }
             }
             List<BundleRequirement> requirements = wiring.getRequirements(null);
             if (requirements != null) {
                 for (BundleRequirement requirement : requirements) {
-                    BundleRequirementResource bundleRequirementResource = new BundleRequirementResource(requirementsPath, requirement);
+                    BundleRequirementResource bundleRequirementResource = new BundleRequirementResource(requirementsPath, wiring, requirement);
                     m_requirementsResourceMap.put(uniqueRequirementId(requirement), bundleRequirementResource);
                 }
             }

@@ -60,7 +60,7 @@ public class BundleRequirementResource extends AbstractResourceCollection {
      * @param path
      * @param bundleRequirement
      */
-    public BundleRequirementResource(Path path, BundleRequirement bundleRequirement) {
+    public BundleRequirementResource(Path path, BundleWiring hostWiring, BundleRequirement bundleRequirement) {
         super(path.addElements(uniqueRequirementId(bundleRequirement)));
         m_requirement = bundleRequirement;
         isPackage = m_requirement.getNamespace().equals(PACKAGE_NAMESPACE);
@@ -71,7 +71,8 @@ public class BundleRequirementResource extends AbstractResourceCollection {
         BundleRevision revision = m_requirement.getRevision();
         if (revision != null) {
             String bundleId = Long.toString(revision.getBundle().getBundleId());
-            BundleWiring wiring = revision.getWiring();
+            //BundleWiring wiring = revision.getWiring();
+            BundleWiring wiring = hostWiring;
             if (wiring != null) {
                 List<BundleWire> allWires = wiring.getRequiredWires(m_requirement.getNamespace());
                 for (BundleWire wire : allWires) {
@@ -79,7 +80,7 @@ public class BundleRequirementResource extends AbstractResourceCollection {
                         // and add a relation link
                         m_wires.add(wire);
                         String wireId = uniqueWireId(wire);
-                        Path wirePath = BundleResourceManager.getInstance().getPath().addElements(bundleId,
+                        Path wirePath = BundleResourceManager.getInstance().getPath().addElements(Long.toString(hostWiring.getBundle().getBundleId()),
                                 BundleResource.WIRES_PATH,
                                 wireId
                         );
