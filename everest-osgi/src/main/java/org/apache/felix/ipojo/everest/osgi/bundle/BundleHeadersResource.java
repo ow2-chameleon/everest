@@ -19,6 +19,7 @@ import java.util.*;
 import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.PackageNamespace.REQUIREMENT_RESOLUTION_DIRECTIVE;
 import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.PackageNamespace.RESOLUTION_DYNAMIC;
 import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.metadataFrom;
+import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.uniqueCapabilityId;
 import static org.apache.felix.ipojo.everest.osgi.OsgiResourceUtils.uniqueRequirementId;
 
 /**
@@ -105,12 +106,20 @@ public class BundleHeadersResource extends AbstractResourceCollection {
         BundleRevision rev = m_bundle.adapt(BundleRevision.class);
         // package export
         List<BundleCapability> capabilities = rev.getDeclaredCapabilities(BundleRevision.PACKAGE_NAMESPACE);
-        Builder builder = PackageResourceManager.relationsBuilder(getPath().addElements(EXPORT_PACKAGE), capabilities);
-        try {
-            resources.add(builder.build());
-        } catch (IllegalResourceException e) {
-            // should never happen
+        Map<String, ResourceMetadata> exports = new HashMap<String, ResourceMetadata>();
+        for (BundleCapability capability : capabilities) {
+            String capabilityId = uniqueCapabilityId(capability);
+            ResourceMetadata metadata = metadataFrom(new ImmutableResourceMetadata.Builder(), capability).build();
+            exports.put(capabilityId,metadata);
         }
+        Builder builder = PackageResourceManager.relationsBuilder(getPath().addElements(EXPORT_PACKAGE), capabilities);
+        //builder.with();
+//        try {
+//            resources.add(builder.build());
+//        } catch (IllegalResourceException e) {
+//            // should never happen
+//        }
+        resources.add(new ReadOnlyLeafCollectionResource(getPath().addElements(EXPORT_PACKAGE),exports));
 
         // package import / dynamic import
         List<BundleRequirement> requirements = rev.getDeclaredRequirements(BundleRevision.PACKAGE_NAMESPACE);
