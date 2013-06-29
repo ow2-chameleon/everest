@@ -1,6 +1,5 @@
 package org.apache.felix.ipojo.everest.osgi;
 
-import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.services.IllegalResourceException;
 import org.apache.felix.ipojo.everest.services.Path;
@@ -16,7 +15,7 @@ import java.util.Map.Entry;
  * Collection of resources that is initiated with a path and a map of name,metadata for its children.
  * Children are only resource with static metadata
  */
-public class ReadOnlyLeafCollectionResource extends DefaultReadOnlyResource {
+public class ReadOnlyLeafCollectionResource extends AbstractResourceCollection {
 
     /**
      * Map of metadata
