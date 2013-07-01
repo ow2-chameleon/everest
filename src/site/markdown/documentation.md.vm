@@ -4,17 +4,20 @@ Documentation
 Everest is compound of several modules, and each module has its own
 documentation, describing the resources it provides/extends.
 
+<h2>Everest-core</h2>
 For general-purpose documentation about Everest, see the 
-[Everest-core documentation](everest-core/home.html). It explains how to
+[Everest-core documentation](everest-core/index.html). It explains how to
 install and use Everest.
 
-If you want to access your resources remotly, then you may have a look to the
-[Everest-servlet documentation](everest-servlet/home.html). It details what you
+<h2>Everest-servlet</h2>
+If you want to access your resources remotely, then you may have a look to the
+[Everest-servlet documentation](everest-servlet/index.html). It details what you
 need to expose tour Everest resources as HTTP REST resources.
 
+<h2>Domains</h2>
 For Everest domains, look at the corresponding documentation:
 
-- [Everest-system documentation](everest-system/home.html)
-- [Everest-osgi documentation](everest-osgi/home.html)
-- [Everest-ipojo documentation](everest-ipojo/home.html)
+- [Everest-system documentation](everest-system/index.html)
+- [Everest-osgi documentation](everest-osgi/index.html)
+- [Everest-ipojo documentation](everest-ipojo/index.html)
 

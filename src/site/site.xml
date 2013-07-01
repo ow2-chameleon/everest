@@ -50,6 +50,10 @@
             <item name="Home" href="everest-servlet/index.html"/>
         </menu>
 
+        <menu name="everest-System">
+            <item name="Home" href="everest-system/index.html"/>
+        </menu>
+        
         <menu name="everest-OSGi">
             <item name="Home" href="everest-osgi/index.html"/>
             <item name="Tutorials" href="everest-osgi/index.html#tutorials"/>
