@@ -31,7 +31,7 @@
 		<div class="image-text">
             <h2>Clean Design</h2>
             <p>Everest implements a pur-RESTful representation. Resources have metadata and releations on other resources. That's it.
-                <a href="#">Learn more&nbsp;»</a>
+                <a href="everest-core/index.html">Learn more&nbsp;»</a>
             </p>
 		</div>
 		<div class="clear"></div>
@@ -43,7 +43,7 @@
 		<div class="image-text">
             <h2>Flexible</h2>
             <p>Bundles, services, packages, everything is a resource. Only their metadata are different. It gives to you the full knowledge on your system.
-                <a href="#">Learn more&nbsp;»</a>
+                <a href="documentation.html">Learn more&nbsp;»</a>
             </p>
 		</div>
 		<div class="clear"></div>
@@ -55,7 +55,7 @@
 		<div class="image-text">
             <h2>HATEOS</h2>
             <p>Everest embrace the HATEOS paradigm. Resources have relations. This powerful abstraction makes navigating in your system as easy as pie.
-                <a href="#">Learn more&nbsp;»</a>
+                <a href="everest-core/concepts.html">Learn more&nbsp;»</a>
             </p>
 		</div>
 		<div class="clear"></div>
@@ -67,7 +67,7 @@
 		<div class="image-text">
             <h2>Extensible</h2>
 			<p>Wanna build your own resources, or extend existing ones? Yes, you can!
-                <a href="#">Learn more&nbsp;»</a>
+                <a href="everest-core/getting-started.html">Learn more&nbsp;»</a>
             </p>
 		</div>
 		<div class="clear"></div>

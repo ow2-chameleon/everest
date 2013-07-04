@@ -40,10 +40,13 @@
             <item name="About" href="about.html"/>
             <item name="Downloads" href="downloads.html"/>
             <item name="Documentation" href="documentation.html"/>
+            <item name="Hello Everest!" href="hello-everest.html"/>
         </menu>
         
         <menu name="everest-core">
             <item name="Home" href="everest-core/index.html"/>
+            <item name="Getting Started" href="everest-core/getting-started.html"/>
+            <item name="Concepts" href="everest-core/concepts.html"/>
         </menu>
         
         <menu name="everest-servlet">

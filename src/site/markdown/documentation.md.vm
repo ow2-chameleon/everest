@@ -4,10 +4,10 @@ Documentation
 Everest is compound of several modules, and each module has its own
 documentation, describing the resources it provides/extends.
 
-<h2>Everest-core</h2>
+<h2>Getting Started with Everest</h2>
 For general-purpose documentation about Everest, see the 
-[Everest-core documentation](everest-core/index.html). It explains how to
-install and use Everest.
+[Everest-core documentation](everest-core/index.html).   
+For a quick start to Everest, see the [Getting Started](getting-started.html). It explains the core concepts of Everest, how to install and use it.
 
 <h2>Everest-servlet</h2>
 If you want to access your resources remotely, then you may have a look to the
