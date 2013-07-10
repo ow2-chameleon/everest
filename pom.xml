@@ -23,6 +23,7 @@
         <everestDistributionVersion>1.0-SNAPSHOT</everestDistributionVersion>
 
         <everestCoreVersion>1.0-SNAPSHOT</everestCoreVersion>
+        <everestCasaVersion>1.0-SNAPSHOT</everestCasaVersion>
         <everestServletVersion>1.0-SNAPSHOT</everestServletVersion>
         <everestSystemVersion>1.0-SNAPSHOT</everestSystemVersion>
         <everestOsgiVersion>1.0-SNAPSHOT</everestOsgiVersion>
@@ -43,6 +44,7 @@
         <module>everest-it</module>
         <module>everest-system</module>
         <module>everest-casa</module>
+        <module>everest-distrib</module>
     </modules>
 
     <!-- TO BE REMOVED, when iPOJO 1.10.1 release is deployed on Maven central
@@ -53,6 +55,8 @@
             <url>https://repository.apache.org/content/repositories/orgapachefelix-021</url>
         </repository>
     </repositories>  -->
+
+
     <pluginRepositories>
         <pluginRepository>
             <id>orgapachefelix-021</id>
