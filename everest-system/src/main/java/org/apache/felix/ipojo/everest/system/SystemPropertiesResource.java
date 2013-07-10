@@ -8,6 +8,7 @@ import org.apache.felix.ipojo.everest.services.*;
 
 import java.util.Dictionary;
 import java.util.Enumeration;
+import java.util.Map;
 
 import static org.apache.felix.ipojo.everest.system.SystemRootResource.SYSTEM_ROOT_PATH;
 
@@ -36,7 +37,24 @@ public class SystemPropertiesResource extends DefaultResource {
                         .name("properties")
                         .description("properties to update")
                         .type(Dictionary.class)
+                        .optional(true),
+                new DefaultParameter()
+                        .name("key")
+                        .description("name of the properties to update")
+                        .optional(true)
+                        .type(String.class),
+                new DefaultParameter()
+                        .name("value")
+                        .description("value of the properties to the update")
+                        .optional(true)
+                        .type(String.class),
+                new DefaultParameter()
+                        .name("configuration")
+                        .type(Map.class)
+                        .description("The set of configuration of the component")
                         .optional(true)));
+
+
     }
 
 
@@ -47,18 +65,45 @@ public class SystemPropertiesResource extends DefaultResource {
 
     @Override
     public Resource update(Request request) throws IllegalActionOnResourceException {
-        this.update(request.get("properties", Dictionary.class));
+        //  this.update(request.get("properties", Dictionary.class));
+        Dictionary newDictionary = request.get("properties", Dictionary.class);
+        if (newDictionary != null) {
+            this.update(newDictionary);
+        }
+
+        String newKey = request.get("key", String.class);
+        if (newKey != null) {
+            String newValue = request.get("value", String.class);
+            if (newValue != null) {
+
+                update(newKey, newValue);
+            }
+        }
+
+        //Map<String, String> newMap = request.get("configuration", Map.class);
+        Map<String, ?> newMap = request.parameters();
+        if (newMap != null) {
+            for (String key : newMap.keySet()) {
+                update(key, newMap.get(key).toString());
+            }
+        }
         return this;
     }
 
     public void update(Dictionary properties) throws IllegalActionOnResourceException {
-        if (properties != null) {
-            Enumeration keys = properties.keys();
-            while (keys.hasMoreElements()) {
-                Object key = keys.nextElement();
-                //TODO should check for exceptions
-                System.setProperty(key.toString(), properties.get(key).toString());
-            }
+
+        Enumeration keys = properties.keys();
+        while (keys.hasMoreElements()) {
+            Object key = keys.nextElement();
+            //TODO should check for exceptions
+            System.setProperty(key.toString(), properties.get(key).toString());
         }
+
+    }
+
+    public void update(String key, String value) throws IllegalActionOnResourceException {
+        //TODO should check for exceptions
+        System.setProperty(key, value);
+
     }
 }
