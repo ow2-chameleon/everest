@@ -134,7 +134,7 @@ We consider that by default this 3 resources are present.So to add this resource
 #### Relation with sub resource
 
 So let's do your first request on your domain.
-Send a get request on the following adress: [http://localhost:8080/everest/casa][1]
+Send a GET request on the following adress: [http://localhost:8080/everest/casa][1]
 The response will be :
 
 ```json
@@ -167,7 +167,7 @@ we have to implement a new method in the Root resource :
 
 This method will add a relation between the root resource and his sub-resources.
 
-So now if you re-do a get, you will obtain :
+So now if you re-do a GET, you will obtain :
 
 ```json
 {
@@ -338,7 +338,49 @@ public class GenericDeviceResource extends DefaultResource {
 
 ### How to add resource to my manager ?
 
-In using the CREATE relation.
+With added a CREATE relation in your manager.
+
+We proceed in two step to add the relation :
+
+* First : modify the manager constructor like this to add a relation :
+```java
+ public GenericDeviceManager() {
+        super(m_genericDevicePath);
+        setRelations(
+                new DefaultRelation(getPath(), Action.CREATE, "create",
+                        new DefaultParameter()
+                                .name("serialNumber")
+                                .description(" Serial number of the device")
+                                .optional(false)
+                                .type(String.class)));
+ }
+```
+
+* Second : create the method *create* witch is called by the relation *CREATE* :
+```java
+ public Resource create(Request request) {
+         GenericDeviceResource resource = null;
+
+         /* Catch of the request argument */
+         String newSerialNumber = request.get("serialNumber", String.class);
+         if (newSerialNumber != null) {
+
+             /* Creation of a New Device */
+             GenericDevice newGenericDevice = new GenericDevice(newSerialNumber);
+
+             /* Creation of the resource which represent the device */
+             resource = new GenericDeviceResource(newGenericDevice, this);
+
+             /* Add the resource to the Map of sub resource*/
+             m_genericDeviceResourcesMap.put(newGenericDevice.DEVICE_SERIAL_NUMBER, resource);
+         }
+
+         return resource;
+ }
+```
+
+### How to add Metadata to my resource ?
+
 
 [1]: chrome-extension://hgmloofddffdnphfgcellkdfbfbjeloo/RestClient.html "http://localhost:8080/everest/casa"
 
