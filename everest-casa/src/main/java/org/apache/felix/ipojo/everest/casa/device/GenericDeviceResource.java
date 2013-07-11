@@ -12,7 +12,7 @@ import org.apache.felix.ipojo.everest.services.ResourceMetadata;
  * Time: 15:55
  * To change this template use File | Settings | File Templates.
  */
-public class GenericDeviceRessource extends DefaultResource {
+public class GenericDeviceResource extends DefaultResource {
 
 
     /**
@@ -27,7 +27,7 @@ public class GenericDeviceRessource extends DefaultResource {
     private final GenericDeviceManager m_genericDeviceManager;
 
 
-    public GenericDeviceRessource(GenericDevice genericDevice, GenericDeviceManager genericDeviceManager) {
+    public GenericDeviceResource(GenericDevice genericDevice, GenericDeviceManager genericDeviceManager) {
 
         super(genericDeviceManager.m_genericDevicePath.add(Path.from(Path.SEPARATOR + genericDevice.DEVICE_SERIAL_NUMBER)));
         this.m_genericDevice = genericDevice;
@@ -38,7 +38,12 @@ public class GenericDeviceRessource extends DefaultResource {
     public ResourceMetadata getMetadata() {
         ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
         metadataBuilder.set("Serial Number", m_genericDevice.DEVICE_SERIAL_NUMBER);
-
+        metadataBuilder.set("State Activated", m_genericDevice.STATE_ACTIVATED);
+        metadataBuilder.set("State Deactivated", m_genericDevice.STATE_DEACTIVATED);
+        metadataBuilder.set("State Property Name", m_genericDevice.STATE_PROPERTY_NAME);
+        metadataBuilder.set("Serial Unknown", m_genericDevice.STATE_UNKNOWN);
         return metadataBuilder.build();
     }
+
+
 }

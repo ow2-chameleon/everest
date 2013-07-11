@@ -250,15 +250,95 @@ So it's very important to override the getResource method either the everest-cor
 
 ### Manage your resource
 
-#### Why manage your resource ?
+In this part we are focusing on the devices branches. In this branches we have two resources :
 
-#### Implement create relation
+* **GenericDeviceManager** : it represent the */devices*, the root of all devices
+* **GenericDeviceResource** : it represent the */serialNumber*, it is the representation of a unique device. Be carefull,
+resource aren't the device but a representation of it.
 
-#### Implement delete relation
+The device manager allowed us to manage a list of Device resource.
+Let's implement the two class !
+
+The implementation of the device manager :
+```java
+public class GenericDeviceManager extends AbstractResourceCollection {
+
+    /**
+     * Name of the resource manager
+     */
+    public static final String m_genericDeviceName = "devices";
+
+    /**
+     * Path of the resource manager, here /casa/devices
+     */
+    public static final Path m_genericDevicePath = m_casaRootPath.add(Path.from(Path.SEPARATOR + m_genericDeviceName));
 
 
+    /**
+     * Map of Generic Device resource by serial Number
+     */
+    private Map<String, GenericDeviceResource> m_genericDeviceResourcesMap = new HashMap<String, GenericDeviceResource>();
+
+    /**
+     * Static instance of this singleton class
+     */
+    private static final GenericDeviceManager m_instance = new GenericDeviceManager();
+
+    /**
+     * Getter of the static instance of this singleton class
+     *
+     * @return the singleton static instance
+     */
+    public static GenericDeviceManager getInstance() {
+        return m_instance;
+    }
+
+    public GenericDeviceManager() {
+        super(m_genericDevicePath);
+    }
+
+    @Override
+    public List<Resource> getResources() {
+        List<Resource> resources = new ArrayList<Resource>();
+        for (String key : m_genericDeviceResourcesMap.keySet()) {
+            resources.add(m_genericDeviceResourcesMap.get(key));
+        }
+        return resources;
+
+    }
+}
+```
+
+The implementation of the device resource :
+```java
+public class GenericDeviceResource extends DefaultResource {
 
 
+     /**
+      * Represented resource
+      */
+     private final GenericDevice m_genericDevice;
+
+
+     /**
+      * Reference to resource manager
+      */
+     private final GenericDeviceManager m_genericDeviceManager;
+
+
+     public GenericDeviceResource(GenericDevice genericDevice, GenericDeviceManager genericDeviceManager) {
+
+         super(genericDeviceManager.m_genericDevicePath.add(Path.from(Path.SEPARATOR + genericDevice.DEVICE_SERIAL_NUMBER)));
+         this.m_genericDevice = genericDevice;
+         this.m_genericDeviceManager = genericDeviceManager;
+
+     }
+ }
+```
+
+### How to add resource to my manager ?
+
+In using the CREATE relation.
 
 [1]: chrome-extension://hgmloofddffdnphfgcellkdfbfbjeloo/RestClient.html "http://localhost:8080/everest/casa"
 

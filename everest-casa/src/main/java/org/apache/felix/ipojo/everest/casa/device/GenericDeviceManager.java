@@ -1,16 +1,19 @@
 package org.apache.felix.ipojo.everest.casa.device;
 
+import org.apache.felix.ipojo.everest.casa.AbstractResourceCollection;
 import org.apache.felix.ipojo.everest.impl.DefaultParameter;
-import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
 import org.apache.felix.ipojo.everest.impl.DefaultRelation;
-import org.apache.felix.ipojo.everest.services.*;
+import org.apache.felix.ipojo.everest.services.Action;
+import org.apache.felix.ipojo.everest.services.Path;
+import org.apache.felix.ipojo.everest.services.Request;
+import org.apache.felix.ipojo.everest.services.Resource;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.felix.ipojo.everest.casa.CasaRootRessource.m_casaRootPath;
+import static org.apache.felix.ipojo.everest.casa.CasaRootResource.m_casaRootPath;
 
 /**
  * Created with IntelliJ IDEA.
@@ -19,18 +22,23 @@ import static org.apache.felix.ipojo.everest.casa.CasaRootRessource.m_casaRootPa
  * Time: 14:11
  * To change this template use File | Settings | File Templates.
  */
-public class GenericDeviceManager extends DefaultReadOnlyResource {
+public class GenericDeviceManager extends AbstractResourceCollection {
 
-
+    /**
+     * Name of the resource manager
+     */
     public static final String m_genericDeviceName = "devices";
 
+    /**
+     * Path of the resource manager, here /casa/devices
+     */
     public static final Path m_genericDevicePath = m_casaRootPath.add(Path.from(Path.SEPARATOR + m_genericDeviceName));
 
 
     /**
-     * Map of bundle resource by bundle id
+     * Map of Generic Device resource by serial Number
      */
-    private Map<String, GenericDeviceRessource> m_genericDeviceResourcesMap = new HashMap<String, GenericDeviceRessource>();
+    private Map<String, GenericDeviceResource> m_genericDeviceResourcesMap = new HashMap<String, GenericDeviceResource>();
 
     /**
      * Static instance of this singleton class
@@ -55,7 +63,6 @@ public class GenericDeviceManager extends DefaultReadOnlyResource {
                                 .description(" Serial number of the device")
                                 .optional(false)
                                 .type(String.class)));
-
     }
 
     @Override
@@ -69,27 +76,14 @@ public class GenericDeviceManager extends DefaultReadOnlyResource {
     }
 
     public Resource create(Request request) {
-        GenericDeviceRessource resource = null;
+        GenericDeviceResource resource = null;
         String newserialNumber = request.get("serialNumber", String.class);
         if (newserialNumber != null) {
             GenericDevice newGenericDevice = new GenericDevice(newserialNumber);
-            resource = new GenericDeviceRessource(newGenericDevice, this);
+            resource = new GenericDeviceResource(newGenericDevice, this);
             m_genericDeviceResourcesMap.put(newGenericDevice.DEVICE_SERIAL_NUMBER, resource);
         }
 
         return resource;
     }
-
-    public List<Relation> getRelations() {
-        List<Relation> relations = new ArrayList<Relation>();
-        relations.addAll(super.getRelations());
-        for (Resource resource : getResources()) {
-            int size = getCanonicalPath().getCount();
-            String name = resource.getCanonicalPath().getElements()[size];
-            relations.add(new DefaultRelation(resource.getCanonicalPath(), Action.READ, getCanonicalPath().getLast() + ":" + name,
-                    "Get " + name));
-        }
-        return relations;
-    }
-
 }

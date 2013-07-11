@@ -22,4 +22,5 @@ public class GenericDevice {
         this.DEVICE_SERIAL_NUMBER = DEVICE_SERIAL_NUMBER;
     }
 
+
 }

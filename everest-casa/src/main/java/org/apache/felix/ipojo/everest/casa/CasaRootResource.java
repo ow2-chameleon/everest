@@ -4,7 +4,8 @@ import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.everest.casa.device.GenericDeviceManager;
-import org.apache.felix.ipojo.everest.impl.AbstractResourceManager;
+import org.apache.felix.ipojo.everest.casa.person.PersonManager;
+import org.apache.felix.ipojo.everest.casa.zone.ZoneManager;
 import org.apache.felix.ipojo.everest.services.Path;
 import org.apache.felix.ipojo.everest.services.Resource;
 
@@ -21,18 +22,38 @@ import java.util.List;
 @Component(name = "CasaRootRessource")
 @Provides(specifications = Resource.class)
 @Instantiate
-public class CasaRootRessource extends AbstractResourceManager {
+public class CasaRootResource extends AbstractResourceCollection {
 
+    /*
+    * Name ressource
+     */
     public static final String m_casaRoot = "casa";
+
+    /*
+     * Path of the ressource
+    */
     public static final Path m_casaRootPath = Path.from(Path.SEPARATOR + m_casaRoot);
+
+    /*
+     * Description of the ressource
+    */
     private static final String m_casaDescription = "casa resources";
-    ;
+
+    /*
+     * List of the subRessource
+    */
     private final List<Resource> m_casaResources = new ArrayList<Resource>();
 
-    public CasaRootRessource() {
-        super(m_casaRoot, m_casaDescription);
+    /*
+     * Constructor
+    */
+    public CasaRootResource() {
+        super(m_casaRootPath);
         m_casaResources.add(new GenericDeviceManager());
+        m_casaResources.add(new PersonManager());
+        m_casaResources.add(new ZoneManager());
     }
+
 
     @Override
     public List<Resource> getResources() {
