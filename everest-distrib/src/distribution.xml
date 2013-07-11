@@ -15,11 +15,9 @@
             <directory>
                 ${chameleon.destination}
             </directory>
-
             <outputDirectory/>
             <includes>
-                <include>bin/**</include>
-                <include>conf/**</include>
+                <include>./**</include>
             </includes>
         </fileSet>
     </fileSets>

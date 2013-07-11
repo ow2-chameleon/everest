@@ -57,7 +57,7 @@
         <!--
          The base directory of the distribution.xml
         -->
-        <distribution.baseDirectory>chameleonCasa-distribution-${project.version}</distribution.baseDirectory>
+        <distribution.baseDirectory>Distribution-Casa-${project.version}</distribution.baseDirectory>
     </properties>
 
 
