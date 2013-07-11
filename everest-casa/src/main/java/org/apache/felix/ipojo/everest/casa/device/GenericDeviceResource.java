@@ -1,9 +1,12 @@
 package org.apache.felix.ipojo.everest.casa.device;
 
+import org.apache.felix.ipojo.everest.impl.DefaultParameter;
+import org.apache.felix.ipojo.everest.impl.DefaultRelation;
 import org.apache.felix.ipojo.everest.impl.DefaultResource;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
-import org.apache.felix.ipojo.everest.services.Path;
-import org.apache.felix.ipojo.everest.services.ResourceMetadata;
+import org.apache.felix.ipojo.everest.services.*;
+
+import java.util.Map;
 
 /**
  * Created with IntelliJ IDEA.
@@ -32,6 +35,12 @@ public class GenericDeviceResource extends DefaultResource {
         super(genericDeviceManager.m_genericDevicePath.add(Path.from(Path.SEPARATOR + genericDevice.DEVICE_SERIAL_NUMBER)));
         this.m_genericDevice = genericDevice;
         this.m_genericDeviceManager = genericDeviceManager;
+        new DefaultRelation(getPath(), Action.UPDATE, "Update field",
+                new DefaultParameter()
+                        .name("parameter/value")
+                        .description(" Modify the parameter of the device with the value")
+                        .optional(false)
+                        .type(Map.class));
 
     }
 
@@ -45,5 +54,16 @@ public class GenericDeviceResource extends DefaultResource {
         return metadataBuilder.build();
     }
 
-
+    @Override
+    public Resource update(Request request) throws IllegalActionOnResourceException {
+        //Map<String, String> newMap = request.get("configuration", Map.class);
+        Map<String, ?> newMap = request.parameters();
+        if (newMap != null) {
+            for (String key : newMap.keySet()) {
+                if (key.contentEquals("STATE_DEACTIVATED"))
+                    m_genericDevice.setSTATE_DEACTIVATED(newMap.get(key).toString());
+            }
+        }
+        return this;
+    }
 }

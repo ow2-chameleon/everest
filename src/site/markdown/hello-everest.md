@@ -96,7 +96,6 @@ public class CasaRootResource extends DefaultReadOnlyResource {
         return m_casaResources;
     }
 }
-
 ```
 
 In order to create the rest architecture create 3 class on this model PersonManager,GenericDeviceManager and ZoneManager.
@@ -121,14 +120,12 @@ We consider that by default this 3 resources are present.So to add this resource
  constructor  :
 
 ```java
-
-  public CasaRootResource() {
-        super(m_casaRootPath);
-        m_casaResources.add(new GenericDeviceManager());
-        m_casaResources.add(new PersonManager());
-        m_casaResources.add(new ZoneManager());
-    }
-
+public CasaRootResource() {
+    super(m_casaRootPath);
+    m_casaResources.add(new GenericDeviceManager());
+    m_casaResources.add(new PersonManager());
+    m_casaResources.add(new ZoneManager());
+}
 ```
 
 #### Relation with sub resource
@@ -150,19 +147,17 @@ The fact is it haven't implicit relation between a resource and his sub resource
 we have to implement a new method in the Root resource :
 
 ```java
-
-   public List<Relation> getRelations() {
-        List<Relation> relations = new ArrayList<Relation>();
-        relations.addAll(super.getRelations());
-        for (Resource resource : getResources()) {
-            int size = getCanonicalPath().getCount();
-            String name = resource.getCanonicalPath().getElements()[size];
-            relations.add(new DefaultRelation(resource.getCanonicalPath(), Action.READ, getCanonicalPath().getLast() + ":" + name,
-                    "Get " + name));
-        }
-        return relations;
+public List<Relation> getRelations() {
+    List<Relation> relations = new ArrayList<Relation>();
+    relations.addAll(super.getRelations());
+    for (Resource resource : getResources()) {
+        int size = getCanonicalPath().getCount();
+        String name = resource.getCanonicalPath().getElements()[size];
+        relations.add(new DefaultRelation(resource.getCanonicalPath(), Action.READ, getCanonicalPath().getLast() + ":" + name,
+        "Get " + name));
     }
-
+    return relations;
+}
 ```
 
 This method will add a relation between the root resource and his sub-resources.
@@ -260,6 +255,7 @@ The device manager allowed us to manage a list of Device resource.
 Let's implement the two class !
 
 The implementation of the device manager :
+
 ```java
 public class GenericDeviceManager extends AbstractResourceCollection {
 
@@ -310,6 +306,7 @@ public class GenericDeviceManager extends AbstractResourceCollection {
 ```
 
 The implementation of the device resource :
+
 ```java
 public class GenericDeviceResource extends DefaultResource {
 
@@ -333,53 +330,110 @@ public class GenericDeviceResource extends DefaultResource {
          this.m_genericDeviceManager = genericDeviceManager;
 
      }
- }
+}
 ```
 
 ### How to add resource to my manager ?
 
-With added a CREATE relation in your manager.
+With adding a CREATE relation in your manager.
 
 We proceed in two step to add the relation :
 
 * First : modify the manager constructor like this to add a relation :
+
 ```java
- public GenericDeviceManager() {
-        super(m_genericDevicePath);
-        setRelations(
-                new DefaultRelation(getPath(), Action.CREATE, "create",
-                        new DefaultParameter()
-                                .name("serialNumber")
-                                .description(" Serial number of the device")
-                                .optional(false)
-                                .type(String.class)));
- }
+public GenericDeviceManager() {
+    super(m_genericDevicePath);
+    setRelations(
+        new DefaultRelation(getPath(), Action.CREATE, "create",
+            new DefaultParameter()
+                .name("serialNumber")
+                    .description(" Serial number of the device")
+                    .optional(false)
+                    .type(String.class)));
+}
 ```
 
 * Second : create the method *create* witch is called by the relation *CREATE* :
+
 ```java
- public Resource create(Request request) {
-         GenericDeviceResource resource = null;
+public Resource create(Request request) {
+    GenericDeviceResource resource = null;
 
-         /* Catch of the request argument */
-         String newSerialNumber = request.get("serialNumber", String.class);
-         if (newSerialNumber != null) {
+     /* Catch of the request argument */
+     String newSerialNumber = request.get("serialNumber", String.class);
+     if (newSerialNumber != null) {
 
-             /* Creation of a New Device */
-             GenericDevice newGenericDevice = new GenericDevice(newSerialNumber);
+        /* Creation of a New Device */
+        GenericDevice newGenericDevice = new GenericDevice(newSerialNumber);
 
-             /* Creation of the resource which represent the device */
-             resource = new GenericDeviceResource(newGenericDevice, this);
+        /* Creation of the resource which represent the device */
+        resource = new GenericDeviceResource(newGenericDevice, this);
 
-             /* Add the resource to the Map of sub resource*/
-             m_genericDeviceResourcesMap.put(newGenericDevice.DEVICE_SERIAL_NUMBER, resource);
-         }
-
-         return resource;
- }
+        /* Add the resource to the Map of sub resource*/
+        m_genericDeviceResourcesMap.put(newGenericDevice.DEVICE_SERIAL_NUMBER, resource);
+     }
+    return resource;
+}
 ```
 
 ### How to add Metadata to my resource ?
+
+You must modify the Generic device resource like this :
+
+```java
+public ResourceMetadata getMetadata() {
+    ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
+    metadataBuilder.set("Serial Number", m_genericDevice.DEVICE_SERIAL_NUMBER);
+    metadataBuilder.set("State Activated", m_genericDevice.STATE_ACTIVATED);
+    metadataBuilder.set("State Deactivated", m_genericDevice.STATE_DEACTIVATED);
+    metadataBuilder.set("State Property Name", m_genericDevice.STATE_PROPERTY_NAME);
+    metadataBuilder.set("Serial Unknown", m_genericDevice.STATE_UNKNOWN);
+    return metadataBuilder.build();
+}
+```
+
+Now when you send a get command you have the metadata print in the answer.
+
+### How to interact with the object represented by the resource ?
+
+With adding a UPDATE relation in your manager.
+
+We proceed in two step to add the relation :
+* First : modify the manager constructor like this to add a relation :
+
+```java
+public GenericDeviceResource(GenericDevice genericDevice, GenericDeviceManager genericDeviceManager) {
+
+    super(genericDeviceManager.m_genericDevicePath.add(Path.from(Path.SEPARATOR + genericDevice.DEVICE_SERIAL_NUMBER)));
+    this.m_genericDevice = genericDevice;
+    this.m_genericDeviceManager = genericDeviceManager;
+    new DefaultRelation(getPath(), Action.UPDATE, "Update field",
+        new DefaultParameter()
+            .name("parameter/value")
+            .description(" Modify the parameter of the device with the value")
+            .optional(false)
+            .type(Map.class));
+
+}
+
+```
+
+* Second : create the method *update* witch is called by the relation *UPDATE* :
+
+```java
+@Override
+public Resource update(Request request) throws IllegalActionOnResourceException {
+    Map<String, ?> newMap = request.parameters();
+    if (newMap != null) {
+        for (String key : newMap.keySet()) {
+            if (key.contentEquals("STATE_DEACTIVATED"))
+                m_genericDevice.setSTATE_DEACTIVATED(newMap.get(key).toString());
+        }
+    }
+    return this;
+}
+```
 
 
 [1]: chrome-extension://hgmloofddffdnphfgcellkdfbfbjeloo/RestClient.html "http://localhost:8080/everest/casa"
