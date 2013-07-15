@@ -40,6 +40,7 @@ public class GenericDeviceManager extends AbstractResourceCollection {
      */
     private Map<String, GenericDeviceResource> m_genericDeviceResourcesMap = new HashMap<String, GenericDeviceResource>();
 
+
     /**
      * Static instance of this singleton class
      */

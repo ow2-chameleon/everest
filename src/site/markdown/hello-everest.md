@@ -16,7 +16,8 @@ Additionally, you need to have read the part about **[concept](everest-core/conc
 
 ### What is a domain ?
 
-A domain is a set of things; more or less abstract; that you want to represent as resource.
+A domain is a set of resource representing a particular context. The level of granularity of resources is defined by
+the designer of the domain.
 
 ### First step : identify your resources
 
@@ -395,7 +396,7 @@ public ResourceMetadata getMetadata() {
 
 Now when you send a get command you have the metadata print in the answer.
 
-### How to interact with the object represented by the resource ?
+###<a name="update"></a> How to interact with the object represented by the resource ?
 
 With adding a UPDATE relation in your manager.
 
@@ -434,7 +435,153 @@ public Resource update(Request request) throws IllegalActionOnResourceException 
     return this;
 }
 ```
+## Manage your relation
 
+### Relation between 2 resources
+
+In our example, each device will be located in one zone. And in each zone we could have several devices. This fact will be
+represented by **relations**.
+
+#### Relation device --> zone.
+
+Let's implement the relation in the DeviceResource. We imagine that a device is not fixed in the space, it can be move
+to an other zone. In rest the action is traduce by an *UPDATE* action on the resource. This action have already been
+ implemented in [How to interact with the object represented by the resource ?](#update "How to interact with the object represented by the resource ?").
+ We just have to add a new case when we see the key word *zone*.
+
+```java
+else if  (key.contentEquals("zone")){
+    m_genericDevice.zone =  newMap.get(key).toString();
+    Relation  relations = new DefaultRelation(ZoneManager.getInstance().getPath().add(Path.from(Path.SEPARATOR + m_genericDevice.zone )), Action.READ, "Location");
+    setRelations(relations);
+}
+```
+
+So know if your update a device with a *POST* request : zone:room and fo a *GET*, we see the relation :
+
+```json
+__relations: {
+    Location: {
+         href: "http://localhost:8080/everest/casa/zone/bathroom"
+         action: "READ"
+         name: "Location"
+        description: null
+        parameters: [0]
+    }-
+}
+```
+
+But when we do a *GET* on [http://localhost:8080/everest/casa/zone/bathroom][1] we see :
+
+```json
+{
+    Name: "bathroom"
+    Luminosity: "10"
+    __relations: {}-
+    __observable: false
+}
+```
+
+There is not the relation ! So let's do the second part in order to see how implement the relation between the bathroom and the
+device present in this zone.
+
+#### Relation device <-- zone.
+
+When you update the location of a device you want that a relation between the zone and the device may be implemented too.
+In order too we implement two method in ZoneResource :
+
+* setDeviceLocation(String serialNumber) : this method add a relation between the zone and a device identified by
+the serial number. It will used if a device appear in the zone.
+* deleteDeviceLocation(String serialNumber) : this method delete a relation between the zone and a device identified by
+the serial number. It will used if a device is moved out of the zone.
+
+```java
+public void deleteDeviceLocation(String serialNumber) {
+    List<Relation> relations ;
+
+    /*Browse the relation list until we find the relation corresponding to the relation that we want to delete*/
+    for (Relation current : getRelations()){
+        if(current.getName().equalsIgnoreCase("device"+serialNumber)){
+            relations = getRelations();
+            relations.remove(current) ;
+            setRelations(relations);
+        }
+    }
+}
+
+public void setDeviceLocation(String serialNumber) {
+    List<Relation> relations ;
+
+    /* save the all relation*/
+    relations = getRelations();
+
+    /*add or update the relation with the device*/
+    relations.add(new DefaultRelation(GenericDeviceManager.getInstance().getPath().add(Path.from(Path.SEPARATOR + serialNumber)), Action.READ, "device"+serialNumber)) ;
+    setRelations(relations);
+}
+```
+
+Then this operation will be manage by the ZoneManager. So we need to declare a new field in the zone manager which contain
+ the serialnumber of a device and the location of a device.This Map will be update each time that a device moved.
+
+```java
+/**
+* Map of Generic Device resource by serial Number
+*/
+private Map<String, String> m_genericDeviceByZone = new HashMap<String, String>();
+```
+
+To finish we need to create the method which update the relation between the zone and the devices :
+
+```java
+public void setChildLocation(String serialNumber,String Location) {
+
+    /*if the relation relation already exist, we delete the precedent relation before create a new one */
+    if(m_genericDeviceByZone.get(serialNumber) != null) {
+        m_zoneResourcesMap.get(m_genericDeviceByZone.get(serialNumber)).deleteDeviceLocation(serialNumber);
+    }
+
+    /*Add the device to the list or replace the old location*/
+    m_genericDeviceByZone.put(serialNumber,Location);
+    for (String key : m_zoneResourcesMap.keySet()){
+
+        /*If the new location exist in the sub resource, a relation between the device and the sub resource will be create*/
+        if (m_zoneResourcesMap.get(key).getPath().getLast().toString().equalsIgnoreCase(Location)){
+        m_zoneResourcesMap.get(key).setDeviceLocation(serialNumber);
+        }
+    }
+}
+```
+
+This method will be called at each time that *UPDATE* the zone of a device :
+
+```java
+else if  (key.contentEquals("zone")){
+    m_genericDevice.zone =  newMap.get(key).toString();
+    Relation  relations = new DefaultRelation(ZoneManager.getInstance().getPath().add(Path.from(Path.SEPARATOR + m_genericDevice.zone )), Action.READ, "Location");
+    setRelations(relations);
+    ZoneManager.getInstance().setChildLocation(m_genericDevice.DEVICE_SERIAL_NUMBER,newMap.get(key).toString());
+}
+```
+
+So know after *UPDATE* a zone of a device, when we do a *GET* on th zone we will see :
+
+```json
+{
+    Name: "bathroom"
+    Luminosity: "10"
+    __relations: {
+        device10: {
+            href: "http://localhost:8080/everest/casa/devices/10"
+            action: "READ"
+            name: "device10"
+            description: null
+            parameters: [0]
+        }-
+    }-
+    __observable: false
+}
+```
 
 [1]: chrome-extension://hgmloofddffdnphfgcellkdfbfbjeloo/RestClient.html "http://localhost:8080/everest/casa"
 [2]: https://chrome.google.com/webstore/detail/advanced-rest-client/hgmloofddffdnphfgcellkdfbfbjeloo "Advanced Rest Client"

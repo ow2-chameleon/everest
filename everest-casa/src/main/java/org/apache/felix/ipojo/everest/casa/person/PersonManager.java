@@ -32,6 +32,12 @@ public class PersonManager extends AbstractResourceCollection {
      */
     private static final PersonManager m_instance = new PersonManager();
 
+
+    public static PersonManager getInstance() {
+        return m_instance;
+    }
+
+
     public PersonManager() {
         super(m_personPath);
     }

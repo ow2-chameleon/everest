@@ -16,7 +16,7 @@ public class GenericDevice {
     public String STATE_ACTIVATED = "activated";
     public String STATE_DEACTIVATED = "deactivated";
     public String STATE_UNKNOWN = "unknown";
-
+    public String zone = "null";
 
     public String getSTATE_DEACTIVATED() {
         return STATE_DEACTIVATED;

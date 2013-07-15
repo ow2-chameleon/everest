@@ -49,9 +49,9 @@ public class CasaRootResource extends AbstractResourceCollection {
     */
     public CasaRootResource() {
         super(m_casaRootPath);
-        m_casaResources.add(new GenericDeviceManager());
-        m_casaResources.add(new PersonManager());
-        m_casaResources.add(new ZoneManager());
+        m_casaResources.add(GenericDeviceManager.getInstance());
+        m_casaResources.add(PersonManager.getInstance());
+        m_casaResources.add(ZoneManager.getInstance());
     }
 
 
