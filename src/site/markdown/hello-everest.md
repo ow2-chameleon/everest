@@ -8,9 +8,14 @@ Here goes the Everest, Aconcagua and other Seven Summits.
 In order to follow the tutorial, you need to download :
 
 * This OSGi framework ( based on Chameleon ) : [everest-distrib-1.0-SNAPSHOT.zip](everest-distrib-1.0-SNAPSHOT.zip)
-* A ReST plug-in for your browser to interact with your domain( google chrome : [Advanced ReST Client][2]).
+* A ReST plug-in for your browser to interact with your domain( google chrome : [Advanced ReST Client][2], mozilla : [restClient][3]).
 
 Additionally, you need to have read the part about **[concept](everest-core/concepts.html)** and **[getting started](everest-core/getting-started.html)**.
+
+**NB** : In order to launch the everest-distrib, do :
+
+* Linux : launch the chameleon script ( *command* : ./chameleon.sh --interactive)
+* Windows : use the following *command* : java -jar .\bin\chameleon-core-1.0.0-SNAPSHOT.jar --interactive
 
 ## General purpose about domain
 
@@ -21,21 +26,21 @@ the designer of the domain.
 
 ### First step : identify your resources
 
-In this tuto, the domain we will represent is the house.
-So the first and the primordial step is to identify the several resource of the domains.
+In this tutorial, the domain we will represent is the house.
+So the first and primordial step is to identify the several resource of the domains.
 
 For this example we choose to represent the house like this :
 !["Representation of the house"](everest-casa.png "The Everest Logo")
 
-* **Device** : represent all the electronic equipment in the house (Binarylight,sensors,cooler...), each device is define by a serial number.
-* **Person** : represent the inhabitant of the house.
-* **Zone** : represent the different part of the house(kitchen,bathroom...).
+* **Device** : represents all the electronic equipment in the house (binarylight, sensors, cooler...), each device is define by a serial number.
+* **Person** : represents the inhabitant of the house.
+* **Zone** : represents the different parts of the house(kitchen, bathroom...).
 
 The level of granularity is at the charge of the domain's creator. Indeed we can imagine to describe more the device resource
 in sub-resources like :
 
-* **Light** : every equipment in relation with luminosity (BinaryLight,photometer...).
-* **Heat** : every equipment in relation with temperature (Heater,thermometer...).
+* **Light** : every equipment in relation with luminosity (binaryLight, photometer...).
+* **Heat** : every equipment in relation with temperature (heater, thermometer...).
 * **Music** : every equipment in relation with sound (speaker, audio source...).
 
 
@@ -62,36 +67,36 @@ In our case the root resource is Casa. So let's implement your first resource !
 ```java
 public class CasaRootResource extends DefaultReadOnlyResource {
 
-    /*
-    * Name of the resource
+    /**
+     * Name of the resource
      */
     public static final String m_casaRoot = "casa";
 
-    /*
+    /**
      * Path of the resource : /casa
-    */
+     */
     public static final Path m_casaRootPath = Path.from(Path.SEPARATOR + m_casaRoot);
 
-    /*
+    /**
      * Description of the resource
-    */
+     */
     private static final String m_casaDescription = "casa resources";
 
-    /*
+    /**
      * List of the subResource : Contains the direct sub resource of root
-    */
+     */
     private final List<Resource> m_casaResources = new ArrayList<Resource>();
 
-    /*
+    /**
      * Constructor of Casa
-    */
+     */
     public CasaRootResource() {
         super(m_casaRootPath);
     }
 
-    /*
+    /**
      * Extract the sub resource of casa
-    */
+     */
     @Override
     public List<Resource> getResources() {
         return m_casaResources;
@@ -99,8 +104,93 @@ public class CasaRootResource extends DefaultReadOnlyResource {
 }
 ```
 
-In order to create the rest architecture create 3 class on this model PersonManager,GenericDeviceManager and ZoneManager.
+In order to create the rest architecture create 3 class on this model PersonManager, GenericDeviceManager and ZoneManager.
 
+* The code of GenericDeviceManager :
+
+```java
+public class GenericDeviceManager extends DefaultReadOnlyResource {
+
+    /**
+     * Name of the resource manager
+     */
+    public static final String m_genericDeviceName = "devices";
+
+    /**
+     * Path of the resource manager, here /casa/devices
+     */
+    public static final Path m_genericDevicePath = m_casaRootPath.add(Path.from(Path.SEPARATOR + m_genericDeviceName));
+
+    /**
+     * Static instance of this singleton class
+     */
+    private static final GenericDeviceManager m_instance = new GenericDeviceManager();
+
+    /**
+     * Getter of the static instance of this singleton class
+     *
+     * @return the singleton static instance
+     */
+    public static GenericDeviceManager getInstance() {
+        return m_instance;
+    }
+
+    public GenericDeviceManager() {
+        super(m_genericDevicePath);
+    }
+
+}
+```
+
+* The code of ZoneManager :
+
+```java
+public class ZoneManager extends DefaultReadOnlyResource {
+
+    public static final String m_zoneName = "zone";
+
+    public static final Path m_zonePath = m_casaRootPath.add(Path.from(Path.SEPARATOR + m_zoneName));
+
+    /**
+     * Static instance of this singleton class
+     */
+    private static final ZoneManager m_instance = new ZoneManager();
+
+    public static ZoneManager getInstance() {
+        return m_instance;
+    }
+
+
+    public ZoneManager() {
+        super(m_zonePath);
+    }
+
+
+```
+
+* The code of PersonManager :
+
+```java
+public class PersonManager extends DefaultReadOnlyResource {
+
+    public static final String m_personName = "person";
+
+    public static final Path m_personPath = m_casaRootPath.add(Path.from(Path.SEPARATOR + m_personName));
+
+    /**
+     * Static instance of this singleton class
+     */
+    private static final PersonManager m_instance = new PersonManager();
+
+    public static PersonManager getInstance() {
+        return m_instance;
+    }
+
+    public PersonManager() {
+        super(m_personPath);
+    }
+}
+```
 
 
 #### Add sub resource to root
@@ -117,7 +207,7 @@ In order to create the rest architecture create 3 class on the precedent model :
     - *name* : "zone"
     - *path* : "/casa/zone"
 
-We consider that by default this 3 resources are present.So to add this resources to the root we just have to modify the
+We consider that by default this 3 resources are present. So to add this resources to the root we just have to modify the
  constructor  :
 
 ```java
@@ -232,7 +322,7 @@ Every class which contains sub resource will be *extend* AbstractResourceCollect
 
 #### How everest run through the ReST architecture
 
-If you send a GET request to ["http://localhost:8080/everest/casa/zone"][1]
+If you send a *GET* request to ["http://localhost:8080/everest/casa/zone"][1]
 
 ```json
 {
@@ -336,7 +426,7 @@ public class GenericDeviceResource extends DefaultResource {
 
 ### How to add resource to my manager ?
 
-With adding a CREATE relation in your manager.
+With adding a *CREATE* relation in your manager.
 
 We proceed in two step to add the relation :
 
@@ -398,9 +488,10 @@ Now when you send a get command you have the metadata print in the answer.
 
 ###<a name="update"></a> How to interact with the object represented by the resource ?
 
-With adding a UPDATE relation in your manager.
+With adding a *UPDATE* relation in your manager.
 
 We proceed in two step to add the relation :
+
 * First : modify the manager constructor like this to add a relation :
 
 ```java
@@ -439,7 +530,7 @@ public Resource update(Request request) throws IllegalActionOnResourceException 
 
 ### Relation between 2 resources
 
-In our example, each device will be located in one zone. And in each zone we could have several devices. This fact will be
+In our example, each device will be located in one zone. And, in each zone, we could have several devices. This fact will be
 represented by **relations**.
 
 #### Relation device --> zone.
@@ -457,7 +548,8 @@ else if  (key.contentEquals("zone")){
 }
 ```
 
-So know if your update a device with a *POST* request : zone:room and fo a *GET*, we see the relation :
+So now if your update,with the ReST client, a device with a *POST* request (first parameter : zone, second parameter : bathroom)
+and do a *GET* request on the DeviceResource, we will see the relation called "Location" :
 
 ```json
 __relations: {
@@ -512,10 +604,10 @@ public void deleteDeviceLocation(String serialNumber) {
 public void setDeviceLocation(String serialNumber) {
     List<Relation> relations ;
 
-    /* save the all relation*/
+    /* save the all relation */
     relations = getRelations();
 
-    /*add or update the relation with the device*/
+    /* add or update the relation with the device */
     relations.add(new DefaultRelation(GenericDeviceManager.getInstance().getPath().add(Path.from(Path.SEPARATOR + serialNumber)), Action.READ, "device"+serialNumber)) ;
     setRelations(relations);
 }
@@ -531,21 +623,21 @@ Then this operation will be manage by the ZoneManager. So we need to declare a n
 private Map<String, String> m_genericDeviceByZone = new HashMap<String, String>();
 ```
 
-To finish we need to create the method which update the relation between the zone and the devices :
+To finish we need to create the method which update the relation between the zone and the device :
 
 ```java
 public void setChildLocation(String serialNumber,String Location) {
 
-    /*if the relation relation already exist, we delete the precedent relation before create a new one */
+    /* if the relation relation already exist, we delete the precedent relation before create a new one */
     if(m_genericDeviceByZone.get(serialNumber) != null) {
         m_zoneResourcesMap.get(m_genericDeviceByZone.get(serialNumber)).deleteDeviceLocation(serialNumber);
     }
 
-    /*Add the device to the list or replace the old location*/
+    /* Add the device to the list or replace the old location */
     m_genericDeviceByZone.put(serialNumber,Location);
     for (String key : m_zoneResourcesMap.keySet()){
 
-        /*If the new location exist in the sub resource, a relation between the device and the sub resource will be create*/
+        /* If the new location exist in the sub resource, a relation between the device and the sub resource will be create */
         if (m_zoneResourcesMap.get(key).getPath().getLast().toString().equalsIgnoreCase(Location)){
         m_zoneResourcesMap.get(key).setDeviceLocation(serialNumber);
         }
@@ -553,7 +645,7 @@ public void setChildLocation(String serialNumber,String Location) {
 }
 ```
 
-This method will be called at each time that *UPDATE* the zone of a device :
+This method will be called each time we *UPDATE* the device's zone  :
 
 ```java
 else if  (key.contentEquals("zone")){
@@ -564,7 +656,7 @@ else if  (key.contentEquals("zone")){
 }
 ```
 
-So know after *UPDATE* a zone of a device, when we do a *GET* on th zone we will see :
+So now after *UPDATE* a device's zone, when we do a *GET* on the zone we will see :
 
 ```json
 {
@@ -585,3 +677,4 @@ So know after *UPDATE* a zone of a device, when we do a *GET* on th zone we will
 
 [1]: chrome-extension://hgmloofddffdnphfgcellkdfbfbjeloo/RestClient.html "http://localhost:8080/everest/casa"
 [2]: https://chrome.google.com/webstore/detail/advanced-rest-client/hgmloofddffdnphfgcellkdfbfbjeloo "Advanced Rest Client"
+[3]: https://addons.mozilla.org/fr/firefox/addon/restclient/ "restClient"
