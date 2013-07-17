@@ -1,7 +1,10 @@
 package org.apache.felix.ipojo.everest.system.mx;
 
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
+import org.apache.felix.ipojo.everest.impl.DefaultRelation;
+import org.apache.felix.ipojo.everest.services.Action;
 import org.apache.felix.ipojo.everest.services.Path;
+import org.apache.felix.ipojo.everest.services.Relation;
 import org.apache.felix.ipojo.everest.services.Resource;
 
 import java.util.ArrayList;
@@ -45,5 +48,17 @@ public class MXResourceManager extends DefaultReadOnlyResource {
         resources.add(m_threadMxResource);
         resources.add(m_memoryMxResource);
         return resources;
+    }
+
+    public List<Relation> getRelations() {
+        List<Relation> relations = new ArrayList<Relation>();
+        relations.addAll(super.getRelations());
+        for (Resource resource : getResources()) {
+            int size = getCanonicalPath().getCount();
+            String name = resource.getCanonicalPath().getElements()[size];
+            relations.add(new DefaultRelation(resource.getCanonicalPath(), Action.READ, getCanonicalPath().getLast() + ":" + name,
+                    "Get " + name));
+        }
+        return relations;
     }
 }

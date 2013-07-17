@@ -7,8 +7,8 @@ everest is a simple and extensible framework to create representations of **anyt
 
 everest adopts [REST][1] principles for implementing a resource representation architecture. It allows:
 
-* Resource creators or *'servers'* to create representations of resource states and implement resource state transitions.
-* Resource browsers or *'clients'* to access and browse these representations.
+** Resource creators or *'servers'* to create representations of resource states and implement resource state transitions.
+** Resource browsers or *'clients'* to access and browse these representations.
 
 In everest, a resource can be anything! OSGi bundles, packages, services, cats, dogs, streets and mountains.. It depends on what you want to represent, and how you want to represent it. Your imagination is the limit. 
 

@@ -13,7 +13,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    
+
         <!-- Defined here: 
               * the latest stable versions of everest sub-projects
               * the used version of OSGi & iPOJO
@@ -23,6 +23,7 @@
         <everestDistributionVersion>1.0-SNAPSHOT</everestDistributionVersion>
 
         <everestCoreVersion>1.0-SNAPSHOT</everestCoreVersion>
+        <everestCasaVersion>1.0-SNAPSHOT</everestCasaVersion>
         <everestServletVersion>1.0-SNAPSHOT</everestServletVersion>
         <everestSystemVersion>1.0-SNAPSHOT</everestSystemVersion>
         <everestOsgiVersion>1.0-SNAPSHOT</everestOsgiVersion>
@@ -42,16 +43,20 @@
         <module>everest-example</module>
         <module>everest-it</module>
         <module>everest-system</module>
+        <module>everest-casa</module>
+        <module>everest-distrib</module>
     </modules>
-    
-    <!-- TO BE REMOVED, when iPOJO 1.10.1 release is deployed on Maven central -->
+
+    <!-- TO BE REMOVED, when iPOJO 1.10.1 release is deployed on Maven central
     <repositories>
         <repository>
             <id>orgapachefelix-021</id>
             <name>Apache Felix staging repository #021</name>
             <url>https://repository.apache.org/content/repositories/orgapachefelix-021</url>
         </repository>
-    </repositories>
+    </repositories>  -->
+
+
     <pluginRepositories>
         <pluginRepository>
             <id>orgapachefelix-021</id>
@@ -178,8 +183,8 @@
                 </plugin>
             </plugins>
         </pluginManagement>
-        
-        <plugins> 
+
+        <plugins>
             <plugin>
                 <artifactId>maven-release-plugin</artifactId>
                 <version>2.0-beta-9</version>
@@ -205,8 +210,8 @@
                             <merge>true</merge>
                         </configuration>
                     </execution>
-                </executions> 
-            </plugin>  
+                </executions>
+            </plugin>
         </plugins>
     </build>
 

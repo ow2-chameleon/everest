@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>everest-project</artifactId>
+        <groupId>org.apache.felix.ipojo</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>everest-distrib</artifactId>
+
+    <repositories>
+        <repository>
+            <id>chameleon</id>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <url>http://repository.ow2.org/nexus/content/repositories/snapshots/</url>
+        </repository>
+    </repositories>
+
+    <properties>
+        <!--
+        Chameleon version
+        -->
+        <chameleon.version>1.0.0-SNAPSHOT</chameleon.version>
+
+        <!--
+        JavaServelet API version
+         -->
+        <javaServelet.version>2.5.0</javaServelet.version>
+
+        <!--
+        compendium  version
+        -->
+        <compendium.version>4.3.1</compendium.version>
+
+
+        <!--
+        commonIO  version
+         -->
+        <commonIO.version>2.4</commonIO.version>
+
+        <!--
+         Apache http Jetty  version
+         -->
+        <httpJetty.version>2.2.0</httpJetty.version>
+
+
+        <!--
+         The location where the chameleon distribution.xml is downloaded and expanded
+        -->
+        <chameleon.destination>${project.build.directory}/chameleon-distribution</chameleon.destination>
+
+        <!--
+         The base directory of the distribution.xml
+        -->
+        <distribution.baseDirectory>Distribution-Casa-${project.version}</distribution.baseDirectory>
+    </properties>
+
+
+    <description>
+        A distribution of chameleon
+    </description>
+
+
+    <!--     <dependencies>
+        <dependency>
+            <groupId>org.ow2.chameleon</groupId>
+            <artifactId>chameleon-core</artifactId>
+            <version>${chameleon.version}</version>
+            <type>zip</type>
+        </dependency>
+    </dependencies>   -->
+
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.felix.ipojo</groupId>
+            <artifactId>everest-core</artifactId>
+            <version>${everestCoreVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.compendium</artifactId>
+            <version>${compendium.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>com.springsource.javax.servlet</artifactId>
+            <version>${javaServelet.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${commonIO.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.http.jetty</artifactId>
+            <version>${httpJetty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.felix.ipojo</groupId>
+            <artifactId>everest-servlet</artifactId>
+            <version>${everestServletVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.felix.ipojo</groupId>
+            <artifactId>everest-casa</artifactId>
+            <version>${everestCasaVersion}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>2.8</version>
+                <executions>
+                    <!--     <execution>
+                            <id>copy-chameleon-distribution.xml</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>unpack-dependencies</goal>
+                            </goals>
+                            <configuration>
+                                <includeGroupIds>org.apache.felix</includeGroupIds>
+                                <includeTypes>zip</includeTypes>
+                                <includeArtifactIds>chameleon-core</includeArtifactIds>
+                                <outputDirectory>${chameleon.destination}</outputDirectory>
+                            </configuration>
+                        </execution>  -->
+                    <execution>
+                        <id>copy-chameleon-distribution</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${chameleon.destination}</outputDirectory>
+                            <artifactItems>
+                                <artifactItem>
+                                    <type>zip</type>
+                                    <groupId>org.ow2.chameleon</groupId>
+                                    <artifactId>chameleon-core</artifactId>
+                                    <version>${chameleon.version}</version>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                    <!-- -->
+                    <execution>
+                        <id>copy-dependencies-chameleon</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${chameleon.destination}/runtime</outputDirectory>
+                            <excludeTransitive>true</excludeTransitive>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.4</version>
+                <configuration>
+                    <attach>true</attach>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>build-distribution</id>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>src/distribution.xml</descriptor>
+                            </descriptors>
+                            <appendAssemblyId>false</appendAssemblyId>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+        </plugins>
+    </build>
+</project>
+
+
