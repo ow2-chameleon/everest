@@ -7,7 +7,7 @@ Here goes the Everest, Aconcagua and other Seven Summits.
 
 In order to follow the tutorial, you need to download :
 
-* This OSGi framework ( based on Chameleon ) : [everest-distrib-1.0-SNAPSHOT.zip](everest-distrib-1.0-SNAPSHOT.zip)
+* This OSGi framework ( based on Chameleon ). You can download and build the test distribution from everest-distrib.
 * A ReST plug-in for your browser to interact with your domain( google chrome : [Advanced ReST Client][2], mozilla : [restClient][3]).
 
 Additionally, you need to have read the part about **[concept](everest-core/concepts.html)** and **[getting started](everest-core/getting-started.html)**.
