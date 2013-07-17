@@ -14,30 +14,29 @@ Additionally, you need to have read the part about **[concept](everest-core/conc
 
 **NB** : In order to launch the everest-distrib, do :
 
-* Linux : launch the chameleon script ( *command* : ./chameleon.sh --interactive)
-* Windows : use the following *command* : java -jar .\bin\chameleon-core-1.0.0-SNAPSHOT.jar --interactive
+* Linux : launch the chameleon script ( *command* : `./chameleon.sh --interactive`)
+* Windows : use the following *command* : `java -jar .\bin\chameleon-core-1.0.0-SNAPSHOT.jar --interactive`
 
 ## General purpose about domain
 
 ### What is a domain ?
 
-A domain is a set of resource representing a particular context. The level of granularity of resources is defined by
+A domain is a set of resources representing a particular context. The level of granularity of resources is defined by
 the designer of the domain.
 
 ### First step : identify your resources
 
 In this tutorial, the domain we will represent is the house.
-So the first and primordial step is to identify the several resource of the domains.
+So the first and primordial step is to identify the several resources of the domain.
 
 For this example we choose to represent the house like this :
 !["Representation of the house"](everest-casa.png "The Everest Logo")
 
-* **Device** : represents all the electronic equipment in the house (binarylight, sensors, cooler...), each device is define by a serial number.
+* **Device** : represents all the electronic equipment in the house (binarylight, sensors, cooler...), each device is defined by a serial number.
 * **Person** : represents the inhabitant of the house.
 * **Zone** : represents the different parts of the house(kitchen, bathroom...).
 
-The level of granularity is at the charge of the domain's creator. Indeed we can imagine to describe more the device resource
-in sub-resources like :
+The granularity of the resources is defined by the designer of the domain. Indeed, we can detail the device resource in sub-resource as:
 
 * **Light** : every equipment in relation with luminosity (binaryLight, photometer...).
 * **Heat** : every equipment in relation with temperature (heater, thermometer...).
@@ -46,7 +45,7 @@ in sub-resources like :
 
 ### Everest in all this
 
-Everest is a resources manager which allowed to traduce the precedent representation in a ReST way.
+Everest is a resources manager which allowed to translate the precedent representation in a ReST way.
 In our case the ReST layout is :
 
 - **/casa** - The root of the everest Casa domain.
@@ -61,7 +60,7 @@ In our case the ReST layout is :
 
 ### The root resource
 
-The start point of each domain is the root resource. It contains all the sub resource of the domain.
+The starting point of each domain is the root resource. It contains all the sub resource of the domain.
 In our case the root resource is Casa. So let's implement your first resource !
 
 ```java
@@ -104,7 +103,7 @@ public class CasaRootResource extends DefaultReadOnlyResource {
 }
 ```
 
-In order to create the rest architecture create 3 class on this model PersonManager, GenericDeviceManager and ZoneManager.
+In order to create the resource hierarchy,we create 3 class PersonManager, GenericDeviceManager and ZoneManager.
 
 * The code of GenericDeviceManager :
 
@@ -222,7 +221,7 @@ public CasaRootResource() {
 #### Relation with sub resource
 
 So let's do your first request on your domain.
-Send a GET request on the following adress: [http://localhost:8080/everest/casa][1]
+Send a *GET* request on the following adress: [http://localhost:8080/everest/casa][1]
 The response will be :
 
 ```json
@@ -234,10 +233,11 @@ The response will be :
 ```
 
 But where are the sub resource that i just add ?
-The fact is it haven't implicit relation between a resource and his sub resource. So let's declare this relation ! For this,
-we have to implement a new method in the Root resource :
+The fact is that there are no implicit relation between a resource and its sub-resource. So let's declare this relation ! We will override
+*getRelation* method in the root resource by adding a relations to each sub-resource it has.
 
 ```java
+@Override
 public List<Relation> getRelations() {
     List<Relation> relations = new ArrayList<Relation>();
     relations.addAll(super.getRelations());
@@ -253,7 +253,7 @@ public List<Relation> getRelations() {
 
 This method will add a relation between the root resource and his sub-resources.
 
-So now if you re-do a GET, you will obtain :
+So now if you re-do a *GET*, you will obtain :
 
 ```json
 {
@@ -304,6 +304,7 @@ public abstract class AbstractResourceCollection extends DefaultReadOnlyResource
       *
       * @return list of relations
       */
+      @Override
      public List<Relation> getRelations() {
          List<Relation> relations = new ArrayList<Relation>();
          relations.addAll(super.getRelations());
@@ -331,16 +332,15 @@ __observable: false
 }
 ```
 But how the everest core can run through the architecture to */zone* ?
-He start to the root and browse recursively the tree invoking the getResource method.
-So it's very important to override the getResource method either the everest-core couldn't browse the domain.
+He start to the root and browse recursively the tree invoking the getResources method.
+So it's very important to override the getResources method either the everest-core couldn't browse the domain.
 
 ### Manage your resource
 
 In this part we are focusing on the devices branches. In this branches we have two resources :
 
-* **GenericDeviceManager** : it represent the */devices*, the root of all devices
-* **GenericDeviceResource** : it represent the */serialNumber*, it is the representation of a unique device. Be carefull,
-resource aren't the device but a representation of it.
+* **GenericDeviceManager** : it represents the */devices*, the root of all devices
+* **GenericDeviceResource** : it represents the */serialNumber*, it is the representation of a unique device.
 
 The device manager allowed us to manage a list of Device resource.
 Let's implement the two class !
@@ -426,7 +426,7 @@ public class GenericDeviceResource extends DefaultResource {
 
 ### How to add resource to my manager ?
 
-With adding a *CREATE* relation in your manager.
+By adding a *CREATE* relation in your manager.
 
 We proceed in two step to add the relation :
 
@@ -445,7 +445,7 @@ public GenericDeviceManager() {
 }
 ```
 
-* Second : create the method *create* witch is called by the relation *CREATE* :
+* Second : implement the method *create* witch is called by the relation *CREATE* :
 
 ```java
 public Resource create(Request request) {
@@ -511,7 +511,7 @@ public GenericDeviceResource(GenericDevice genericDevice, GenericDeviceManager g
 
 ```
 
-* Second : create the method *update* witch is called by the relation *UPDATE* :
+* Second : implement the method *update* witch is called by the relation *UPDATE* :
 
 ```java
 @Override
@@ -530,7 +530,7 @@ public Resource update(Request request) throws IllegalActionOnResourceException 
 
 ### Relation between 2 resources
 
-In our example, each device will be located in one zone. And, in each zone, we could have several devices. This fact will be
+In our example, each device will be located in one zone. And, in a zone, we could have several devices. This fact will be
 represented by **relations**.
 
 #### Relation device --> zone.
