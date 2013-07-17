@@ -31,6 +31,7 @@ public class ThreadResource extends DefaultReadOnlyResource {
         threadInfo = m_parentManager.getBean().getThreadInfo(m_ids);
         ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
         metadataBuilder.set("Thread-Ids", m_ids);
+        metadataBuilder.set("Thread-Name", threadInfo.getThreadName());
         metadataBuilder.set("Thread-User-Time", m_parentManager.getBean().getThreadUserTime(m_ids));
         metadataBuilder.set("CPU-Time", m_parentManager.getBean().getThreadCpuTime(m_ids));
         metadataBuilder.set("Block-Count", threadInfo.getBlockedCount());

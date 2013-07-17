@@ -42,8 +42,14 @@ public class ThreadMxResource extends DefaultReadOnlyResource {
     @Override
     public ResourceMetadata getMetadata() {
         ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
-        metadataBuilder.set("peak-thread-count", m_threadMXBean.getPeakThreadCount());
-        metadataBuilder.set("thread-count", m_threadMXBean.getThreadCount());
+        metadataBuilder.set("Peak-Thread-Count", m_threadMXBean.getPeakThreadCount());
+        metadataBuilder.set("Thread-Count", m_threadMXBean.getThreadCount());
+        metadataBuilder.set("Tread-Current-CPU-Time-Enable", m_threadMXBean.isThreadCpuTimeEnabled());
+        metadataBuilder.set("Tread-Current-CPU-Time-Supported", m_threadMXBean.isCurrentThreadCpuTimeSupported());
+        metadataBuilder.set("Object-Monitor-Usage-Supported", m_threadMXBean.isObjectMonitorUsageSupported());
+        metadataBuilder.set("Synchronizer-Usage-Supported", m_threadMXBean.isSynchronizerUsageSupported());
+        metadataBuilder.set("Contention-Monitoring-Enable", m_threadMXBean.isThreadContentionMonitoringEnabled());
+        metadataBuilder.set("Contention-Monitoring-Supported", m_threadMXBean.isThreadContentionMonitoringSupported());
         return metadataBuilder.build();
     }
 

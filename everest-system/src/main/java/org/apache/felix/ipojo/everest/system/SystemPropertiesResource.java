@@ -39,16 +39,6 @@ public class SystemPropertiesResource extends DefaultResource {
                         .type(Dictionary.class)
                         .optional(true),
                 new DefaultParameter()
-                        .name("key")
-                        .description("name of the properties to update")
-                        .optional(true)
-                        .type(String.class),
-                new DefaultParameter()
-                        .name("value")
-                        .description("value of the properties to the update")
-                        .optional(true)
-                        .type(String.class),
-                new DefaultParameter()
                         .name("configuration")
                         .type(Map.class)
                         .description("The set of configuration of the component")
@@ -60,6 +50,11 @@ public class SystemPropertiesResource extends DefaultResource {
 
     @Override
     public ResourceMetadata getMetadata() {
+        ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
+        for (String key : System.getProperties().stringPropertyNames()) {
+            metadataBuilder.set(key, System.getProperty(key));
+        }
+        metadata = metadataBuilder.build();
         return metadata;
     }
 
@@ -71,14 +66,6 @@ public class SystemPropertiesResource extends DefaultResource {
             this.update(newDictionary);
         }
 
-        String newKey = request.get("key", String.class);
-        if (newKey != null) {
-            String newValue = request.get("value", String.class);
-            if (newValue != null) {
-
-                update(newKey, newValue);
-            }
-        }
 
         //Map<String, String> newMap = request.get("configuration", Map.class);
         Map<String, ?> newMap = request.parameters();
@@ -98,12 +85,11 @@ public class SystemPropertiesResource extends DefaultResource {
             //TODO should check for exceptions
             System.setProperty(key.toString(), properties.get(key).toString());
         }
-
     }
 
     public void update(String key, String value) throws IllegalActionOnResourceException {
         //TODO should check for exceptions
-        System.setProperty(key, value);
+        System.setProperty(key.toString(), value.toString());
 
     }
 }

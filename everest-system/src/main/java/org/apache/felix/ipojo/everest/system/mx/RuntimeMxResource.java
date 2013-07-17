@@ -43,6 +43,8 @@ public class RuntimeMxResource extends DefaultReadOnlyResource {
         metadataBuilder.set("vm-vendor", m_runtimeMXBean.getVmVendor());
         metadataBuilder.set("vm-version", m_runtimeMXBean.getVmVersion());
         metadataBuilder.set("management-spec-version", m_runtimeMXBean.getManagementSpecVersion());
+        metadataBuilder.set("class-path", m_runtimeMXBean.getClassPath());
+        metadataBuilder.set("boot-class-path-supported", m_runtimeMXBean.isBootClassPathSupported());
         return metadataBuilder.build();
     }
 }
