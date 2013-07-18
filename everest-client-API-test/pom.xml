@@ -157,11 +157,6 @@
             <version>${everestCoreVersion}</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.apache.felix.ipojo</groupId>
-            <artifactId>everest-system</artifactId>
-            <version>${everestSystemVersion}</version>
-        </dependency>
 
         <dependency>
             <groupId>org.apache.felix.ipojo</groupId>

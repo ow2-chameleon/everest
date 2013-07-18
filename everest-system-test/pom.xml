@@ -182,12 +182,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.felix.ipojo</groupId>
-            <artifactId>everest-system</artifactId>
-            <version>${everestSystemVersion}</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.easytesting</groupId>
             <artifactId>fest-assert</artifactId>
             <version>1.4</version>

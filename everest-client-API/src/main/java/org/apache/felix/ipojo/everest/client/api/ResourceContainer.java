@@ -20,7 +20,13 @@ public class ResourceContainer {
         this.m_resource = resource;
     }
 
-    public synchronized ListResourceContainer children() {
+   /* public synchronized ResourceContainer parent() throws ResourceNotFoundException {
+
+        m_resource.getPath().
+
+    }   */
+
+    public synchronized ListResourceContainer childrens() throws ResourceNotFoundException {
 
         List<Resource> childrenResources = m_resource.getResources();
         List<ResourceContainer> returnResources = new ArrayList<ResourceContainer>();
@@ -28,8 +34,24 @@ public class ResourceContainer {
         for (Resource currentResource : childrenResources) {
             returnResources.add(new ResourceContainer(currentResource));
         }
-
+        ///*TO DO : JETER L EXCEPTION RESSOURCE NOT FOUND
+        //  throw new ResourceNotFoundException ;
         return new ListResourceContainer(returnResources);
+
+    }
+
+    public synchronized ResourceContainer children(String name) throws ResourceNotFoundException {
+
+        List<Resource> childrenResources = m_resource.getResources();
+
+        for (Resource currentResource : childrenResources) {
+            if (currentResource.getPath().getLast().equalsIgnoreCase(name)) {
+                return new ResourceContainer(currentResource);
+            }
+        }
+        ///*TO DO : JETER L EXCEPTION RESSOURCE NOT FOUND
+        //  throw new ResourceNotFoundException ;
+        return null;
 
     }
 
@@ -59,6 +81,28 @@ public class ResourceContainer {
 
         ///*TO DO : JETER L EXCEPTION RESSOURCE NOT FOUND
         //  throw new ResourceNotFoundException ;
+        return null;
+    }
+
+    public synchronized String retrieve(String metadataId) {
+
+        ResourceMetadata resourceMetadata = m_resource.getMetadata();
+        for (String current : resourceMetadata.keySet()) {
+            if (current.equalsIgnoreCase(metadataId)) {
+                return resourceMetadata.get(current).toString();
+            }
+        }
+        return null;
+    }
+
+    public synchronized <T> T retrieve(String metadataId, Class<? extends T> clazz) {
+
+        ResourceMetadata resourceMetadata = m_resource.getMetadata();
+        for (String current : resourceMetadata.keySet()) {
+            if (current.equalsIgnoreCase(metadataId)) {
+                return resourceMetadata.get(metadataId, clazz);
+            }
+        }
         return null;
     }
 

@@ -7,7 +7,17 @@ public class TestFunctionality extends CommonTest {
 
     @Test
     public void testReadTop() throws ResourceNotFoundException, IllegalActionOnResourceException {
+
         EverestClientApi testAPI = new EverestClientApi(everest);
-        testAPI.read("/system");
+
+ /*
+
+
+        try {
+            assertThat(testAPI.read("/system").relation("everest:properties").retrieve("java.runtime.name")).isEqualTo("Java(TM) SE Runtime Environment");
+        } catch (IllegalResourceException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } */
+
     }
 }
