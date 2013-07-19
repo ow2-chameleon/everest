@@ -7,6 +7,8 @@ import org.apache.felix.ipojo.everest.impl.DefaultRelation;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.services.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -36,12 +38,16 @@ public class GenericDeviceResource extends AbstractResourceCollection {
         super(genericDeviceManager.m_genericDevicePath.add(Path.from(Path.SEPARATOR + genericDevice.DEVICE_SERIAL_NUMBER)));
         this.m_genericDevice = genericDevice;
         this.m_genericDeviceManager = genericDeviceManager;
-        new DefaultRelation(genericDeviceManager.m_genericDevicePath.add(Path.from(Path.SEPARATOR + genericDevice.DEVICE_SERIAL_NUMBER)), Action.UPDATE, "Update field",
+        List<Relation> relations = new ArrayList<Relation>();
+        relations.add(new DefaultRelation(genericDeviceManager.m_genericDevicePath.add(Path.from(Path.SEPARATOR + genericDevice.DEVICE_SERIAL_NUMBER)), Action.UPDATE, "Update field",
                 new DefaultParameter()
                         .name("parameter/value")
                         .description(" Modify the parameter of the device with the value")
                         .optional(false)
-                        .type(Map.class));
+                        .type(Map.class)));
+
+
+        relations.add(new DefaultRelation(genericDeviceManager.m_genericDevicePath.add(Path.from(Path.SEPARATOR + genericDevice.DEVICE_SERIAL_NUMBER)), Action.DELETE, "delete", null));
 
     }
 
@@ -73,5 +79,11 @@ public class GenericDeviceResource extends AbstractResourceCollection {
             }
         }
         return this;
+    }
+
+    @Override
+    public Resource delete(Request request) throws IllegalActionOnResourceException {
+        m_genericDeviceManager.deleteresource(m_genericDevice.DEVICE_SERIAL_NUMBER);
+        return (m_genericDeviceManager);
     }
 }

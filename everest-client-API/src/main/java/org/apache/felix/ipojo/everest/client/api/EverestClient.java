@@ -24,12 +24,23 @@ public class EverestClient extends ResourceContainer {
 
     public ResourceContainer read(String path) throws ResourceNotFoundException, IllegalActionOnResourceException {
         this.m_resource = m_everest.process(new DefaultRequest(Action.READ, Path.from(path), null));
-        return this;// new ResourceContainer(m_everest.process(new DefaultRequest(Action.READ, Path.from(path), null)));
+        m_currentPath = m_resource.getPath();
+        m_currentAction = Action.READ;
+        m_currentParams.clear();
+        return this; //new ResourceContainer(m_everest.process(new DefaultRequest(Action.READ, Path.from(path), null)));
     }
 
     public synchronized ResourceContainer update(String path) throws ResourceNotFoundException, IllegalActionOnResourceException {
         m_currentPath = Path.from(path);
         m_currentAction = Action.UPDATE;
+        m_currentParams.clear();
+        return this;
+    }
+
+    public synchronized ResourceContainer update(Resource resource) throws ResourceNotFoundException, IllegalActionOnResourceException {
+        m_currentPath = resource.getPath();
+        m_currentAction = Action.UPDATE;
+        m_currentParams.clear();
         return this;
     }
 
@@ -37,6 +48,14 @@ public class EverestClient extends ResourceContainer {
     public synchronized ResourceContainer create(String path) throws ResourceNotFoundException, IllegalActionOnResourceException {
         m_currentPath = Path.from(path);
         m_currentAction = Action.CREATE;
+        m_currentParams.clear();
+        return this;
+    }
+
+    public synchronized ResourceContainer create(Resource resource) throws ResourceNotFoundException, IllegalActionOnResourceException {
+        m_currentPath = resource.getPath();
+        m_currentAction = Action.CREATE;
+        m_currentParams.clear();
         return this;
     }
 
@@ -44,13 +63,21 @@ public class EverestClient extends ResourceContainer {
     public synchronized ResourceContainer delete(String path) throws ResourceNotFoundException, IllegalActionOnResourceException {
         m_currentPath = Path.from(path);
         m_currentAction = Action.DELETE;
+        m_currentParams.clear();
         return this;
 
     }
 
+    public synchronized ResourceContainer delete(Resource resource) throws ResourceNotFoundException, IllegalActionOnResourceException {
+        m_currentPath = resource.getPath();
+        m_currentAction = Action.DELETE;
+        m_currentParams.clear();
+        return this;
+    }
+
     @Override
     public synchronized ResourceContainer doIt() throws ResourceNotFoundException, IllegalActionOnResourceException {
-        return new ResourceContainer(EverestClient.m_everest.process(new DefaultRequest(m_currentAction, m_currentPath.getParent(), m_currentParams)));
+        return new ResourceContainer(EverestClient.m_everest.process(new DefaultRequest(m_currentAction, m_currentPath, m_currentParams)));
     }
 
 }

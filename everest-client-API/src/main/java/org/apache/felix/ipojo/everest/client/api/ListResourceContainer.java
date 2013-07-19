@@ -33,18 +33,24 @@ public class ListResourceContainer {
 
     public synchronized ListResourceContainer parent() throws ResourceNotFoundException, IllegalActionOnResourceException {
 
+        List<Path> listPath = new ArrayList<Path>();
         List<ResourceContainer> returnResources = new ArrayList<ResourceContainer>();
 
         for (ResourceContainer current : m_resourcesContainer) {
             try {
-                returnResources.add(current.parent());
+                if (!(listPath.contains(current.parent().m_resource.getPath()))) {
+                    returnResources.add(current.parent());
+                    listPath.add(current.parent().m_resource.getPath());
+                }
+
             } catch (RuntimeException e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
         }
 
         if (!(returnResources.isEmpty())) {
-            return new ListResourceContainer(returnResources);
+            m_resourcesContainer = returnResources;
+            return this;
         }
 
 
@@ -52,39 +58,41 @@ public class ListResourceContainer {
     }
 
 
-    public synchronized ListResourceContainer childrens() throws RuntimeException {
+    public synchronized ListResourceContainer children() throws RuntimeException {
 
 
         List<ResourceContainer> returnResources = new ArrayList<ResourceContainer>();
 
         for (ResourceContainer currentResourceContainer : m_resourcesContainer) {
             try {
-                returnResources.addAll(currentResourceContainer.childrens().m_resourcesContainer);
+                returnResources.addAll(currentResourceContainer.children().m_resourcesContainer);
             } catch (RuntimeException e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
         }
         if (!(returnResources.isEmpty())) {
-            return new ListResourceContainer(returnResources);
+            m_resourcesContainer = returnResources;
+            return this;
         }
 
         throw new RuntimeException();
     }
 
-    public synchronized ListResourceContainer children(String name) throws RuntimeException {
+    public synchronized ListResourceContainer child(String name) throws RuntimeException {
 
         List<ResourceContainer> returnResources = new ArrayList<ResourceContainer>();
 
         for (ResourceContainer currentResourceContainer : m_resourcesContainer) {
             try {
-                returnResources.add(currentResourceContainer.children(name));
+                returnResources.add(currentResourceContainer.child(name));
             } catch (RuntimeException e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
 
         }
         if (!(returnResources.isEmpty())) {
-            return new ListResourceContainer(returnResources);
+            m_resourcesContainer = returnResources;
+            return this;
         }
 
         throw new RuntimeException();
@@ -94,18 +102,29 @@ public class ListResourceContainer {
 
     public synchronized ListResourceContainer relations() throws RuntimeException, ResourceNotFoundException, IllegalActionOnResourceException {
 
+        List<Path> listPath = new ArrayList<Path>();
         List<ResourceContainer> returnResources = new ArrayList<ResourceContainer>();
+        List<ResourceContainer> temp;
 
         for (ResourceContainer current : m_resourcesContainer) {
             try {
-                returnResources.addAll(current.relations().m_resourcesContainer);
+                temp = current.relations().m_resourcesContainer;
+                for (ResourceContainer currentResource : temp) {
+                    System.out.println(currentResource.m_resource.getPath());
+                    if (!(listPath.contains(currentResource.m_resource.getPath()))) {
+                        listPath.add(current.m_resource.getPath());
+                        returnResources.add(currentResource);
+                    }
+                }
+
             } catch (RuntimeException e) {
                 e.printStackTrace();
             }
 
         }
         if (!(returnResources.isEmpty())) {
-            return new ListResourceContainer(returnResources);
+            m_resourcesContainer = returnResources;
+            return this;
         }
 
         throw new RuntimeException();
@@ -113,17 +132,22 @@ public class ListResourceContainer {
 
     public synchronized ListResourceContainer relation(String relationName) throws RuntimeException, ResourceNotFoundException, IllegalActionOnResourceException {
 
+        List<Path> listPath = new ArrayList<Path>();
         List<ResourceContainer> returnResources = new ArrayList<ResourceContainer>();
 
         for (ResourceContainer current : m_resourcesContainer) {
             try {
-                returnResources.add(current.relation(relationName));
+                if (!(listPath.contains(current.relation(relationName).m_resource.getPath()))) {
+                    listPath.add(current.relation(relationName).m_resource.getPath());
+                    returnResources.add(current.relation(relationName));
+                }
             } catch (RuntimeException e) {
                 e.printStackTrace();
             }
         }
         if (!(returnResources.isEmpty())) {
-            return new ListResourceContainer(returnResources);
+            m_resourcesContainer = returnResources;
+            return this;
         }
 
         throw new RuntimeException();
@@ -221,7 +245,30 @@ public class ListResourceContainer {
         for (ResourceContainer current : m_resourcesContainer) {
             returnResources.add(current.doIt());
         }
-        return new ListResourceContainer(returnResources);
+
+        m_resourcesContainer = returnResources;
+        return this;
+    }
+
+
+    public synchronized ListResourceContainer filter(ResourceFilter filter) throws RuntimeException {
+
+        List<ResourceContainer> returnResources = new ArrayList<ResourceContainer>();
+
+        for (ResourceContainer current : m_resourcesContainer) {
+            try {
+                returnResources.add(current.filter(filter));
+            } catch (RuntimeException e) {
+                e.printStackTrace();
+            }
+        }
+
+        if (!(returnResources.isEmpty())) {
+            m_resourcesContainer = returnResources;
+            return this;
+        }
+
+        throw new RuntimeException();
     }
 
 

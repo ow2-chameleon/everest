@@ -62,6 +62,19 @@ public class GenericDeviceManager extends AbstractResourceCollection {
                                 .description(" Serial number of the device")
                                 .optional(false)
                                 .type(String.class)));
+
+        GenericDeviceResource resource = null;
+        GenericDevice newGenericDevice = new GenericDevice("1");
+        resource = new GenericDeviceResource(newGenericDevice, this);
+        m_genericDeviceResourcesMap.put(newGenericDevice.DEVICE_SERIAL_NUMBER, resource);
+
+        newGenericDevice = new GenericDevice("2");
+        resource = new GenericDeviceResource(newGenericDevice, this);
+        m_genericDeviceResourcesMap.put(newGenericDevice.DEVICE_SERIAL_NUMBER, resource);
+
+        newGenericDevice = new GenericDevice("3");
+        resource = new GenericDeviceResource(newGenericDevice, this);
+        m_genericDeviceResourcesMap.put(newGenericDevice.DEVICE_SERIAL_NUMBER, resource);
     }
 
     @Override
@@ -91,5 +104,9 @@ public class GenericDeviceManager extends AbstractResourceCollection {
         metadataBuilder.set("Name", m_genericDeviceName);
         metadataBuilder.set("Path", m_genericDevicePath);
         return metadataBuilder.build();
+    }
+
+    public void deleteresource(String key) {
+        m_genericDeviceResourcesMap.remove(key);
     }
 }

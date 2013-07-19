@@ -60,6 +60,20 @@ public class ZoneManager extends AbstractResourceCollection {
                                 .description("zone/NameOfZOne")
                                 .optional(false)
                                 .type(Map.class)));
+
+        ZoneResource resource = null;
+        Zone newZone = new Zone("room1");
+        resource = new ZoneResource(newZone, this);
+        m_zoneResourcesMap.put(newZone.getName(), resource);
+
+        newZone = new Zone("room2");
+        resource = new ZoneResource(newZone, this);
+        m_zoneResourcesMap.put(newZone.getName(), resource);
+
+        newZone = new Zone("room3");
+        resource = new ZoneResource(newZone, this);
+        m_zoneResourcesMap.put(newZone.getName(), resource);
+
     }
 
 

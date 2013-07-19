@@ -37,7 +37,7 @@ public class ResourceContainer {
         }
     }
 
-    public synchronized ListResourceContainer childrens() throws RuntimeException {
+    public synchronized ListResourceContainer children() throws RuntimeException {
 
         List<Resource> childrenResources = m_resource.getResources();
         List<ResourceContainer> returnResources = new ArrayList<ResourceContainer>();
@@ -54,7 +54,7 @@ public class ResourceContainer {
 
     }
 
-    public synchronized ResourceContainer children(String name) throws RuntimeException {
+    public synchronized ResourceContainer child(String name) throws RuntimeException {
 
         List<Resource> childrenResources = m_resource.getResources();
 
@@ -70,12 +70,17 @@ public class ResourceContainer {
     public synchronized ListResourceContainer relations() throws RuntimeException, ResourceNotFoundException, IllegalActionOnResourceException {
 
         Path currentPath;
+        List<Path> listPath = new ArrayList<Path>();
         List<Relation> relations = m_resource.getRelations();
         List<ResourceContainer> returnResources = new ArrayList<ResourceContainer>();
 
         for (Relation current : relations) {
             currentPath = current.getHref();
-            returnResources.add(read(currentPath.toString()));
+
+            if (!(listPath.contains(currentPath))) {
+                listPath.add(currentPath);
+                returnResources.add(read(currentPath.toString()));
+            }
         }
 
         if (!(returnResources.isEmpty())) {
@@ -134,18 +139,21 @@ public class ResourceContainer {
 
     public synchronized ResourceContainer update() throws ResourceNotFoundException, IllegalActionOnResourceException {
         m_currentAction = Action.UPDATE;
+        m_currentParams.clear();
         return this;
     }
 
 
     public synchronized ResourceContainer create() throws ResourceNotFoundException, IllegalActionOnResourceException {
         m_currentAction = Action.CREATE;
+        m_currentParams.clear();
         return this;
     }
 
 
     public synchronized ResourceContainer delete() throws ResourceNotFoundException, IllegalActionOnResourceException {
         m_currentAction = Action.DELETE;
+        m_currentParams.clear();
         return this;
 
     }
@@ -160,4 +168,11 @@ public class ResourceContainer {
     }
 
 
+    public synchronized ResourceContainer filter(ResourceFilter filter) {
+        if (filter.accept(m_resource)) {
+            return this;
+        }
+
+        throw new RuntimeException();
+    }
 }
