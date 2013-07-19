@@ -20,6 +20,14 @@ public class ResourceContainer {
 
     protected Action m_currentAction = Action.READ;
 
+    public Map<String, Object> getM_currentParams() {
+        return m_currentParams;
+    }
+
+    public Action getM_currentAction() {
+        return m_currentAction;
+    }
+
     protected Map<String, Object> m_currentParams = new HashMap<String, Object>();
 
     public ResourceContainer(Resource resource) {

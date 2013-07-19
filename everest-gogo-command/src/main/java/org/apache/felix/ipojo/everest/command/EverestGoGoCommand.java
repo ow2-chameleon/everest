@@ -7,19 +7,13 @@ package org.apache.felix.ipojo.everest.command;/*
 
 import org.apache.felix.ipojo.annotations.*;
 import org.apache.felix.ipojo.everest.client.api.EverestClient;
-import org.apache.felix.ipojo.everest.services.EverestService;
-import org.apache.felix.ipojo.everest.services.IllegalActionOnResourceException;
-import org.apache.felix.ipojo.everest.services.Resource;
-import org.apache.felix.ipojo.everest.services.ResourceNotFoundException;
+import org.apache.felix.ipojo.everest.services.*;
 import org.apache.felix.service.command.Descriptor;
-import org.osgi.service.component.annotations.Component;
 
 @Component(immediate = true)
 @Instantiate
-@Provides
-
+@Provides(specifications = EverestGoGoCommand.class)
 public class EverestGoGoCommand {
-
 
     /**
      * Defines the command scope (rondo).
@@ -37,12 +31,10 @@ public class EverestGoGoCommand {
     @Requires(optional = false)
     EverestService m_everest;
 
-    @Requires(optional = false)
     EverestClient m_everestClient;
 
-
-    @Bind
-    public void bindDeploymentHandle() {
+    @Validate
+    public void start() {
         try {
             m_everestClient = new EverestClient(m_everest);
         } catch (ResourceNotFoundException e) {
@@ -50,13 +42,8 @@ public class EverestGoGoCommand {
         } catch (IllegalActionOnResourceException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
-
     }
 
-    @Unbind
-    public void unbindDeploymentHandle() {
-
-    }
 
     @Descriptor("create a Resource")
     public void create(@Descriptor("create") String handleId) {
@@ -64,31 +51,86 @@ public class EverestGoGoCommand {
     }
 
     @Descriptor("retrieve a Resource")
-    public Resource retrieve(@Descriptor("retrieve") String handleId) throws ResourceNotFoundException, IllegalActionOnResourceException {
-        return m_everestClient.read(handleId).retrieve();
-    }
+    public void retrieve(@Descriptor("retrieve") String... handleId) {
+        String bufferOut = new String();
+        try {
+            String path;
+            if (handleId.length == 0) {
 
-    @Descriptor("retrieve a Resource")
-    public Resource retrieve(@Descriptor("retrieve") String... handleId) throws ResourceNotFoundException, IllegalActionOnResourceException {
-        String path;
-        if (handleId.length == 0) {
-            return m_everestClient.retrieve();
-        } else {
-            path = handleId[0];
+            } else if (handleId.length == 1) {
+                Resource resource;
+                path = handleId[0];
+                resource = m_everestClient.read(path).retrieve();
+                bufferOut = bufferOut + "Name : " + resource.getPath().getLast().toString() + "\n";
+                bufferOut = bufferOut + "\nMETADATA\n";
+                ResourceMetadata resourceMetadata = resource.getMetadata();
+                for (String currentString : resourceMetadata.keySet()) {
+                    bufferOut = bufferOut + currentString + " : \"" + resourceMetadata.get(currentString) + "\"" + "\n";
+                }
 
+            } else {
+                path = handleId[0];
+                Resource resource = m_everestClient.read(path).retrieve();
+                bufferOut = bufferOut + "Name : " + resource.getPath().getLast().toString() + "\n";
+                bufferOut = bufferOut + "\nMETADATA\n";
+                for (String currentString : handleId) {
+                    if (!(currentString.equalsIgnoreCase(handleId[0]))) {
+                        bufferOut = bufferOut + currentString + " : \"" + m_everestClient.read(path).retrieve(currentString) + "\"" + "\n";
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            bufferOut = null;
         }
+
+        System.out.println(bufferOut);
 
 
     }
 
     @Descriptor("update a Resource")
-    public void update(@Descriptor("update") String handleId) {
+    public void update(@Descriptor("update") String... handleId) {
+        String bufferOut = new String();
+        try {
+            String path;
+            if (handleId.length < 3) {
+
+                bufferOut = bufferOut + " Error : Need At least 3 Arguments";
+            } else {
+                path = handleId[0];
+                m_everestClient.update(path);
+                for (int i = 1; i < handleId.length; i++) {
+                    if ((i % 2) == 0) {
+                        System.out.println("KEY" + handleId[i - 1] + " VALUE " + handleId[i]);
+                        m_everestClient.with(handleId[i - 1], handleId[i]);
+                    }
+                }
+                System.out.println(m_everestClient.getM_currentPath().toString());
+                System.out.println(m_everestClient.getM_currentAction());
+                System.out.println(m_everestClient.getM_currentParams());
+
+                Resource resource = m_everestClient.doIt().retrieve();
+                bufferOut = bufferOut + "Name : " + resource.getPath().getLast().toString() + "\n";
+                bufferOut = bufferOut + "\nMETADATA\n";
+                ResourceMetadata resourceMetadata = resource.getMetadata();
+                for (String currentString : resourceMetadata.keySet()) {
+                    bufferOut = bufferOut + currentString + " : \"" + resourceMetadata.get(currentString) + "\"" + "\n";
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            bufferOut = null;
+        }
+
+        System.out.println(bufferOut);
+
 
     }
 
     @Descriptor("delete a Resource")
-    public void delete(@Descriptor("delete") String handleId) {
-
+    public void delete(@Descriptor("delete") String handleId) throws ResourceNotFoundException, IllegalActionOnResourceException {
+        m_everestClient.delete(handleId).doIt();
     }
 
 }

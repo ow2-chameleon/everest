@@ -6,8 +6,10 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.everest.casa.device.GenericDeviceManager;
 import org.apache.felix.ipojo.everest.casa.person.PersonManager;
 import org.apache.felix.ipojo.everest.casa.zone.ZoneManager;
+import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.services.Path;
 import org.apache.felix.ipojo.everest.services.Resource;
+import org.apache.felix.ipojo.everest.services.ResourceMetadata;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,5 +60,13 @@ public class CasaRootResource extends AbstractResourceCollection {
     @Override
     public List<Resource> getResources() {
         return m_casaResources;
+    }
+
+    @Override
+    public ResourceMetadata getMetadata() {
+        ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
+        metadataBuilder.set("Name", m_casaRoot);
+        metadataBuilder.set("Path", m_casaRootPath);
+        return metadataBuilder.build();
     }
 }

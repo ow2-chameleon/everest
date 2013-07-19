@@ -14,7 +14,13 @@ public class EverestClient extends ResourceContainer {
 
     public static EverestService m_everest;
 
+
     public Path m_currentPath;
+
+
+    public Path getM_currentPath() {
+        return m_currentPath;
+    }
 
     public EverestClient(EverestService m_everest) throws ResourceNotFoundException, IllegalActionOnResourceException {
         super(m_everest.process(new DefaultRequest(Action.READ, Path.from("/"), null)));

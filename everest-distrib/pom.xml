@@ -122,6 +122,21 @@
             <artifactId>everest-casa</artifactId>
             <version>${everestCasaVersion}</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.felix.ipojo</groupId>
+            <artifactId>everest-client-API</artifactId>
+            <version>${everestClientApiVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.felix.ipojo</groupId>
+            <artifactId>everest-gogo-command</artifactId>
+            <version>${everestCasaVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.felix.ipojo</groupId>
+            <artifactId>everest-system</artifactId>
+            <version>${everestCasaVersion}</version>
+        </dependency>
     </dependencies>
 
     <build>

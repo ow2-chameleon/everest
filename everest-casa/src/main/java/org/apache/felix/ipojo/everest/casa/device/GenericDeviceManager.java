@@ -64,6 +64,21 @@ public class GenericDeviceManager extends AbstractResourceCollection {
                                 .description(" Serial number of the device")
                                 .optional(false)
                                 .type(String.class)));
+
+        GenericDeviceResource resource = null;
+        GenericDevice newGenericDevice = new GenericDevice("1");
+        resource = new GenericDeviceResource(newGenericDevice, this);
+        m_genericDeviceResourcesMap.put(newGenericDevice.DEVICE_SERIAL_NUMBER, resource);
+
+        newGenericDevice = new GenericDevice("2");
+        resource = new GenericDeviceResource(newGenericDevice, this);
+        m_genericDeviceResourcesMap.put(newGenericDevice.DEVICE_SERIAL_NUMBER, resource);
+
+        newGenericDevice = new GenericDevice("3");
+        resource = new GenericDeviceResource(newGenericDevice, this);
+        m_genericDeviceResourcesMap.put(newGenericDevice.DEVICE_SERIAL_NUMBER, resource);
+
+
     }
 
     @Override
