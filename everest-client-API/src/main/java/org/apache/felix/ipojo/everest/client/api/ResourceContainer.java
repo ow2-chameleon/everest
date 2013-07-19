@@ -10,23 +10,34 @@ import org.apache.felix.ipojo.everest.impl.DefaultRequest;
 import org.apache.felix.ipojo.everest.services.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ResourceContainer {
 
-    Resource m_resource;
+    protected Resource m_resource;
+
+    protected Action m_currentAction = Action.READ;
+
+    protected Map<String, Object> m_currentParams = new HashMap<String, Object>();
 
     public ResourceContainer(Resource resource) {
         this.m_resource = resource;
     }
 
-   /* public synchronized ResourceContainer parent() throws ResourceNotFoundException {
+    public synchronized ResourceContainer parent() throws RuntimeException, ResourceNotFoundException, IllegalActionOnResourceException {
 
-        m_resource.getPath().
+        if (m_resource.getPath().toString().equalsIgnoreCase("/")) {
 
-    }   */
+            throw new RuntimeException();
+        } else {
 
-    public synchronized ListResourceContainer childrens() throws ResourceNotFoundException {
+            return read(m_resource.getPath().getParent().toString());
+        }
+    }
+
+    public synchronized ListResourceContainer childrens() throws RuntimeException {
 
         List<Resource> childrenResources = m_resource.getResources();
         List<ResourceContainer> returnResources = new ArrayList<ResourceContainer>();
@@ -35,12 +46,15 @@ public class ResourceContainer {
             returnResources.add(new ResourceContainer(currentResource));
         }
         ///*TO DO : JETER L EXCEPTION RESSOURCE NOT FOUND
-        //  throw new ResourceNotFoundException ;
-        return new ListResourceContainer(returnResources);
+        if (!(returnResources.isEmpty())) {
+            return new ListResourceContainer(returnResources);
+        }
+
+        throw new RuntimeException();
 
     }
 
-    public synchronized ResourceContainer children(String name) throws ResourceNotFoundException {
+    public synchronized ResourceContainer children(String name) throws RuntimeException {
 
         List<Resource> childrenResources = m_resource.getResources();
 
@@ -49,13 +63,11 @@ public class ResourceContainer {
                 return new ResourceContainer(currentResource);
             }
         }
-        ///*TO DO : JETER L EXCEPTION RESSOURCE NOT FOUND
-        //  throw new ResourceNotFoundException ;
-        return null;
+        throw new RuntimeException();
 
     }
 
-    public synchronized ListResourceContainer relations() throws ResourceNotFoundException, IllegalActionOnResourceException {
+    public synchronized ListResourceContainer relations() throws RuntimeException, ResourceNotFoundException, IllegalActionOnResourceException {
 
         Path currentPath;
         List<Relation> relations = m_resource.getRelations();
@@ -65,11 +77,15 @@ public class ResourceContainer {
             currentPath = current.getHref();
             returnResources.add(read(currentPath.toString()));
         }
-        return new ListResourceContainer(returnResources);
 
+        if (!(returnResources.isEmpty())) {
+            return new ListResourceContainer(returnResources);
+        }
+
+        throw new RuntimeException();
     }
 
-    public synchronized ResourceContainer relation(String nameRelation) throws ResourceNotFoundException, IllegalActionOnResourceException {
+    public synchronized ResourceContainer relation(String nameRelation) throws RuntimeException, ResourceNotFoundException, IllegalActionOnResourceException {
 
         List<Relation> relations = m_resource.getRelations();
 
@@ -79,10 +95,13 @@ public class ResourceContainer {
             }
         }
 
-        ///*TO DO : JETER L EXCEPTION RESSOURCE NOT FOUND
-        //  throw new ResourceNotFoundException ;
-        return null;
+        throw new RuntimeException();
     }
+
+    public synchronized Resource retrieve() {
+        return this.m_resource;
+    }
+
 
     public synchronized String retrieve(String metadataId) {
 
@@ -109,7 +128,36 @@ public class ResourceContainer {
 
     private ResourceContainer read(String path) throws ResourceNotFoundException, IllegalActionOnResourceException {
 
-        return new ResourceContainer(EverestClientApi.m_everest.process(new DefaultRequest(Action.READ, Path.from(path), null)));
+        return new ResourceContainer(EverestClient.m_everest.process(new DefaultRequest(Action.READ, Path.from(path), null)));
+    }
+
+
+    public synchronized ResourceContainer update() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        m_currentAction = Action.UPDATE;
+        return this;
+    }
+
+
+    public synchronized ResourceContainer create() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        m_currentAction = Action.CREATE;
+        return this;
+    }
+
+
+    public synchronized ResourceContainer delete() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        m_currentAction = Action.DELETE;
+        return this;
 
     }
+
+    public synchronized ResourceContainer with(String key, Object value) {
+        m_currentParams.put(key, value);
+        return this;
+    }
+
+    public synchronized ResourceContainer doIt() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        return new ResourceContainer(EverestClient.m_everest.process(new DefaultRequest(m_currentAction, m_resource.getPath(), m_currentParams)));
+    }
+
+
 }

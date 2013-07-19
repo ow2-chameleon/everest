@@ -19,7 +19,7 @@ import static org.ops4j.pax.exam.CoreOptions.*;
 public class CommonTest extends BaseTest {
 
     /**
-     * The everest service.
+     * The everest services.
      */
     @Inject
     EverestService everest;
