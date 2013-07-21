@@ -19,6 +19,17 @@
             </snapshots>
             <url>http://repository.ow2.org/nexus/content/repositories/snapshots/</url>
         </repository>
+        <repository>
+            <id>repository.springsource.com.release</id>
+            <name>SpringSource OBR - Release</name>
+            <url>http://repository.springsource.com/maven/bundles/release</url>
+        </repository>
+        <repository>
+            <id>repository.springsource.com.external</id>
+            <name>SpringSource OBR - External</name>
+            <url>http://repository.springsource.com/maven/bundles/external</url>
+        </repository>
+
     </repositories>
 
     <properties>
@@ -109,6 +120,21 @@
         <dependency>
             <groupId>org.apache.felix.ipojo</groupId>
             <artifactId>everest-casa</artifactId>
+            <version>${everestCasaVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.felix.ipojo</groupId>
+            <artifactId>everest-client-API</artifactId>
+            <version>${everestClientApiVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.felix.ipojo</groupId>
+            <artifactId>everest-gogo-command</artifactId>
+            <version>${everestCasaVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.felix.ipojo</groupId>
+            <artifactId>everest-system</artifactId>
             <version>${everestCasaVersion}</version>
         </dependency>
     </dependencies>

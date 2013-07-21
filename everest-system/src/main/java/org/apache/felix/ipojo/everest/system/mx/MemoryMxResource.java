@@ -40,6 +40,9 @@ public class MemoryMxResource extends DefaultReadOnlyResource {
         metadataBuilder.set("commited-heap", m_memoryMXBean.getHeapMemoryUsage().getCommitted());
         metadataBuilder.set("used-nonheap", m_memoryMXBean.getNonHeapMemoryUsage().getUsed());
         metadataBuilder.set("commited-nonheap", m_memoryMXBean.getNonHeapMemoryUsage().getCommitted());
+        metadataBuilder.set("verbose", m_memoryMXBean.isVerbose());
         return metadataBuilder.build();
     }
 }
+
+

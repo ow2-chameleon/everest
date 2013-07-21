@@ -1,19 +1,17 @@
-package org.apache.felix.ipojo.everest.casa.device;
+package casa.device;
 
-import org.apache.felix.ipojo.everest.casa.AbstractResourceCollection;
+import casa.AbstractResourceCollection;
 import org.apache.felix.ipojo.everest.impl.DefaultParameter;
 import org.apache.felix.ipojo.everest.impl.DefaultRelation;
-import org.apache.felix.ipojo.everest.services.Action;
-import org.apache.felix.ipojo.everest.services.Path;
-import org.apache.felix.ipojo.everest.services.Request;
-import org.apache.felix.ipojo.everest.services.Resource;
+import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
+import org.apache.felix.ipojo.everest.services.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.felix.ipojo.everest.casa.CasaRootResource.m_casaRootPath;
+import static casa.TestRootResource.m_casaRootPath;
 
 /**
  * Created with IntelliJ IDEA.
@@ -77,8 +75,6 @@ public class GenericDeviceManager extends AbstractResourceCollection {
         newGenericDevice = new GenericDevice("3");
         resource = new GenericDeviceResource(newGenericDevice, this);
         m_genericDeviceResourcesMap.put(newGenericDevice.DEVICE_SERIAL_NUMBER, resource);
-
-
     }
 
     @Override
@@ -101,5 +97,16 @@ public class GenericDeviceManager extends AbstractResourceCollection {
         }
 
         return resource;
+    }
+
+    public ResourceMetadata getMetadata() {
+        ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
+        metadataBuilder.set("Name", m_genericDeviceName);
+        metadataBuilder.set("Path", m_genericDevicePath);
+        return metadataBuilder.build();
+    }
+
+    public void deleteresource(String key) {
+        m_genericDeviceResourcesMap.remove(key);
     }
 }
