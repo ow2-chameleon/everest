@@ -1,4 +1,4 @@
-package org.apache.felix.ipojo.everest.system.mx;
+package org.apache.felix.ipojo.everest.system;
 
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
 import org.apache.felix.ipojo.everest.impl.DefaultRelation;
@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.felix.ipojo.everest.system.mx.MXResourceManager.MX_PATH;
+import static org.apache.felix.ipojo.everest.system.SystemRootResource.SYSTEM_ROOT_PATH;
 
 /**
  * Created with IntelliJ IDEA.
@@ -20,22 +20,22 @@ import static org.apache.felix.ipojo.everest.system.mx.MXResourceManager.MX_PATH
  * Date: 5/28/13
  * Time: 1:40 PM
  */
-public class ThreadMxResource extends DefaultReadOnlyResource {
+public class ThreadManagerResource extends DefaultReadOnlyResource {
 
-    private static final Path THREADS_MX_PATH = MX_PATH.addElements("threads");
+    private static final Path THREADS_PATH = SYSTEM_ROOT_PATH.addElements("threads");
 
     private final ThreadMXBean m_threadMXBean;
 
-    private static final ThreadMxResource instance = new ThreadMxResource();
+    private static final ThreadManagerResource instance = new ThreadManagerResource();
 
     private final Map<Long, ThreadResource> m_threadResource = new HashMap<Long, ThreadResource>();
 
-    public static ThreadMxResource getInstance() {
+    public static ThreadManagerResource getInstance() {
         return instance;
     }
 
-    public ThreadMxResource() {
-        super(THREADS_MX_PATH);
+    public ThreadManagerResource() {
+        super(THREADS_PATH);
         m_threadMXBean = ManagementFactory.getThreadMXBean();
     }
 

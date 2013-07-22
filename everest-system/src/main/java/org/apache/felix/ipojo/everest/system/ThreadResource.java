@@ -1,4 +1,4 @@
-package org.apache.felix.ipojo.everest.system.mx;
+package org.apache.felix.ipojo.everest.system;
 
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
@@ -16,11 +16,11 @@ import java.lang.management.ThreadInfo;
  */
 public class ThreadResource extends DefaultReadOnlyResource {
 
-    private final ThreadMxResource m_parentManager;
+    private final ThreadManagerResource m_parentManager;
 
     private final long m_ids;
 
-    public ThreadResource(long ids, ThreadMxResource parent) {
+    public ThreadResource(long ids, ThreadManagerResource parent) {
         super(parent.getPath().add(Path.from(Path.SEPARATOR + ids)));
         m_parentManager = parent;
         m_ids = ids;

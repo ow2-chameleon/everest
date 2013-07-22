@@ -36,43 +36,36 @@ public class TestResources extends CommonTest {
         read("/system/environment");
     }
 
+
     /**
-     * Check that the '/system/mx' resource is present.
+     * Check that the '/system/runtime' resource is present.
      */
     @Test
-    public void testMxManagerIsPresent() throws ResourceNotFoundException, IllegalActionOnResourceException {
-        read("/system/mx");
+    public void testRuntimeIsPresent() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        read("/system/runtime");
     }
 
     /**
-     * Check that the '/system/mx/runtime' resource is present.
+     * Check that the '/system/threads' resource is present.
      */
     @Test
-    public void testRuntimeMxIsPresent() throws ResourceNotFoundException, IllegalActionOnResourceException {
-        read("/system/mx/runtime");
+    public void testThreadIsPresent() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        read("/system/threads");
     }
 
     /**
-     * Check that the '/system/mx/threads' resource is present.
+     * Check that the '/system/os' resource is present.
      */
     @Test
-    public void testThreadMxIsPresent() throws ResourceNotFoundException, IllegalActionOnResourceException {
-        read("/system/mx/threads");
+    public void testOperatingSystemIsPresent() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        read("/system/os");
     }
 
     /**
-     * Check that the '/system/mx/os' resource is present.
-     */
-    @Test
-    public void testOperatingSystemMxIsPresent() throws ResourceNotFoundException, IllegalActionOnResourceException {
-        read("/system/mx/os");
-    }
-
-    /**
-     * Check that the '/system/mx/memory' resource is present.
+     * Check that the '/system/memory' resource is present.
      */
     @Test
     public void testMemoryMxIsPresent() throws ResourceNotFoundException, IllegalActionOnResourceException {
-        read("/system/mx/memory");
+        read("/system/memory");
     }
 }

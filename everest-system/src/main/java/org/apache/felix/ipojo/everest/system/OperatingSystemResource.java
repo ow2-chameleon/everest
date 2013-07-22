@@ -1,4 +1,4 @@
-package org.apache.felix.ipojo.everest.system.mx;
+package org.apache.felix.ipojo.everest.system;
 
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
@@ -8,7 +8,7 @@ import org.apache.felix.ipojo.everest.services.ResourceMetadata;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 
-import static org.apache.felix.ipojo.everest.system.mx.MXResourceManager.MX_PATH;
+import static org.apache.felix.ipojo.everest.system.SystemRootResource.SYSTEM_ROOT_PATH;
 
 /**
  * Created with IntelliJ IDEA.
@@ -16,20 +16,20 @@ import static org.apache.felix.ipojo.everest.system.mx.MXResourceManager.MX_PATH
  * Date: 5/28/13
  * Time: 1:39 PM
  */
-public class OperatingSystemMxResource extends DefaultReadOnlyResource {
+public class OperatingSystemResource extends DefaultReadOnlyResource {
 
-    private static final Path OS_MX_PATH = MX_PATH.addElements("os");
+    private static final Path OS_PATH = SYSTEM_ROOT_PATH.addElements("os");
 
     private final OperatingSystemMXBean m_osMXBean;
 
-    private static final OperatingSystemMxResource instance = new OperatingSystemMxResource();
+    private static final OperatingSystemResource instance = new OperatingSystemResource();
 
-    public static OperatingSystemMxResource getInstance() {
+    public static OperatingSystemResource getInstance() {
         return instance;
     }
 
-    public OperatingSystemMxResource() {
-        super(OS_MX_PATH);
+    public OperatingSystemResource() {
+        super(OS_PATH);
         m_osMXBean = ManagementFactory.getOperatingSystemMXBean();
     }
 
