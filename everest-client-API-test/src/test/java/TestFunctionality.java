@@ -1,4 +1,3 @@
-
 import org.apache.felix.ipojo.everest.client.api.EverestClient;
 import org.apache.felix.ipojo.everest.services.IllegalActionOnResourceException;
 import org.apache.felix.ipojo.everest.services.Resource;
@@ -81,19 +80,15 @@ public class TestFunctionality extends CommonTest {
 
         testAPI.read("/test/devices/3").delete().doIt();
 
-        try {
-            testAPI.read("/test/devices").child("3");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+
+        assertThat(testAPI.read("/test/devices").child("3").retrieve()).isEqualTo(null);
+
 
         testAPI.read("/test/devices").children().delete().doIt();
 
-        try {
-            testAPI.read("/test/devices").children();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+
+        assertThat(testAPI.read("/test/devices").children().retrieve()).isEqualTo(null);
+
     }
 
     @Test

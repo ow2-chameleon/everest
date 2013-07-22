@@ -13,9 +13,10 @@ import java.util.List;
 
 public class ListResourceContainer {
 
-
+    /**
+     * Lis of resourceContainer which contains
+     */
     List<ResourceContainer> m_resourcesContainer = new ArrayList<ResourceContainer>();
-
 
     private ResourceContainer read(String path) throws ResourceNotFoundException, IllegalActionOnResourceException {
 
@@ -31,20 +32,32 @@ public class ListResourceContainer {
         this.m_resourcesContainer = listresource;
     }
 
+    /**
+     * Get the list of parent of the m_resourcesContainer. If 2 resources have the same parent, he appears just one time in
+     * the return.
+     *
+     * @return
+     * @throws ResourceNotFoundException
+     * @throws IllegalActionOnResourceException
+     *
+     */
     public synchronized ListResourceContainer parent() throws ResourceNotFoundException, IllegalActionOnResourceException {
+
+        if (m_resourcesContainer == null) {
+
+            return this;
+        }
 
         List<Path> listPath = new ArrayList<Path>();
         List<ResourceContainer> returnResources = new ArrayList<ResourceContainer>();
 
         for (ResourceContainer current : m_resourcesContainer) {
-            try {
+            if (!(current.parent() == null)) {
+                //check if the parent is already save in the return list
                 if (!(listPath.contains(current.parent().m_resource.getPath()))) {
                     returnResources.add(current.parent());
                     listPath.add(current.parent().m_resource.getPath());
                 }
-
-            } catch (RuntimeException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
         }
 
@@ -54,20 +67,26 @@ public class ListResourceContainer {
         }
 
 
-        throw new RuntimeException();
+        this.m_resourcesContainer = null;
+        return this;
     }
 
+    /**
+     * Get the children of each member of   m_resourcesContainer
+     *
+     * @return
+     */
+    public synchronized ListResourceContainer children() {
 
-    public synchronized ListResourceContainer children() throws RuntimeException {
+        if (m_resourcesContainer == null) {
 
-
+            return this;
+        }
         List<ResourceContainer> returnResources = new ArrayList<ResourceContainer>();
 
         for (ResourceContainer currentResourceContainer : m_resourcesContainer) {
-            try {
+            if (!(currentResourceContainer.children().m_resourcesContainer == null)) {
                 returnResources.addAll(currentResourceContainer.children().m_resourcesContainer);
-            } catch (RuntimeException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
         }
         if (!(returnResources.isEmpty())) {
@@ -75,50 +94,65 @@ public class ListResourceContainer {
             return this;
         }
 
-        throw new RuntimeException();
+        this.m_resourcesContainer = null;
+        return this;
     }
 
-    public synchronized ListResourceContainer child(String name) throws RuntimeException {
+    /**
+     * Get the child identified by name of each member of   m_resourcesContainer
+     *
+     * @param name
+     * @return
+     */
+    public synchronized ListResourceContainer child(String name) {
 
+        if (m_resourcesContainer == null) {
+            return this;
+        }
         List<ResourceContainer> returnResources = new ArrayList<ResourceContainer>();
 
         for (ResourceContainer currentResourceContainer : m_resourcesContainer) {
-            try {
+            if (currentResourceContainer.child(name) == null) {
                 returnResources.add(currentResourceContainer.child(name));
-            } catch (RuntimeException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
-
         }
         if (!(returnResources.isEmpty())) {
             m_resourcesContainer = returnResources;
             return this;
         }
 
-        throw new RuntimeException();
+        this.m_resourcesContainer = null;
+        return this;
 
 
     }
 
-    public synchronized ListResourceContainer relations() throws RuntimeException, ResourceNotFoundException, IllegalActionOnResourceException {
-
+    /**
+     * Get the all resource which are in relations with each member of m_resourcesContainer
+     *
+     * @return
+     * @throws ResourceNotFoundException
+     * @throws IllegalActionOnResourceException
+     *
+     */
+    public synchronized ListResourceContainer relations() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        if (m_resourcesContainer == null) {
+            return this;
+        }
         List<Path> listPath = new ArrayList<Path>();
         List<ResourceContainer> returnResources = new ArrayList<ResourceContainer>();
         List<ResourceContainer> temp;
 
         for (ResourceContainer current : m_resourcesContainer) {
-            try {
+            if (!(current.relations().m_resourcesContainer == null)) {
                 temp = current.relations().m_resourcesContainer;
                 for (ResourceContainer currentResource : temp) {
-                    System.out.println(currentResource.m_resource.getPath());
+                    // check if the resource is already save
                     if (!(listPath.contains(currentResource.m_resource.getPath()))) {
                         listPath.add(current.m_resource.getPath());
                         returnResources.add(currentResource);
                     }
                 }
-
-            } catch (RuntimeException e) {
-                e.printStackTrace();
             }
 
         }
@@ -127,22 +161,32 @@ public class ListResourceContainer {
             return this;
         }
 
-        throw new RuntimeException();
+        this.m_resourcesContainer = null;
+        return this;
     }
 
-    public synchronized ListResourceContainer relation(String relationName) throws RuntimeException, ResourceNotFoundException, IllegalActionOnResourceException {
-
+    /**
+     * Get the all resource which are in relation identified by name with each member of m_resourcesContainer
+     *
+     * @param relationName : name of the relation
+     * @return
+     * @throws ResourceNotFoundException
+     * @throws IllegalActionOnResourceException
+     *
+     */
+    public synchronized ListResourceContainer relation(String relationName) throws ResourceNotFoundException, IllegalActionOnResourceException {
+        if (m_resourcesContainer == null) {
+            return this;
+        }
         List<Path> listPath = new ArrayList<Path>();
         List<ResourceContainer> returnResources = new ArrayList<ResourceContainer>();
 
         for (ResourceContainer current : m_resourcesContainer) {
-            try {
+            if (!(current.relation(relationName).m_resource == null)) {
                 if (!(listPath.contains(current.relation(relationName).m_resource.getPath()))) {
                     listPath.add(current.relation(relationName).m_resource.getPath());
                     returnResources.add(current.relation(relationName));
                 }
-            } catch (RuntimeException e) {
-                e.printStackTrace();
             }
         }
         if (!(returnResources.isEmpty())) {
@@ -150,10 +194,21 @@ public class ListResourceContainer {
             return this;
         }
 
-        throw new RuntimeException();
+        this.m_resourcesContainer = null;
+        return this;
     }
 
+    /**
+     * Get the metadata identified by his ID at the string format of each member of  m_resourcesContainer
+     *
+     * @param metadataId : Id of the Metadata
+     * @return
+     */
     public synchronized List<String> retrieve(String metadataId) {
+
+        if (m_resourcesContainer == null) {
+            return null;
+        }
 
         List<String> returnList = new ArrayList<String>();
 
@@ -172,7 +227,16 @@ public class ListResourceContainer {
 
     }
 
+    /**
+     * Get all the resources present in m_resourcesContainer
+     *
+     * @return
+     */
     public synchronized List<Resource> retrieve() {
+
+        if (m_resourcesContainer == null) {
+            return null;
+        }
 
         List<Resource> returnList = new ArrayList<Resource>();
 
@@ -188,8 +252,18 @@ public class ListResourceContainer {
 
     }
 
-
+    /**
+     * Get a metadata identified by his ID at the T format
+     *
+     * @param metadataId : Id of the Metadata
+     * @param clazz      : Class of the value of the metadata
+     * @param <T>
+     * @return
+     */
     public synchronized <T> List<T> retrieve(String metadataId, Class<T> clazz) {
+        if (m_resourcesContainer == null) {
+            return null;
+        }
 
         List<T> returnList = new ArrayList<T>();
 
@@ -207,7 +281,19 @@ public class ListResourceContainer {
 
     }
 
+    /**
+     * Define the next action to UPDATE send by the doIt method.Erase the parameters.
+     *
+     * @return
+     * @throws ResourceNotFoundException
+     * @throws IllegalActionOnResourceException
+     *
+     */
     public synchronized ListResourceContainer update() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        if (m_resourcesContainer == null) {
+            return null;
+        }
+
         for (ResourceContainer current : m_resourcesContainer) {
             current.update();
         }
@@ -215,30 +301,76 @@ public class ListResourceContainer {
         return this;
     }
 
-
+    /**
+     * Define the next action to CREATE send by the doIt method.Erase the parameters.
+     *
+     * @return
+     * @throws ResourceNotFoundException
+     * @throws IllegalActionOnResourceException
+     *
+     */
     public synchronized ListResourceContainer create() throws ResourceNotFoundException, IllegalActionOnResourceException {
+
+        if (m_resourcesContainer == null) {
+            return null;
+        }
         for (ResourceContainer current : m_resourcesContainer) {
             current.create();
         }
         return this;
     }
 
-
+    /**
+     * Define the next action to DELETE send by the doIt method.Erase the parameters.
+     *
+     * @return
+     * @throws ResourceNotFoundException
+     * @throws IllegalActionOnResourceException
+     *
+     */
     public synchronized ListResourceContainer delete() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        if (m_resourcesContainer == null) {
+            return null;
+        }
+
         for (ResourceContainer current : m_resourcesContainer) {
             current.delete();
         }
         return this;
     }
 
+    /**
+     * Define the parameters send by the doIt method. each called to with() put a new <key,value> in m_currentParams.
+     *
+     * @return
+     * @throws ResourceNotFoundException
+     * @throws IllegalActionOnResourceException
+     *
+     */
     public synchronized ListResourceContainer with(String key, Object value) {
+        if (m_resourcesContainer == null) {
+            return null;
+        }
+
         for (ResourceContainer current : m_resourcesContainer) {
             current.with(key, value);
         }
         return this;
     }
 
+    /**
+     * This method is called after called an action method (create , delete or update) and have set parameters with the
+     * method with(). This method throw a request on m_resource with the action define by the last call of an action method and with a set of parameters.
+     *
+     * @return : The resource container which contains the resource create , update , delete.
+     * @throws ResourceNotFoundException
+     * @throws IllegalActionOnResourceException
+     *
+     */
     public synchronized ListResourceContainer doIt() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        if (m_resourcesContainer == null) {
+            return null;
+        }
 
         List<ResourceContainer> returnResources = new ArrayList<ResourceContainer>();
 
@@ -252,6 +384,9 @@ public class ListResourceContainer {
 
 
     public synchronized ListResourceContainer filter(ResourceFilter filter) throws RuntimeException {
+        if (m_resourcesContainer == null) {
+            return null;
+        }
 
         List<ResourceContainer> returnResources = new ArrayList<ResourceContainer>();
 
@@ -259,7 +394,7 @@ public class ListResourceContainer {
             try {
                 returnResources.add(current.filter(filter));
             } catch (RuntimeException e) {
-                e.printStackTrace();
+                System.out.println(current.m_resource.getPath() + ":  filter not match");
             }
         }
 
@@ -268,7 +403,8 @@ public class ListResourceContainer {
             return this;
         }
 
-        throw new RuntimeException();
+        this.m_resourcesContainer = null;
+        return this;
     }
 
 
