@@ -167,4 +167,12 @@ public class EverestClient extends ResourceContainer {
         return new ResourceContainer(EverestClient.m_everest.process(new DefaultRequest(m_currentAction, m_currentPath, m_currentParams)));
     }
 
+    public synchronized AssertionResource assertThat(Resource resource) throws ResourceNotFoundException, IllegalActionOnResourceException {
+        return new AssertionResource(resource);
+    }
+
+    public synchronized AssertionString assertThat(String key) {
+        return new AssertionString(key);
+
+    }
 }
