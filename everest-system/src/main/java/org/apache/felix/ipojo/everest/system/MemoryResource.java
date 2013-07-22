@@ -1,4 +1,4 @@
-package org.apache.felix.ipojo.everest.system.mx;
+package org.apache.felix.ipojo.everest.system;
 
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
@@ -8,7 +8,7 @@ import org.apache.felix.ipojo.everest.services.ResourceMetadata;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 
-import static org.apache.felix.ipojo.everest.system.mx.MXResourceManager.MX_PATH;
+import static org.apache.felix.ipojo.everest.system.SystemRootResource.SYSTEM_ROOT_PATH;
 
 /**
  * Created with IntelliJ IDEA.
@@ -16,20 +16,20 @@ import static org.apache.felix.ipojo.everest.system.mx.MXResourceManager.MX_PATH
  * Date: 5/28/13
  * Time: 1:42 PM
  */
-public class MemoryMxResource extends DefaultReadOnlyResource {
+public class MemoryResource extends DefaultReadOnlyResource {
 
-    private static final Path MEMORY_MX_PATH = MX_PATH.addElements("memory");
+    private static final Path MEMORY_PATH = SYSTEM_ROOT_PATH.addElements("memory");
 
     private final MemoryMXBean m_memoryMXBean;
 
-    private static final MemoryMxResource instance = new MemoryMxResource();
+    private static final MemoryResource instance = new MemoryResource();
 
-    public static MemoryMxResource getInstance() {
+    public static MemoryResource getInstance() {
         return instance;
     }
 
-    public MemoryMxResource() {
-        super(MEMORY_MX_PATH);
+    public MemoryResource() {
+        super(MEMORY_PATH);
         m_memoryMXBean = ManagementFactory.getMemoryMXBean();
     }
 

@@ -1,4 +1,4 @@
-package org.apache.felix.ipojo.everest.system.mx;
+package org.apache.felix.ipojo.everest.system;
 
 import org.apache.felix.ipojo.everest.impl.DefaultReadOnlyResource;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
@@ -8,7 +8,8 @@ import org.apache.felix.ipojo.everest.services.ResourceMetadata;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 
-import static org.apache.felix.ipojo.everest.system.mx.MXResourceManager.MX_PATH;
+import static org.apache.felix.ipojo.everest.system.SystemRootResource.SYSTEM_ROOT_PATH;
+
 
 /**
  * Created with IntelliJ IDEA.
@@ -16,20 +17,20 @@ import static org.apache.felix.ipojo.everest.system.mx.MXResourceManager.MX_PATH
  * Date: 5/28/13
  * Time: 1:33 PM
  */
-public class RuntimeMxResource extends DefaultReadOnlyResource {
+public class RuntimeResource extends DefaultReadOnlyResource {
 
-    private static final Path RUNTIME_MX_PATH = MX_PATH.addElements("runtime");
+    private static final Path RUNTIME_PATH = SYSTEM_ROOT_PATH.addElements("runtime");
 
     private final RuntimeMXBean m_runtimeMXBean;
 
-    private static final RuntimeMxResource instance = new RuntimeMxResource();
+    private static final RuntimeResource instance = new RuntimeResource();
 
-    public static RuntimeMxResource getInstance() {
+    public static RuntimeResource getInstance() {
         return instance;
     }
 
-    public RuntimeMxResource() {
-        super(RUNTIME_MX_PATH);
+    public RuntimeResource() {
+        super(RUNTIME_PATH);
         m_runtimeMXBean = ManagementFactory.getRuntimeMXBean();
     }
 

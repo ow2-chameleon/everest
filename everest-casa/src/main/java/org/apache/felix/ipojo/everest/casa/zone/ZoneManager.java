@@ -81,7 +81,7 @@ public class ZoneManager extends AbstractResourceCollection {
         Map<String, ?> newMap = request.parameters();
         if (newMap != null) {
             for (String key : newMap.keySet()) {
-                if (newMap.get(key).toString().equalsIgnoreCase("zone")) {
+                if (key.equalsIgnoreCase("zone")) {
                     Zone newZone = new Zone(newMap.get(key).toString());
                     resource = new ZoneResource(newZone, this);
                     m_zoneResourcesMap.put(newZone.name, resource);
