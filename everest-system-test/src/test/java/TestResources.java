@@ -67,5 +67,6 @@ public class TestResources extends CommonTest {
     @Test
     public void testMemoryMxIsPresent() throws ResourceNotFoundException, IllegalActionOnResourceException {
         read("/system/memory");
+
     }
 }
