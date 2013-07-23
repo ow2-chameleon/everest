@@ -25,7 +25,7 @@ public class EverestGoGoCommand {
      * Defines the functions (commands).
      */
     @ServiceProperty(name = "osgi.command.function", value = "{}")
-    String[] m_function = new String[]{"create", "retrieve", "update", "delete", "everestassert"};
+    String[] m_function = new String[]{"create", "retrieve", "update", "delete", "assertThat"};
 
 
     @Requires(optional = false)
@@ -192,7 +192,7 @@ public class EverestGoGoCommand {
     }
 
     @Descriptor("Assert property")
-    public void everestassert(@Descriptor("everestassert") String... handleId) throws ResourceNotFoundException, IllegalActionOnResourceException {
+    public void assertThat(@Descriptor("everestassert") String... handleId) throws ResourceNotFoundException, IllegalActionOnResourceException {
         String bufferOut = new String();
 
         try {
