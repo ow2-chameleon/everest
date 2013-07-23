@@ -35,13 +35,9 @@ public class EverestGoGoCommand {
 
     @Validate
     public void start() {
-        try {
-            m_everestClient = new EverestClient(m_everest);
-        } catch (ResourceNotFoundException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        } catch (IllegalActionOnResourceException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
+
+        m_everestClient = new EverestClient(m_everest);
+
     }
 
 

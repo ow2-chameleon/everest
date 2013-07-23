@@ -43,11 +43,9 @@
         <module>everest-example</module>
         <module>everest-it</module>
         <module>everest-system</module>
-        <module>everest-casa</module>
         <module>everest-distrib</module>
-        <module>everest-system-test</module>
+        <module>everest-casa</module>
         <module>everest-client-API</module>
-        <module>everest-client-API-test</module>
         <module>everest-gogo-command</module>
     </modules>
 
