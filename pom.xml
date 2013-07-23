@@ -44,11 +44,9 @@
         <module>everest-it</module>
         <module>everest-system</module>
         <module>everest-casa</module>
-        <module>everest-distrib</module>
-        <module>everest-system-test</module>
         <module>everest-client-API</module>
-        <module>everest-client-API-test</module>
         <module>everest-gogo-command</module>
+        <module>everest-distrib</module>
     </modules>
 
     <!-- TO BE REMOVED, when iPOJO 1.10.1 release is deployed on Maven central
