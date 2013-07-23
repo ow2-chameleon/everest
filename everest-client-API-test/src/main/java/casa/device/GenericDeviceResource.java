@@ -48,7 +48,7 @@ public class GenericDeviceResource extends AbstractResourceCollection {
 
 
         relations.add(new DefaultRelation(genericDeviceManager.m_genericDevicePath.add(Path.from(Path.SEPARATOR + genericDevice.DEVICE_SERIAL_NUMBER)), Action.DELETE, "delete", null));
-
+        setRelations(relations);
     }
 
     public ResourceMetadata getMetadata() {

@@ -5,11 +5,9 @@ import casa.device.GenericDeviceManager;
 import casa.services.Zone;
 import org.apache.felix.ipojo.everest.impl.DefaultRelation;
 import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
-import org.apache.felix.ipojo.everest.services.Action;
-import org.apache.felix.ipojo.everest.services.Path;
-import org.apache.felix.ipojo.everest.services.Relation;
-import org.apache.felix.ipojo.everest.services.ResourceMetadata;
+import org.apache.felix.ipojo.everest.services.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -37,6 +35,9 @@ public class ZoneResource extends AbstractResourceCollection {
         super(m_zoneManager.m_zonePath.add(Path.from(Path.SEPARATOR + m_zone.getName())));
         this.m_zone = m_zone;
         this.m_ZoneManager = m_zoneManager;
+        List<Relation> relations = new ArrayList<Relation>();
+        relations.add(new DefaultRelation(m_ZoneManager.m_zonePath.add(Path.from(Path.SEPARATOR + m_zone.getName())), Action.DELETE, "delete", null));
+        setRelations(relations);
     }
 
     public ResourceMetadata getMetadata() {
@@ -62,6 +63,12 @@ public class ZoneResource extends AbstractResourceCollection {
         relations = getRelations();
         relations.add(new DefaultRelation(GenericDeviceManager.getInstance().getPath().add(Path.from(Path.SEPARATOR + serialNumber)), Action.READ, "device" + serialNumber));
         setRelations(relations);
+    }
+
+    @Override
+    public Resource delete(Request request) throws IllegalActionOnResourceException {
+        m_ZoneManager.deleteresource(m_zone.getName());
+        return (m_ZoneManager);
     }
 
 }

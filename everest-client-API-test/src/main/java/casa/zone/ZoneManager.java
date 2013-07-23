@@ -125,5 +125,9 @@ public class ZoneManager extends AbstractResourceCollection {
         return metadataBuilder.build();
     }
 
+    public void deleteresource(String key) {
+        m_zoneResourcesMap.remove(key);
+    }
+
 
 }

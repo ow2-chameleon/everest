@@ -3,11 +3,14 @@ import org.apache.felix.ipojo.everest.services.IllegalActionOnResourceException;
 import org.apache.felix.ipojo.everest.services.Resource;
 import org.apache.felix.ipojo.everest.services.ResourceNotFoundException;
 import org.junit.Test;
+import org.ops4j.pax.exam.spi.reactors.ExamReactorStrategy;
+import org.ops4j.pax.exam.spi.reactors.PerMethod;
 
 import java.util.List;
 
 import static org.fest.assertions.Assertions.assertThat;
 
+@ExamReactorStrategy(PerMethod.class)
 public class TestFunctionality extends CommonTest {
 
 
@@ -78,16 +81,16 @@ public class TestFunctionality extends CommonTest {
         System.out.println("TEST DELETE");
         EverestClient testAPI = new EverestClient(everest);
 
-        testAPI.read("/test/devices/3").delete().doIt();
+        testAPI.read("/test/zone/room1").delete().doIt();
 
 
-        assertThat(testAPI.read("/test/devices").child("3").retrieve()).isEqualTo(null);
+        assertThat(testAPI.read("/test/zone").child("room1").retrieve()).isEqualTo(null);
 
 
-        testAPI.read("/test/devices").children().delete().doIt();
+        testAPI.read("/test/zone").children().delete().doIt();
 
 
-        assertThat(testAPI.read("/test/devices").children().retrieve()).isEqualTo(null);
+        assertThat(testAPI.read("/test/zone").children().retrieve()).isEqualTo(null);
 
     }
 
@@ -96,10 +99,10 @@ public class TestFunctionality extends CommonTest {
         System.out.println("TEST Relation");
         EverestClient testAPI = new EverestClient(everest);
 
-        Resource resource = testAPI.read("/test/zone").relation("create").retrieve();
+        Resource resource = testAPI.read("/test/devices").relation("create").retrieve();
         System.out.println(resource.getPath());
 
-        List<Resource> listResource = testAPI.read("/test/zone").relations().retrieve();
+        List<Resource> listResource = testAPI.read("/test/devices").relations().retrieve();
 
         listResource = testAPI.read("/test").children().relations().retrieve();
 
@@ -108,7 +111,7 @@ public class TestFunctionality extends CommonTest {
             System.out.println(current.getPath().getLast());
         }
 
-        testAPI.read("/test/zone");
+        testAPI.read("/test/devices");
 
         listResource = testAPI.relations().retrieve();
         for (Resource current : listResource) {

@@ -94,7 +94,11 @@ public class EverestGoGoCommand {
                 Resource resource;
                 path = handleId[0];
                 resource = m_everestClient.read(path).retrieve();
-                bufferOut = bufferOut + "Name : " + resource.getPath().getLast().toString() + "\n";
+                if (resource.getPath().toString().equalsIgnoreCase("/")) {
+                    bufferOut = bufferOut + "Name : " + resource.getPath().toString() + "\n";
+                } else {
+                    bufferOut = bufferOut + "Name : " + resource.getPath().getLast().toString() + "\n";
+                }
                 bufferOut = bufferOut + "\nMETADATA : \n";
                 ResourceMetadata resourceMetadata = resource.getMetadata();
                 for (String currentString : resourceMetadata.keySet()) {
@@ -104,7 +108,12 @@ public class EverestGoGoCommand {
             } else {
                 path = handleId[0];
                 Resource resource = m_everestClient.read(path).retrieve();
-                bufferOut = bufferOut + "Name : " + resource.getPath().getLast().toString() + "\n";
+                if (resource.getPath().toString().equalsIgnoreCase("/")) {
+                    bufferOut = bufferOut + "Name : " + resource.getPath().toString() + "\n";
+                } else {
+                    bufferOut = bufferOut + "Name : " + resource.getPath().getLast().toString() + "\n";
+                }
+
                 bufferOut = bufferOut + "\nMETADATA\n";
                 for (String currentString : handleId) {
                     if (!(currentString.equalsIgnoreCase(handleId[0]))) {
@@ -139,7 +148,11 @@ public class EverestGoGoCommand {
                     }
                 }
                 Resource resource = m_everestClient.doIt().retrieve();
-                bufferOut = bufferOut + "Success : Update of " + resource.getPath().getLast().toString() + " at " + resource.getPath().toString() + "\n";
+                if (resource.getPath().toString().equalsIgnoreCase("/")) {
+                    bufferOut = bufferOut + "Success : Update of " + resource.getPath().toString() + "\n";
+                } else {
+                    bufferOut = bufferOut + "Success : Update of " + resource.getPath().getLast().toString() + " at " + resource.getPath().toString() + "\n";
+                }
                 bufferOut = bufferOut + "\nMETADATA : \n";
                 ResourceMetadata resourceMetadata = resource.getMetadata();
                 for (String currentString : resourceMetadata.keySet()) {
