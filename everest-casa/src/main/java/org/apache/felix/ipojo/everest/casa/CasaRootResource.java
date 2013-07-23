@@ -29,7 +29,7 @@ public class CasaRootResource extends AbstractResourceCollection {
     /*
     * Name ressource
      */
-    public static final String m_casaRoot = "org.apache.felix.ipojo.everest.everestApi.casa";
+    public static final String m_casaRoot = "casa";
 
     /*
      * Path of the ressource
@@ -39,7 +39,7 @@ public class CasaRootResource extends AbstractResourceCollection {
     /*
      * Description of the ressource
     */
-    private static final String m_casaDescription = "org.apache.felix.ipojo.everest.everestApi.casa resources";
+    private static final String m_casaDescription = "casa resources";
 
     /*
      * List of the subRessource
