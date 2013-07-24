@@ -31,9 +31,6 @@ public class EverestClient extends ResourceContainer {
 
     /**
      * @param m_everest : Need the everest core service to browse the resource tree
-     * @throws ResourceNotFoundException
-     * @throws IllegalActionOnResourceException
-     *
      */
     public EverestClient(EverestService m_everest) {
         super(null);
@@ -51,11 +48,12 @@ public class EverestClient extends ResourceContainer {
      * @param path : path of the resource to read
      * @return : A resource container which contain the resource you have read
      * @throws ResourceNotFoundException
-     * @throws IllegalActionOnResourceException
-     *
      */
-    public ResourceContainer read(String path) throws ResourceNotFoundException, IllegalActionOnResourceException {
-        this.m_resource = m_everest.process(new DefaultRequest(Action.READ, Path.from(path), null));
+    public ResourceContainer read(String path) throws ResourceNotFoundException {
+        try {
+            this.m_resource = m_everest.process(new DefaultRequest(Action.READ, Path.from(path), null));
+        } catch (IllegalActionOnResourceException e) {
+        }
         m_currentPath = m_resource.getPath();
         m_currentAction = Action.READ;
         m_currentParams.clear();
@@ -67,11 +65,8 @@ public class EverestClient extends ResourceContainer {
      *
      * @param path :path of the resource to update
      * @return :
-     * @throws ResourceNotFoundException
-     * @throws IllegalActionOnResourceException
-     *
      */
-    public synchronized ResourceContainer update(String path) throws ResourceNotFoundException, IllegalActionOnResourceException {
+    public synchronized ResourceContainer update(String path) {
         m_currentPath = Path.from(path);
         m_currentAction = Action.UPDATE;
         m_currentParams.clear();
@@ -83,11 +78,8 @@ public class EverestClient extends ResourceContainer {
      *
      * @param resource : The resource that you want to update
      * @return
-     * @throws ResourceNotFoundException
-     * @throws IllegalActionOnResourceException
-     *
      */
-    public synchronized ResourceContainer update(Resource resource) throws ResourceNotFoundException, IllegalActionOnResourceException {
+    public synchronized ResourceContainer update(Resource resource) {
         m_currentPath = resource.getPath();
         m_currentAction = Action.UPDATE;
         m_currentParams.clear();
@@ -99,11 +91,8 @@ public class EverestClient extends ResourceContainer {
      *
      * @param path : path of the parent resource that you want to create
      * @return
-     * @throws ResourceNotFoundException
-     * @throws IllegalActionOnResourceException
-     *
      */
-    public synchronized ResourceContainer create(String path) throws ResourceNotFoundException, IllegalActionOnResourceException {
+    public synchronized ResourceContainer create(String path) {
         m_currentPath = Path.from(path);
         m_currentAction = Action.CREATE;
         m_currentParams.clear();
@@ -115,11 +104,8 @@ public class EverestClient extends ResourceContainer {
      *
      * @param resource :  The parent resource that you want to create
      * @return
-     * @throws ResourceNotFoundException
-     * @throws IllegalActionOnResourceException
-     *
      */
-    public synchronized ResourceContainer create(Resource resource) throws ResourceNotFoundException, IllegalActionOnResourceException {
+    public synchronized ResourceContainer create(Resource resource) {
         m_currentPath = resource.getPath();
         m_currentAction = Action.CREATE;
         m_currentParams.clear();
@@ -131,11 +117,8 @@ public class EverestClient extends ResourceContainer {
      *
      * @param path : path of the resource that you want to delete
      * @return
-     * @throws ResourceNotFoundException
-     * @throws IllegalActionOnResourceException
-     *
      */
-    public synchronized ResourceContainer delete(String path) throws ResourceNotFoundException, IllegalActionOnResourceException {
+    public synchronized ResourceContainer delete(String path) {
         m_currentPath = Path.from(path);
         m_currentAction = Action.DELETE;
         m_currentParams.clear();
@@ -148,11 +131,8 @@ public class EverestClient extends ResourceContainer {
      *
      * @param resource : The resource that you want to delete
      * @return
-     * @throws ResourceNotFoundException
-     * @throws IllegalActionOnResourceException
-     *
      */
-    public synchronized ResourceContainer delete(Resource resource) throws ResourceNotFoundException, IllegalActionOnResourceException {
+    public synchronized ResourceContainer delete(Resource resource) {
         m_currentPath = resource.getPath();
         m_currentAction = Action.DELETE;
         m_currentParams.clear();
@@ -173,8 +153,15 @@ public class EverestClient extends ResourceContainer {
         return new ResourceContainer(EverestClient.m_everest.process(new DefaultRequest(m_currentAction, m_currentPath, m_currentParams)));
     }
 
-    public synchronized AssertionResource assertThat(Resource resource) throws ResourceNotFoundException, IllegalActionOnResourceException {
-        return new AssertionResource(resource);
+    public synchronized AssertionResource assertThat(Resource resource) {
+        try {
+            return new AssertionResource(resource);
+        } catch (ResourceNotFoundException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            return null;
+        } catch (IllegalActionOnResourceException e) {
+            return null;
+        }
     }
 
     public synchronized AssertionString assertThat(String key) {

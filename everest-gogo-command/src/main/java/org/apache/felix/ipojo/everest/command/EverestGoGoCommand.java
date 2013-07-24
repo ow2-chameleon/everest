@@ -10,6 +10,8 @@ import org.apache.felix.ipojo.everest.client.api.EverestClient;
 import org.apache.felix.ipojo.everest.services.*;
 import org.apache.felix.service.command.Descriptor;
 
+import java.util.List;
+
 @Component(immediate = true)
 @Instantiate
 @Provides(specifications = EverestGoGoCommand.class)
@@ -25,7 +27,7 @@ public class EverestGoGoCommand {
      * Defines the functions (commands).
      */
     @ServiceProperty(name = "osgi.command.function", value = "{}")
-    String[] m_function = new String[]{"create", "retrieve", "update", "delete", "everestassert"};
+    String[] m_function = new String[]{"create", "retrieve", "update", "delete", "assertThat", "child", "relation"};
 
 
     @Requires(optional = false)
@@ -95,7 +97,7 @@ public class EverestGoGoCommand {
                 } else {
                     bufferOut = bufferOut + "Name : " + resource.getPath().getLast().toString() + "\n";
                 }
-                bufferOut = bufferOut + "\nMETADATA : \n";
+                bufferOut = bufferOut + "METADATA : \n";
                 ResourceMetadata resourceMetadata = resource.getMetadata();
                 for (String currentString : resourceMetadata.keySet()) {
                     bufferOut = bufferOut + currentString + " : \"" + resourceMetadata.get(currentString) + "\"" + "\n";
@@ -110,7 +112,7 @@ public class EverestGoGoCommand {
                     bufferOut = bufferOut + "Name : " + resource.getPath().getLast().toString() + "\n";
                 }
 
-                bufferOut = bufferOut + "\nMETADATA\n";
+                bufferOut = bufferOut + "METADATA\n";
                 for (String currentString : handleId) {
                     if (!(currentString.equalsIgnoreCase(handleId[0]))) {
                         bufferOut = bufferOut + currentString + " : \"" + m_everestClient.read(path).retrieve(currentString) + "\"" + "\n";
@@ -149,7 +151,7 @@ public class EverestGoGoCommand {
                 } else {
                     bufferOut = bufferOut + "Success : Update of " + resource.getPath().getLast().toString() + " at " + resource.getPath().toString() + "\n";
                 }
-                bufferOut = bufferOut + "\nMETADATA : \n";
+                bufferOut = bufferOut + "METADATA : \n";
                 ResourceMetadata resourceMetadata = resource.getMetadata();
                 for (String currentString : resourceMetadata.keySet()) {
                     bufferOut = bufferOut + currentString + " : \"" + resourceMetadata.get(currentString) + "\"" + "\n";
@@ -192,7 +194,7 @@ public class EverestGoGoCommand {
     }
 
     @Descriptor("Assert property")
-    public void everestassert(@Descriptor("everestassert") String... handleId) throws ResourceNotFoundException, IllegalActionOnResourceException {
+    public void assertThat(@Descriptor("everestassert") String... handleId) throws ResourceNotFoundException, IllegalActionOnResourceException {
         String bufferOut = new String();
 
         try {
@@ -237,5 +239,145 @@ public class EverestGoGoCommand {
         System.out.println(bufferOut);
     }
 
+    @Descriptor("Get child/children of a resource")
+    public void child(@Descriptor("create") String... handleId) {
+        String bufferOut = new String();
+        try {
+            String path;
+            if (handleId.length == 0) {
+                bufferOut = bufferOut + "Error : Must have at least 1 argument \n";
+            } else if (handleId.length == 1) {
+                path = handleId[0];
+                List<Resource> resources = m_everestClient.read(path).children().retrieve();
 
+                if (!(resources == null)) {
+                    bufferOut = bufferOut + "List of children :\n";
+                    for (Resource current : resources) {
+                        bufferOut = bufferOut + "\nCHILD :\n";
+                        bufferOut = bufferOut + "Resource name \"" + current.getPath().getLast().toString() + "\"  at : \"" + current.getPath().toString() + "\"\n";
+
+                        ResourceMetadata resourceMetadata = current.getMetadata();
+                        if (!(resourceMetadata.isEmpty())) {
+                            bufferOut = bufferOut + "\nMETADATA : \n";
+                            for (String currentString : resourceMetadata.keySet()) {
+                                bufferOut = bufferOut + currentString + " : \"" + resourceMetadata.get(currentString) + "\"" + "\n";
+                            }
+                        } else {
+                            bufferOut = bufferOut + "\nNo metadata\n";
+                        }
+                    }
+                } else {
+                    bufferOut = bufferOut + "\nNo children\n";
+                }
+
+            } else {
+                path = handleId[0];
+                for (String currentString : handleId) {
+                    if (!(currentString.equalsIgnoreCase(handleId[0]))) {
+                        Resource resource = m_everestClient.read(path).child(currentString).retrieve();
+                        if (!(resource == null)) {
+                            bufferOut = bufferOut + "\nCHILD :\n";
+                            bufferOut = bufferOut + "Resource name \"" + resource.getPath().getLast().toString() + "\" at : \"" + resource.getPath().toString() + "\"\n";
+
+                            ResourceMetadata resourceMetadata = resource.getMetadata();
+                            if (!(resourceMetadata.isEmpty())) {
+                                bufferOut = bufferOut + "METADATA :\n";
+                                for (String currentMetatdata : resourceMetadata.keySet()) {
+                                    bufferOut = bufferOut + currentMetatdata + " : \"" + resourceMetadata.get(currentMetatdata) + "\"" + "\n";
+                                }
+                            } else {
+                                bufferOut = bufferOut + "No metadata\n";
+                            }
+
+                        } else {
+                            bufferOut = bufferOut + "\nNo child named : \"" + currentString + "\"\n";
+                        }
+                    }
+                }
+            }
+
+
+        } catch (Exception e) {
+            System.out.println(bufferOut);
+            e.printStackTrace();
+            bufferOut = null;
+        }
+        System.out.println(bufferOut);
+
+
+    }
+
+    @Descriptor("Get relation/realtions of a resource")
+    public void relation(@Descriptor("create") String... handleId) {
+        String bufferOut = new String();
+        try {
+            String path;
+            if (handleId.length == 0) {
+                bufferOut = bufferOut + "Error : Must have at least 1 argument \n";
+            } else if (handleId.length == 1) {
+                path = handleId[0];
+                List<Resource> resources = m_everestClient.read(path).relations().retrieve();
+
+                if (!(resources == null)) {
+                    bufferOut = bufferOut + "List of Relations :\n";
+                    for (Resource current : resources) {
+                        bufferOut = bufferOut + "\nRelation with :\n";
+                        if (current.getPath().toString().equalsIgnoreCase("/")) {
+                            bufferOut = bufferOut + "Resource name \"/\" at : " + current.getPath().toString() + "\n";
+                        } else {
+                            bufferOut = bufferOut + "Resource name \"" + current.getPath().getLast().toString() + "\" at : \"" + current.getPath().toString() + "\"\n";
+
+                        }
+                        ResourceMetadata resourceMetadata = current.getMetadata();
+                        if (!(resourceMetadata.isEmpty())) {
+                            bufferOut = bufferOut + "METADATA : \n";
+                            for (String currentString : resourceMetadata.keySet()) {
+                                bufferOut = bufferOut + currentString + " : \"" + resourceMetadata.get(currentString) + "\"" + "\n";
+                            }
+                        } else {
+                            bufferOut = bufferOut + "\nNo metadata\n";
+                        }
+                    }
+                } else {
+                    bufferOut = bufferOut + "\nNo relations\n";
+                }
+
+            } else {
+                path = handleId[0];
+                for (String currentString : handleId) {
+                    if (!(currentString.equalsIgnoreCase(handleId[0]))) {
+                        Resource resource = m_everestClient.read(path).relation(currentString).retrieve();
+                        if (!(resource == null)) {
+                            bufferOut = bufferOut + "\nRelation with:\n";
+                            if (resource.getPath().toString().equalsIgnoreCase("/")) {
+                                bufferOut = bufferOut + "Resource name \"/\" at : " + resource.getPath().toString() + "\n";
+                            } else {
+                                bufferOut = bufferOut + "Resource name \"" + resource.getPath().getLast().toString() + "\" at : \"" + resource.getPath().toString() + "\"\n";
+
+                            }
+                            ResourceMetadata resourceMetadata = resource.getMetadata();
+                            if (!(resourceMetadata.isEmpty())) {
+                                bufferOut = bufferOut + "METADATA : \n";
+                                for (String currentMetatdata : resourceMetadata.keySet()) {
+                                    bufferOut = bufferOut + currentMetatdata + " : \"" + resourceMetadata.get(currentMetatdata) + "\"" + "\n";
+                                }
+                            } else {
+                                bufferOut = bufferOut + "No metadata\n";
+                            }
+                        } else {
+                            bufferOut = bufferOut + "\nNo relation named :\"" + currentString + "\"\n";
+                        }
+                    }
+                }
+            }
+
+
+        } catch (Exception e) {
+            System.out.println(bufferOut);
+            e.printStackTrace();
+            bufferOut = null;
+        }
+        System.out.println(bufferOut);
+
+    }
 }

@@ -60,10 +60,8 @@ public class ResourceContainer {
      *
      * @return : A resource container which represent the parent resource
      * @throws ResourceNotFoundException
-     * @throws IllegalActionOnResourceException
-     *
      */
-    public synchronized ResourceContainer parent() throws ResourceNotFoundException, IllegalActionOnResourceException {
+    public synchronized ResourceContainer parent() throws ResourceNotFoundException {
         if (m_resource == null) {
             return this;
         }
@@ -132,12 +130,9 @@ public class ResourceContainer {
      * Get all the resource in relation with m_resource
      *
      * @return
-     * @throws RuntimeException          : is throw if the resource have no relation
      * @throws ResourceNotFoundException
-     * @throws IllegalActionOnResourceException
-     *
      */
-    public synchronized ListResourceContainer relations() throws RuntimeException, ResourceNotFoundException, IllegalActionOnResourceException {
+    public synchronized ListResourceContainer relations() throws ResourceNotFoundException {
         List<ResourceContainer> returnResources = new ArrayList<ResourceContainer>();
 
         if (m_resource == null) {
@@ -171,12 +166,9 @@ public class ResourceContainer {
      *
      * @param nameRelation : name of the relation
      * @return
-     * @throws RuntimeException          : throws if the relation not exist
      * @throws ResourceNotFoundException
-     * @throws IllegalActionOnResourceException
-     *
      */
-    public synchronized ResourceContainer relation(String nameRelation) throws RuntimeException, ResourceNotFoundException, IllegalActionOnResourceException {
+    public synchronized ResourceContainer relation(String nameRelation) throws ResourceNotFoundException {
 
         if (m_resource == null) {
             return this;
@@ -188,7 +180,8 @@ public class ResourceContainer {
                 return read(current.getHref().toString());
             }
         }
-        throw new RuntimeException();
+        m_resource = null;
+        return this;
     }
 
     /**
@@ -243,20 +236,22 @@ public class ResourceContainer {
     }
 
 
-    private ResourceContainer read(String path) throws ResourceNotFoundException, IllegalActionOnResourceException {
-
-        return new ResourceContainer(EverestClient.m_everest.process(new DefaultRequest(Action.READ, Path.from(path), null)));
+    private ResourceContainer read(String path) throws ResourceNotFoundException {
+        ResourceContainer resourceContainer = null;
+        try {
+            resourceContainer = new ResourceContainer(EverestClient.m_everest.process(new DefaultRequest(Action.READ, Path.from(path), null)));
+        } catch (IllegalActionOnResourceException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+        return resourceContainer;
     }
 
     /**
      * Define the next action to UPDATE send by the doIt method.Erase the parameters.
      *
      * @return
-     * @throws ResourceNotFoundException
-     * @throws IllegalActionOnResourceException
-     *
      */
-    public synchronized ResourceContainer update() throws ResourceNotFoundException, IllegalActionOnResourceException {
+    public synchronized ResourceContainer update() {
         m_currentAction = Action.UPDATE;
         m_currentParams.clear();
         return this;
@@ -266,11 +261,8 @@ public class ResourceContainer {
      * Define the next action to CREATE send by the doIt method.Erase the parameters.
      *
      * @return
-     * @throws ResourceNotFoundException
-     * @throws IllegalActionOnResourceException
-     *
      */
-    public synchronized ResourceContainer create() throws ResourceNotFoundException, IllegalActionOnResourceException {
+    public synchronized ResourceContainer create() {
         m_currentAction = Action.CREATE;
         m_currentParams.clear();
         return this;
@@ -280,11 +272,8 @@ public class ResourceContainer {
      * Define the next action to DELETE send by the doIt method.Erase the parameters.
      *
      * @return
-     * @throws ResourceNotFoundException
-     * @throws IllegalActionOnResourceException
-     *
      */
-    public synchronized ResourceContainer delete() throws ResourceNotFoundException, IllegalActionOnResourceException {
+    public synchronized ResourceContainer delete() {
         m_currentAction = Action.DELETE;
         m_currentParams.clear();
         return this;
@@ -295,9 +284,6 @@ public class ResourceContainer {
      * Define the parameters send by the doIt method. each called to with() put a new <key,value> in m_currentParams.
      *
      * @return
-     * @throws ResourceNotFoundException
-     * @throws IllegalActionOnResourceException
-     *
      */
     public synchronized ResourceContainer with(String key, Object value) {
         m_currentParams.put(key, value);
@@ -329,6 +315,7 @@ public class ResourceContainer {
             return this;
         }
 
-        throw new RuntimeException();
+        m_resource = null;
+        return this;
     }
 }

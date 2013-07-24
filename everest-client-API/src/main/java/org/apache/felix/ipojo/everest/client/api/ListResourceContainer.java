@@ -38,10 +38,8 @@ public class ListResourceContainer {
      *
      * @return
      * @throws ResourceNotFoundException
-     * @throws IllegalActionOnResourceException
-     *
      */
-    public synchronized ListResourceContainer parent() throws ResourceNotFoundException, IllegalActionOnResourceException {
+    public synchronized ListResourceContainer parent() throws ResourceNotFoundException {
 
         if (m_resourcesContainer == null) {
 
@@ -132,10 +130,8 @@ public class ListResourceContainer {
      *
      * @return
      * @throws ResourceNotFoundException
-     * @throws IllegalActionOnResourceException
-     *
      */
-    public synchronized ListResourceContainer relations() throws ResourceNotFoundException, IllegalActionOnResourceException {
+    public synchronized ListResourceContainer relations() throws ResourceNotFoundException {
         if (m_resourcesContainer == null) {
             return this;
         }
@@ -171,10 +167,8 @@ public class ListResourceContainer {
      * @param relationName : name of the relation
      * @return
      * @throws ResourceNotFoundException
-     * @throws IllegalActionOnResourceException
-     *
      */
-    public synchronized ListResourceContainer relation(String relationName) throws ResourceNotFoundException, IllegalActionOnResourceException {
+    public synchronized ListResourceContainer relation(String relationName) throws ResourceNotFoundException {
         if (m_resourcesContainer == null) {
             return this;
         }
@@ -285,11 +279,8 @@ public class ListResourceContainer {
      * Define the next action to UPDATE send by the doIt method.Erase the parameters.
      *
      * @return
-     * @throws ResourceNotFoundException
-     * @throws IllegalActionOnResourceException
-     *
      */
-    public synchronized ListResourceContainer update() throws ResourceNotFoundException, IllegalActionOnResourceException {
+    public synchronized ListResourceContainer update() {
         if (m_resourcesContainer == null) {
             return null;
         }
@@ -305,11 +296,8 @@ public class ListResourceContainer {
      * Define the next action to CREATE send by the doIt method.Erase the parameters.
      *
      * @return
-     * @throws ResourceNotFoundException
-     * @throws IllegalActionOnResourceException
-     *
      */
-    public synchronized ListResourceContainer create() throws ResourceNotFoundException, IllegalActionOnResourceException {
+    public synchronized ListResourceContainer create() {
 
         if (m_resourcesContainer == null) {
             return null;
@@ -324,11 +312,8 @@ public class ListResourceContainer {
      * Define the next action to DELETE send by the doIt method.Erase the parameters.
      *
      * @return
-     * @throws ResourceNotFoundException
-     * @throws IllegalActionOnResourceException
-     *
      */
-    public synchronized ListResourceContainer delete() throws ResourceNotFoundException, IllegalActionOnResourceException {
+    public synchronized ListResourceContainer delete() {
         if (m_resourcesContainer == null) {
             return null;
         }
@@ -343,9 +328,6 @@ public class ListResourceContainer {
      * Define the parameters send by the doIt method. each called to with() put a new <key,value> in m_currentParams.
      *
      * @return
-     * @throws ResourceNotFoundException
-     * @throws IllegalActionOnResourceException
-     *
      */
     public synchronized ListResourceContainer with(String key, Object value) {
         if (m_resourcesContainer == null) {
@@ -383,7 +365,7 @@ public class ListResourceContainer {
     }
 
 
-    public synchronized ListResourceContainer filter(ResourceFilter filter) throws RuntimeException {
+    public synchronized ListResourceContainer filter(ResourceFilter filter) {
         if (m_resourcesContainer == null) {
             return null;
         }
@@ -391,11 +373,8 @@ public class ListResourceContainer {
         List<ResourceContainer> returnResources = new ArrayList<ResourceContainer>();
 
         for (ResourceContainer current : m_resourcesContainer) {
-            try {
+            if (!(current.filter(filter) == null))
                 returnResources.add(current.filter(filter));
-            } catch (RuntimeException e) {
-                System.out.println(current.m_resource.getPath() + ":  filter not match");
-            }
         }
 
         if (!(returnResources.isEmpty())) {
