@@ -76,6 +76,19 @@ public class TestFunctionality extends CommonTest {
         System.out.println(resource.getPath());
         System.out.println(resource.getMetadata());
         assertThat(testAPI.read("/test/devices/3").retrieve("State Deactivated")).isEqualTo("FALSE");
+        resource = testAPI.read("/test/devices/3").update().with("STATE_DEACTIVATED", "FALSE").with("State Unknown", "TRUE").with("State Activated", "ACTIVATED").doIt().retrieve();
+        System.out.println(resource.getPath());
+        System.out.println(resource.getMetadata());
+        resource = testAPI.update().with("STATE_DEACTIVATED", "TRUE").with("State Unknown", "UNKNOWN").with("State Activated", "TRUE").doIt().retrieve();
+        System.out.println(resource.getPath());
+        System.out.println(resource.getMetadata());
+        assertThat(testAPI.read("/test/devices/3").retrieve("State Deactivated")).isEqualTo("TRUE");
+        assertThat(testAPI.read("/test/devices/3").retrieve("State Unknown")).isEqualTo("UNKNOWN");
+        assertThat(testAPI.read("/test/devices/3").retrieve("State Activated")).isEqualTo("TRUE");
+        resource = testAPI.update(resource).with("STATE_DEACTIVATED", "FALSE").with("State Unknown", "FALSE").with("State Activated", "FALSE").doIt().retrieve();
+        assertThat(testAPI.read("/test/devices/3").retrieve("State Deactivated")).isEqualTo("FALSE");
+        assertThat(testAPI.read("/test/devices/3").retrieve("State Unknown")).isEqualTo("FALSE");
+        assertThat(testAPI.read("/test/devices/3").retrieve("State Activated")).isEqualTo("FALSE");
     }
 
     @Test

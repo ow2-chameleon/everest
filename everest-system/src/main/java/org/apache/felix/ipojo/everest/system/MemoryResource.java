@@ -5,6 +5,7 @@ import org.apache.felix.ipojo.everest.impl.ImmutableResourceMetadata;
 import org.apache.felix.ipojo.everest.services.Path;
 import org.apache.felix.ipojo.everest.services.ResourceMetadata;
 
+import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 
@@ -41,6 +42,10 @@ public class MemoryResource extends DefaultReadOnlyResource {
         metadataBuilder.set("used-nonheap", m_memoryMXBean.getNonHeapMemoryUsage().getUsed());
         metadataBuilder.set("commited-nonheap", m_memoryMXBean.getNonHeapMemoryUsage().getCommitted());
         metadataBuilder.set("verbose", m_memoryMXBean.isVerbose());
+        File file = new File("/");
+        metadataBuilder.set("total-space", file.getTotalSpace());
+        metadataBuilder.set("free-space", file.getFreeSpace());
+        metadataBuilder.set("usable-space", file.getUsableSpace());
         return metadataBuilder.build();
     }
 }

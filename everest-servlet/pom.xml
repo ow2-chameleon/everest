@@ -32,7 +32,6 @@
             <artifactId>everest-core</artifactId>
             <version>${everestCoreVersion}</version>
         </dependency>
-
         <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.ipojo.annotations</artifactId>

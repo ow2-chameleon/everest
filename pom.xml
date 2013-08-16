@@ -31,7 +31,7 @@
         <everestClientApiVersion>1.0-SNAPSHOT</everestClientApiVersion>
         <osgiVersion>4.3.1</osgiVersion>
         <ipojoVersion>1.10.1</ipojoVersion>
-
+        <everestVfsVersion>1.0-SNAPSHOT</everestVfsVersion>
         <site.path>snapshot</site.path>
     </properties>
 
@@ -44,9 +44,12 @@
         <module>everest-it</module>
         <module>everest-system</module>
         <module>everest-casa</module>
+        <module>everest-vfs</module>
         <module>everest-client-API</module>
         <module>everest-gogo-command</module>
         <module>everest-distrib</module>
+        <module>everest-fs</module>
+
     </modules>
 
     <!-- TO BE REMOVED, when iPOJO 1.10.1 release is deployed on Maven central
