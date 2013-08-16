@@ -39,11 +39,11 @@ Here is a quick programmatic usage example:
   import org.osgi.framework.BundleContext;
   import org.osgi.framework.ServiceReference;
   
-  import org.apache.felix.ipojo.everest.services.EverestService;
-  import org.apache.felix.ipojo.everest.services.Resource;
-  import org.apache.felix.ipojo.everest.impl.DefaultRequest;
-  import org.apache.felix.ipojo.everest.services.Action;
-  import org.apache.felix.ipojo.everest.services.Path;
+  import org.ow2.chameleon.everest.services.EverestService;
+  import org.ow2.chameleon.everest.services.Resource;
+  import org.ow2.chameleon.everest.impl.DefaultRequest;
+  import org.ow2.chameleon.everest.services.Action;
+  import org.ow2.chameleon.everest.services.Path;
   
   public class EverestIpojoExample {
     

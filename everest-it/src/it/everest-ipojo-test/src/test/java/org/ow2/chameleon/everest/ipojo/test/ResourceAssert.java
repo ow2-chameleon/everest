@@ -1,0 +1,67 @@
+package org.ow2.chameleon.everest.ipojo.test;
+
+import org.ow2.chameleon.everest.services.Path;
+import org.ow2.chameleon.everest.services.Relation;
+import org.ow2.chameleon.everest.services.RelationFilter;
+import org.ow2.chameleon.everest.services.Resource;
+import org.fest.assertions.GenericAssert;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.fest.assertions.Assertions.assertThat;
+
+/**
+ * Fluent assertions for everest resources.
+ */
+public class ResourceAssert extends GenericAssert<ResourceAssert, Resource> {
+
+    protected ResourceAssert(Resource actual) {
+        super(ResourceAssert.class, actual);
+    }
+
+    public ResourceAssert hasPath(Path path) {
+        assertThat((Object) actual.getPath()).isEqualTo(path);
+        return this;
+    }
+
+    public ResourceAssert hasPath(String path) {
+        return hasPath(Path.from(path));
+    }
+
+    public ResourceAssert hasCanonicalPath(Path path) {
+        assertThat((Object) actual.getCanonicalPath()).isEqualTo(path);
+        return this;
+    }
+
+    public ResourceAssert hasCanonicalPath(String path) {
+        return hasCanonicalPath(Path.from(path));
+    }
+
+    public ResourceAssert hasResource(Resource resource) {
+        assertThat(actual.getResources()).contains(resource);
+        return this;
+    }
+
+    public ResourceAssert hasResource(Path resourcePath) {
+        assertThat(actual.getResource(resourcePath.toString())).isNotNull();
+        return this;
+    }
+
+    public ResourceAssert hasRelation(RelationFilter filter) {
+        List<Relation> relations = new ArrayList<Relation>();
+
+        for (Relation rel : actual.getRelations()) {
+            if (filter.accept(rel)) {
+                relations.add(rel);
+            }
+        }
+        assertThat(relations).isNotEmpty();
+        return this;
+    }
+
+    public static ResourceAssert assertThatResource(Resource r) {
+        return new ResourceAssert(r);
+    }
+
+}

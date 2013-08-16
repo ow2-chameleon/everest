@@ -1,20 +1,58 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright 2013 OW2 Chameleon
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~  http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.apache.felix.ipojo</groupId>
-    <artifactId>everest-project</artifactId>
+    <parent>
+        <groupId>org.ow2.chameleon</groupId>
+        <artifactId>parent-pom</artifactId>
+        <version>0.3.2</version>
+    </parent>
+
+    <groupId>org.ow2.chameleon.everest</groupId>
+    <artifactId>everest</artifactId>
     <version>1.0-SNAPSHOT</version>
+
+    <name>OW2 Chameleon - Everest</name>
     <packaging>pom</packaging>
 
-    <url>https://github.com/bourretp/everest</url>
+    <description>
+
+    </description>
+    <scm>
+        <connection>scm:git:git@github.com:ow2-chameleon/${project.artifactId}.git</connection>
+        <url>https://github.com/ow2-chameleon/${project.artifactId}</url>
+        <developerConnection>scm:git:git@github.com:ow2-chameleon/${project.artifactId}.git</developerConnection>
+    </scm>
+    <issueManagement>
+        <system>github</system>
+        <url>https://github.com/ow2-chameleon/${project.artifactId}/issues</url>
+    </issueManagement>
+    <url>https://github.com/ow2-chameleon/${project.artifactId}</url>
 
     <properties>
+        <site.path>snapshot</site.path>
+        <lastReleasedVersion>N/A</lastReleasedVersion>
+
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <!-- Defined here: 
+        <!-- Defined here:
               * the latest stable versions of everest sub-projects
               * the used version of OSGi & iPOJO
              This properties are used in the generated site.
@@ -32,7 +70,6 @@
         <osgiVersion>4.3.1</osgiVersion>
         <ipojoVersion>1.10.1</ipojoVersion>
         <everestVfsVersion>1.0-SNAPSHOT</everestVfsVersion>
-        <site.path>snapshot</site.path>
     </properties>
 
     <modules>
@@ -50,24 +87,6 @@
         <module>everest-fs</module>
 
     </modules>
-
-    <!-- TO BE REMOVED, when iPOJO 1.10.1 release is deployed on Maven central
-    <repositories>
-        <repository>
-            <id>orgapachefelix-021</id>
-            <name>Apache Felix staging repository #021</name>
-            <url>https://repository.apache.org/content/repositories/orgapachefelix-021</url>
-        </repository>
-    </repositories>  -->
-
-
-    <pluginRepositories>
-        <pluginRepository>
-            <id>orgapachefelix-021</id>
-            <name>Apache Felix staging repository #021</name>
-            <url>https://repository.apache.org/content/repositories/orgapachefelix-021</url>
-        </pluginRepository>
-    </pluginRepositories>
 
     <dependencyManagement>
         <dependencies>

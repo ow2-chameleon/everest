@@ -45,7 +45,7 @@ You can reconfigure dynamically service dependencies by sending an **UPDATE** re
 Request:
 
 ```
-UPDATE /ipojo/instance/org.apache.felix.ipojo.everest.core.Everest-0/dependency/RootResource
+UPDATE /ipojo/instance/org.ow2.chameleon.everest.core.Everest-0/dependency/RootResource
 - filter="(type=ipojo)"
 ```
 
@@ -62,7 +62,7 @@ Result:
 **WARNING**: Reconfiguring the *isAggregate* and/or *isOptional* flags may have very strange side effects on the dependency and containing component instance. Prepare for unforeseen consequences...
 
 ## Example
-READ /ipojo/instance/org.apache.felix.ipojo.everest.core.Everest-0/dependency/RootResource
+READ /ipojo/instance/org.ow2.chameleon.everest.core.Everest-0/dependency/RootResource
 
 ```json
 {

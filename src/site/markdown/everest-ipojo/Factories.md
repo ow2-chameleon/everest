@@ -70,7 +70,7 @@ READ /ipojo/factory/Foo/1.2.3.foo
 {
   "name":"Foo",
   "version":"1.2.3.foo",
-  "className":"org.apache.felix.ipojo.everest.ipojo.test.b1.FooProviderImpl",
+  "className":"org.ow2.chameleon.everest.ipojo.test.b1.FooProviderImpl",
   "state":"valid",
   "missingHandlers":[],
   "__relations": {

@@ -1,6 +1,6 @@
 <ipojo>
     <!-- Instance declarations used to test InstanceDeclarationResource's -->
-    <instance component="org.apache.felix.ipojo.everest.ipojo.test.b1.BarProviderImpl" version="2.0.0">
+    <instance component="org.ow2.chameleon.everest.ipojo.test.b1.BarProviderImpl" version="2.0.0">
         <property name="barPrefix" value="__declared"/>
         <property name="barSuffix" value="bar2__"/>
     </instance>

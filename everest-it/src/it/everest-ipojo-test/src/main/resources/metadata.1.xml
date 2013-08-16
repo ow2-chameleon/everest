@@ -4,7 +4,7 @@
         <property name="fooPrefix" value="__declared"/>
         <property name="fooCounter" value="123"/>
     </instance>
-    <instance component="org.apache.felix.ipojo.everest.ipojo.test.b1.BarProviderImpl">
+    <instance component="org.ow2.chameleon.everest.ipojo.test.b1.BarProviderImpl">
         <property name="barPrefix" value="__declared"/>
         <property name="barSuffix" value="barNull__"/>
     </instance>

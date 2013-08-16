@@ -38,7 +38,7 @@ You can reconfigure dynamically service providings by sending an **UPDATE** requ
 Request:
 
 ```
-UPDATE /ipojo/instance/org.apache.felix.ipojo.everest.core.Everest-0/providing/0
+UPDATE /ipojo/instance/org.ow2.chameleon.everest.core.Everest-0/providing/0
 - state="unregistered"
 ```
 
@@ -56,14 +56,14 @@ Result:
 **NOTE**: The above example is a perfect illustration of a *BAD* example. If you are wondering why: it is exactly as cutting off the branch you're sitting on. Prepare for predictable resource damages.
 
 ## Example
-READ /ipojo/instance/org.apache.felix.ipojo.everest.core.Everest-0/providing/0
+READ /ipojo/instance/org.ow2.chameleon.everest.core.Everest-0/providing/0
 
 ```json
 {
   "state":"REGISTERED",
   "properties": {
-    "factory.name":"org.apache.felix.ipojo.everest.core.Everest",
-    "instance.name":"org.apache.felix.ipojo.everest.core.Everest-0"
+    "factory.name":"org.ow2.chameleon.everest.core.Everest",
+    "instance.name":"org.ow2.chameleon.everest.core.Everest-0"
   },
   "__relations": {
     "service": {

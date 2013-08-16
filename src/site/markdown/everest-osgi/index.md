@@ -234,7 +234,7 @@ This resource is **observable**. It deliveres events for the following:
 ### Adaptations
 
 - **org.osgi.framework.Bundle**: Bundle object
-- **org.apache.felix.ipojo.everest.osgi.bundle.BundleResource**: BundleResource class that is used to represent this bundle
+- **org.ow2.chameleon.everest.osgi.bundle.BundleResource**: BundleResource class that is used to represent this bundle
 
 [Scroll To Top ↑](#osgi)
 
@@ -290,7 +290,7 @@ All capability attributes and directives
 
 ### Adaptations
 - **org.osgi.wiring.framework.BundleCapability**: BundleCapability object
-- **org.apache.felix.ipojo.everest.osgi.bundle.BundleCapabilityResource**: BundleCapabilityResource class used to represent this capability  
+- **org.ow2.chameleon.everest.osgi.bundle.BundleCapabilityResource**: BundleCapabilityResource class used to represent this capability
 
 [Scroll To Top ↑](#osgi)
 
@@ -319,7 +319,7 @@ All requirement attributes and directives
 
 ### Adaptations
 - **org.osgi.wiring.framework.BundleRequirement**: BundleRequirement object
-- **org.apache.felix.ipojo.everest.osgi.bundle.BundleRequirementResource**: BundleRequirementResource class used to represent this requirement  
+- **org.ow2.chameleon.everest.osgi.bundle.BundleRequirementResource**: BundleRequirementResource class used to represent this requirement
 
 [Scroll To Top ↑](#osgi)
 
@@ -406,7 +406,7 @@ This resource is observable. It delivers events for the following:
 
 ### Adaptations
 - **org.osgi.wiring.framework.BundleCapability**: BundleCapability object
-- **org.apache.felix.ipojo.everest.osgi.package.PackageResource**: PackageResource class used to represent this package 
+- **org.ow2.chameleon.everest.osgi.package.PackageResource**: PackageResource class used to represent this package
 
 [Scroll To Top ↑](#osgi)   
 
@@ -438,7 +438,7 @@ All service properties
 
 ### Adaptations
 * **org.osgi.framework.ServiceReference**: ServiceReference object of this service
-* **org.apache.felix.ipojo.everest.osgi.service.ServiceResource**: ServiceResource class used to represent this service
+* **org.ow2.chameleon.everest.osgi.service.ServiceResource**: ServiceResource class used to represent this service
 
 [Scroll To Top ↑](#osgi)   
 
@@ -502,7 +502,7 @@ This resource is **observable**. It deliveres events for the following:
 
 ### Adaptations
 * **org.osgi.service.cm.Configuration**: Configuration object
-* **org.apache.felix.ipojo.everest.osgi.config.ConfigurationResource**: ConfigurationResource class used to represent this resource
+* **org.ow2.chameleon.everest.osgi.config.ConfigurationResource**: ConfigurationResource class used to represent this resource
 
 [Scroll To Top ↑](#osgi)  
  
@@ -535,7 +535,7 @@ This resource is **not observable**.
 
 ### Adaptations
 * **org.osgi.service.log.LogEntry**: LogEntry object
-* **org.apache.felix.ipojo.everest.osgi.log.LogEntryResource**: LogEntryResource class used to represent this resource
+* **org.ow2.chameleon.everest.osgi.log.LogEntryResource**: LogEntryResource class used to represent this resource
 
 [Scroll To Top ↑](#osgi)  
  

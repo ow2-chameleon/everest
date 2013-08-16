@@ -42,13 +42,13 @@ READ /ipojo/declaration/type/Foo/1.2.3.foo
   "componentMetadata":
     "component name=\"Foo\"
     version=\"1.2.3.foo\"
-    classname=\"org.apache.felix.ipojo.everest.ipojo.test.b1.FooProviderImpl\"\n\t
-    provides specifications=\"{org.apache.felix.ipojo.everest.ipojo.test.b1.FooService}\"\n\t\t
+    classname=\"org.ow2.chameleon.everest.ipojo.test.b1.FooProviderImpl\"\n\t
+    provides specifications=\"{org.ow2.chameleon.everest.ipojo.test.b1.FooService}\"\n\t\t
     property name=\"fooCounter\" field=\"fooCounter\" value=\"0\" type=\"int\"\n\t
     properties\n\t\t
     property name=\"fooPrefix\" field=\"fooPrefix\" value=\"\" type=\"java.lang.String\"\n\t
     manipulation\n\t\t
-    interface name=\"org.apache.felix.ipojo.everest.ipojo.test.b1.FooService\"\n\t\t
+    interface name=\"org.ow2.chameleon.everest.ipojo.test.b1.FooService\"\n\t\t
     field name=\"fooCounter\" type=\"int\"\n\t\t
     field name=\"fooPrefix\" type=\"java.lang.String\"\n\t\t
     method name=\"$init\"\n\t\t
