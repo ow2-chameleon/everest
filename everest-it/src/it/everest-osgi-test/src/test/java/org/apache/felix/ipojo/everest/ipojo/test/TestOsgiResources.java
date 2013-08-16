@@ -127,7 +127,7 @@ public class TestOsgiResources extends EverestOsgiTest {
                     Resource resource = get(capsReqs.getHref().toString());
                     assertThat(resource).isNotNull();
                     BundleCapabilityResource bundleCapabilityResource = resource.adaptTo(BundleCapabilityResource.class);
-                    BundleRequirementResource bundleRequirementResource = resource.adaptTo(BundleRequirementResource.class
+                    BundleRequirementResource bundleRequirementResource = resource.adaptTo(BundleRequirementResource.class);
 
                     if (bundleCapabilityResource != null) { // then it is a capability
                         BundleCapability capability = bundleCapabilityResource.adaptTo(BundleCapability.class);
