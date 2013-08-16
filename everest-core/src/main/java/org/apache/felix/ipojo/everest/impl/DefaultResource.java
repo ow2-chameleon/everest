@@ -1,13 +1,9 @@
 package org.apache.felix.ipojo.everest.impl;
 
-import org.apache.felix.ipojo.everest.core.Everest;
 import org.apache.felix.ipojo.everest.filters.ResourceFilters;
 import org.apache.felix.ipojo.everest.services.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import static org.apache.felix.ipojo.everest.core.Everest.DEBUG_REQUEST;
 
@@ -69,10 +65,44 @@ public class DefaultResource implements Resource {
     }
 
     public List<Relation> getRelations() {
-        if (relations == null) {
-            return Collections.emptyList();
+        Set<Relation> setRelation = new HashSet<Relation>();
+        try {
+            setRelation.add(new DefaultRelation(this.getCanonicalPath(), Action.READ, "Self", "Return the current resource \"" + this.getPath().getLast() + "\""));
+        } catch (IndexOutOfBoundsException e) {
+            setRelation.add(new DefaultRelation(this.getCanonicalPath(), Action.READ, "Self", "Return the current resource \"/"));
         }
-        return new ArrayList<Relation>(Arrays.asList(relations));
+
+        if (!(this.getPath().toString().equalsIgnoreCase("/")))
+            try {
+                setRelation.add(new DefaultRelation(this.getPath().getParent(), Action.READ, "Parent", "Return the parent resource \"" + this.getPath().getParent().getLast() + "\""));
+            } catch (IndexOutOfBoundsException e) {
+                setRelation.add(new DefaultRelation(this.getPath().getParent(), Action.READ, "Parent", "Return the parent resource \"/\""));
+
+            }
+
+        if (relations != null && ((getResources() != null) || !(getResources().isEmpty()))) {
+            for (Relation relation : relations) {
+                setRelation.add(relation);
+            }
+            for (Resource resource : getResources()) {
+                Relation currentRelation = new DefaultRelation(resource.getPath(), Action.READ, "Child:" + resource.getPath().getLast(), "Get the child  \"" + resource.getPath().getLast() + "\"");
+                setRelation.add(currentRelation);
+            }
+            return new ArrayList<Relation>(setRelation);
+        } else if (relations == null && ((getResources() != null) || !(getResources().isEmpty()))) {
+            for (Resource resource : getResources()) {
+                Relation currentRelation = new DefaultRelation(resource.getPath(), Action.READ, "Child:" + resource.getPath().getLast(), "Get the child  \"" + resource.getPath().getLast() + "\"");
+                setRelation.add(currentRelation);
+            }
+            return new ArrayList<Relation>(setRelation);
+        } else if (relations != null && ((getResources() == null) || (getResources().isEmpty()))) {
+            for (Relation relation : relations) {
+                setRelation.add(relation);
+            }
+            return new ArrayList<Relation>(setRelation);
+        } else {
+            return new ArrayList<Relation>(setRelation);
+        }
     }
 
     public DefaultResource setRelations(List<Relation> relations) {
@@ -140,8 +170,6 @@ public class DefaultResource implements Resource {
                     getCanonicalPath());
             //End Trace
         }
-
-
 
 
         // 1) Substract our path from the request path.
