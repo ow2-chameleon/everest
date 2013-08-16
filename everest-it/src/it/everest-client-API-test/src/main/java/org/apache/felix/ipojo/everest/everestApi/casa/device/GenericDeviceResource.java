@@ -75,6 +75,10 @@ public class GenericDeviceResource extends AbstractResourceCollection {
                     setRelations(relations);
 
                     ZoneManager.getInstance().setChildLocation(m_genericDevice.DEVICE_SERIAL_NUMBER, newMap.get(key).toString());
+                } else if (key.contentEquals("State Unknown")) {
+                    m_genericDevice.setSTATE_UNKNOWN(newMap.get(key).toString());
+                } else if (key.contentEquals("State Activated")) {
+                    m_genericDevice.setSTATE_ACTIVATED(newMap.get(key).toString());
                 }
             }
         }
