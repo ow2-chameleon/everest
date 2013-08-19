@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package org.apache.ipojo.everest.fileSystem;/*
+package org.ow2.chameleon.everest.fileSystem;/*
  * User: Colin
  * Date: 12/08/13
  * Time: 13:15

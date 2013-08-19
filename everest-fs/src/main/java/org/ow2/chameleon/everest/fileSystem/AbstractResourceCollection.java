@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package org.apache.ipojo.everest.fileSystem;
+package org.ow2.chameleon.everest.fileSystem;
 
 
 import org.ow2.chameleon.everest.impl.DefaultReadOnlyResource;
