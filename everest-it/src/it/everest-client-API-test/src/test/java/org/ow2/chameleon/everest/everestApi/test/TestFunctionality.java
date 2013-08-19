@@ -1,6 +1,7 @@
 package org.ow2.chameleon.everest.everestApi.test;
 
 import org.ow2.chameleon.everest.client.api.EverestClient;
+import org.ow2.chameleon.everest.services.Action;
 import org.ow2.chameleon.everest.services.IllegalActionOnResourceException;
 import org.ow2.chameleon.everest.services.Resource;
 import org.ow2.chameleon.everest.services.ResourceNotFoundException;
@@ -8,6 +9,7 @@ import org.junit.Test;
 import org.ops4j.pax.exam.spi.reactors.ExamReactorStrategy;
 import org.ops4j.pax.exam.spi.reactors.PerMethod;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.fest.assertions.Assertions.assertThat;
@@ -36,6 +38,12 @@ public class TestFunctionality extends CommonTest {
         Resource resource = testAPI.read("/test/devices").retrieve();
 
         assertThat(testAPI.create(resource).with("serialNumber", "1101").doIt().retrieve("Serial Number")).isEqualTo("1101");
+
+        try{
+            testAPI.read("/test").children().create().with("serialNumber", "2000").doIt().retrieve("Serial Number");
+        } catch (IllegalActionOnResourceException e){
+            assertThat(e.getResource()).isEqualTo(testAPI.read("/test/person").retrieve());
+        }
     }
 
     @Test
@@ -56,7 +64,27 @@ public class TestFunctionality extends CommonTest {
             System.out.println(current.getPath().getLast());
             System.out.println(current.getPath());
         }
+        Resource resource = testAPI.read("/test/devices").child("1").retrieve();
 
+        resourceList = testAPI.read("/test").children().child("room1").retrieve();
+
+
+        List<String> temp = new ArrayList<String>();
+        temp = testAPI.read("/test").children().child("room1").retrieve("Name");
+        assertThat(temp.get(0)).isEqualTo("room1");
+
+        temp = testAPI.read("/test").children().child("room1").retrieve("Name",String.class);
+        assertThat(temp.get(0)).isEqualTo("room1");
+
+        assertThat(resourceList.size()).isEqualTo(1);
+        resourceList = testAPI.read("/test").children().child("device1").retrieve();
+        assertThat(resourceList).isEqualTo(null);
+
+        resourceList = testAPI.read("/test/devices/1").children().retrieve();
+        assertThat(resourceList).isEqualTo(null);
+
+        resourceList = testAPI.read("/test/devices/1").children().child("device1").retrieve();
+        assertThat(resourceList).isEqualTo(null);
     }
 
 
@@ -89,6 +117,9 @@ public class TestFunctionality extends CommonTest {
         assertThat(testAPI.read("/test/devices/3").retrieve("State Deactivated")).isEqualTo("FALSE");
         assertThat(testAPI.read("/test/devices/3").retrieve("State Unknown")).isEqualTo("FALSE");
         assertThat(testAPI.read("/test/devices/3").retrieve("State Activated")).isEqualTo("FALSE");
+
+        testAPI.update("/test/devices/3").with("STATE_DEACTIVATED", "TRUE").doIt();
+        assertThat(testAPI.read("/test/devices/3").retrieve("State Deactivated")).isEqualTo("TRUE");
     }
 
     @Test
@@ -101,13 +132,24 @@ public class TestFunctionality extends CommonTest {
 
         assertThat(testAPI.read("/test/zone").child("room1").retrieve()).isEqualTo(null);
 
-
+        testAPI.delete(testAPI.read("/test/zone/room2").retrieve()).doIt();
+        assertThat(testAPI.read("/test/zone").child("room2").retrieve()).isEqualTo(null);
         testAPI.read("/test/zone").children().delete().doIt();
 
 
         assertThat(testAPI.read("/test/zone").children().retrieve()).isEqualTo(null);
 
     }
+
+    @Test
+    public void testDeleteClient() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        System.out.println("TEST DELETE");
+        EverestClient testAPI = new EverestClient(everest);
+
+        testAPI.delete("/test/zone/room2").doIt();
+        assertThat(testAPI.read("/test/zone").child("room2").retrieve()).isEqualTo(null);
+    }
+
 
     @Test
     public void testRelation() throws ResourceNotFoundException, IllegalActionOnResourceException {
@@ -129,9 +171,9 @@ public class TestFunctionality extends CommonTest {
         testAPI.read("/test/devices");
 
         listResource = testAPI.relations().retrieve();
-        for (Resource current : listResource) {
-            System.out.println(current.getPath().getLast());
-        }
+        listResource = testAPI.read("/test").children().relation("create").retrieve();
+
+        assertThat(listResource.size()).isEqualTo(2);
 
     }
 
@@ -157,4 +199,32 @@ public class TestFunctionality extends CommonTest {
         }
     }
 
-}
+    @Test
+    public void testAssertResource() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        EverestClient testAPI = new EverestClient(everest);
+
+        assertThat(testAPI.assertThat(testAPI.read("/test/zone").retrieve()).exist()).isEqualTo(true);
+
+        assertThat(testAPI.assertThat(testAPI.read("/test/zone").retrieve()).isEqualTo(testAPI.read("/test/zone").retrieve())).isEqualTo(true);
+        assertThat(testAPI.assertThat(testAPI.read("/test/zone").retrieve()).isEqualTo(testAPI.read("/test/zone/room1").retrieve())).isEqualTo(false);
+
+        assertThat(testAPI.assertThat(testAPI.read("/test/zone").retrieve("Name")).isEqualTo("zone")).isEqualTo(true);
+        assertThat(testAPI.assertThat(testAPI.read("/test/zone").retrieve("Name")).isEqualTo("canard")).isEqualTo(false);
+    }
+
+    @Test
+    public void testGetter() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        EverestClient testAPI = new EverestClient(everest);
+
+        testAPI.read("/test/devices").create();
+        assertThat( testAPI.read("/test/devices").getM_currentAction()).isEqualTo(Action.READ);
+        assertThat( testAPI.read("/test/devices").create().getM_currentAction()).isEqualTo(Action.CREATE);
+
+        assertThat( testAPI.read("/test/devices").with("Serial Number","1010").getM_currentParams().containsKey("Serial Number")).isEqualTo(true);
+        assertThat( testAPI.read("/test/devices").with("Serial Number","1010").getM_currentParams().get("Serial Number")).isEqualTo("1010");
+
+    }
+
+
+
+    }

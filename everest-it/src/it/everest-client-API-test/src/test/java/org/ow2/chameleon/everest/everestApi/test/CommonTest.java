@@ -32,7 +32,8 @@ public class CommonTest extends BaseTest {
                 // Fest assert JARs wrapped as bundles
                 wrappedBundle(mavenBundle("org.easytesting", "fest-util").versionAsInProject()),
                 wrappedBundle(mavenBundle("org.easytesting", "fest-assert").versionAsInProject()),
-                mavenBundle("org.apache.felix", "org.apache.felix.eventadmin").versionAsInProject()
+                mavenBundle("org.apache.felix", "org.apache.felix.eventadmin").versionAsInProject(),
+                bootDelegationPackage("com.intellij.rt.coverage.data")
         );
     }
 

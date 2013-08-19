@@ -33,12 +33,6 @@ public class ListResourceContainer {
      */
     List<ResourceContainer> m_resourcesContainer = new ArrayList<ResourceContainer>();
 
-    private ResourceContainer read(String path) throws ResourceNotFoundException, IllegalActionOnResourceException {
-
-        return new ResourceContainer(EverestClient.m_everest.process(new DefaultRequest(Action.READ, Path.from(path), null)));
-
-    }
-
     public ListResourceContainer(ResourceContainer resourceContainer) {
         m_resourcesContainer.add(resourceContainer);
     }
@@ -125,12 +119,15 @@ public class ListResourceContainer {
         List<ResourceContainer> returnResources = new ArrayList<ResourceContainer>();
 
         for (ResourceContainer currentResourceContainer : m_resourcesContainer) {
-            if (currentResourceContainer.child(name) == null) {
-                returnResources.add(currentResourceContainer.child(name));
+            ResourceContainer temp = currentResourceContainer.child(name);
+            if ( temp.m_resource != null) {
+                ResourceContainer temp1;
+                temp1 = new ResourceContainer(temp.m_resource);
+               returnResources.add(temp);
             }
         }
         if (!(returnResources.isEmpty())) {
-            m_resourcesContainer = returnResources;
+           m_resourcesContainer = returnResources;
             return this;
         }
 
@@ -222,8 +219,9 @@ public class ListResourceContainer {
         List<String> returnList = new ArrayList<String>();
 
         for (ResourceContainer current : m_resourcesContainer) {
-            if (current.retrieve(metadataId) != null) {
-                returnList.add(current.retrieve(metadataId));
+           if (current.retrieve(metadataId) != null) {
+               System.out.println(current.retrieve().getMetadata());
+               returnList.add(current.retrieve(metadataId));
             }
         }
 
