@@ -1,11 +1,11 @@
-package org.ow2.chameleon.everest.everestApi.casa;
+package org.ow2.chameleon.everest.client.casaTest;
 
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
-import org.ow2.chameleon.everest.everestApi.casa.device.GenericDeviceManager;
-import org.ow2.chameleon.everest.everestApi.casa.person.PersonManager;
-import org.ow2.chameleon.everest.everestApi.casa.zone.ZoneManager;
+import org.ow2.chameleon.everest.client.casaTest.device.GenericDeviceManager;
+import org.ow2.chameleon.everest.client.casaTest.person.PersonManager;
+import org.ow2.chameleon.everest.client.casaTest.zone.ZoneManager;
 import org.ow2.chameleon.everest.impl.ImmutableResourceMetadata;
 import org.ow2.chameleon.everest.services.Path;
 import org.ow2.chameleon.everest.services.Resource;

@@ -1,4 +1,4 @@
-package org.ow2.chameleon.everest.everestApi.test;
+package org.ow2.everest.client.test;
 
 
 import org.ow2.chameleon.everest.services.*;
@@ -28,8 +28,7 @@ public class CommonTest extends BaseTest {
         return options(  // everest bundles
                 mavenBundle("org.ow2.chameleon.everest", "everest-core").versionAsInProject(),
                 mavenBundle("org.ow2.chameleon.everest", "everest-system").versionAsInProject(),
-                mavenBundle("org.ow2.chameleon.everest", "everest-client-API").versionAsInProject(),
-                // Fest assert JARs wrapped as bundles
+            // Fest assert JARs wrapped as bundles
                 wrappedBundle(mavenBundle("org.easytesting", "fest-util").versionAsInProject()),
                 wrappedBundle(mavenBundle("org.easytesting", "fest-assert").versionAsInProject()),
                 mavenBundle("org.apache.felix", "org.apache.felix.eventadmin").versionAsInProject(),

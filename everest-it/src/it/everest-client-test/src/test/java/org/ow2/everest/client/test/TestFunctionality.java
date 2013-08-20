@@ -1,6 +1,6 @@
-package org.ow2.chameleon.everest.everestApi.test;
+package org.ow2.everest.client.test;
 
-import org.ow2.chameleon.everest.client.api.EverestClient;
+import org.ow2.chameleon.everest.client.EverestClient;
 import org.ow2.chameleon.everest.services.Action;
 import org.ow2.chameleon.everest.services.IllegalActionOnResourceException;
 import org.ow2.chameleon.everest.services.Resource;
@@ -17,6 +17,14 @@ import static org.fest.assertions.Assertions.assertThat;
 @ExamReactorStrategy(PerMethod.class)
 public class TestFunctionality extends CommonTest {
 
+
+    @Test
+    public void testBundleContext() throws ResourceNotFoundException, IllegalActionOnResourceException {
+
+        EverestClient testAPI = new EverestClient(getContext());
+        assertThat(testAPI.read("/test").retrieve("Name")).isEqualTo("test");
+
+    }
 
     @Test
     public void testRead() throws ResourceNotFoundException, IllegalActionOnResourceException {
