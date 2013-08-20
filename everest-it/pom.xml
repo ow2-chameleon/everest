@@ -35,6 +35,11 @@
         <url.version>1.5.1</url.version>
     </properties>
 
+    <modules>
+        <module>src/it/everest-fileSystem-test</module>
+        <module>src/it/everest-osgi-test</module>
+        <module>src/it/everest-ipojo-test</module>
+    </modules>
     <dependencies>
 
         <dependency>
@@ -176,6 +181,11 @@
         <dependency>
             <groupId>org.ow2.chameleon.everest</groupId>
             <artifactId>everest-ipojo</artifactId>
+            <version>${everestIpojoVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.ow2.chameleon.everest</groupId>
+            <artifactId>everest-fs</artifactId>
             <version>${everestIpojoVersion}</version>
         </dependency>
         <dependency>
