@@ -11,7 +11,7 @@
         <relativePath>../../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>everest-client-API-test</artifactId>
+    <artifactId>everest-client-test</artifactId>
 
 
 </project>

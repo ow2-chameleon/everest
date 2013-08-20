@@ -34,12 +34,6 @@
         <exam.version>3.0.1</exam.version>
         <url.version>1.5.1</url.version>
     </properties>
-
-    <modules>
-        <module>src/it/everest-fileSystem-test</module>
-        <module>src/it/everest-osgi-test</module>
-        <module>src/it/everest-ipojo-test</module>
-    </modules>
     <dependencies>
 
         <dependency>
@@ -208,13 +202,6 @@
             <groupId>org.easytesting</groupId>
             <artifactId>fest-assert</artifactId>
             <version>1.4</version>
-        </dependency>
-
-
-        <dependency>
-            <groupId>org.ow2.chameleon.everest</groupId>
-            <artifactId>everest-client-API</artifactId>
-            <version>${everestClientApiVersion}</version>
         </dependency>
 
     </dependencies>

@@ -45,13 +45,6 @@
             <version>${everestCoreVersion}</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.ow2.chameleon.everest</groupId>
-            <artifactId>everest-client-API</artifactId>
-            <version>${everestClientApiVersion}</version>
-        </dependency>
-
-
     </dependencies>
 
     <!-- Build -->

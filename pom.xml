@@ -82,7 +82,6 @@
         <module>everest-system</module>
         <module>everest-casa</module>
         <module>everest-fs</module>
-        <module>everest-client-API</module>
         <module>everest-gogo-command</module>
         <module>everest-distrib</module>
     </modules>
