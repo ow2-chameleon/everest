@@ -34,7 +34,6 @@
         <exam.version>3.0.1</exam.version>
         <url.version>1.5.1</url.version>
     </properties>
-
     <dependencies>
 
         <dependency>
@@ -180,6 +179,11 @@
         </dependency>
         <dependency>
             <groupId>org.ow2.chameleon.everest</groupId>
+            <artifactId>everest-fs</artifactId>
+            <version>${everestIpojoVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.ow2.chameleon.everest</groupId>
             <artifactId>everest-osgi</artifactId>
             <version>${everestOsgiVersion}</version>
         </dependency>
@@ -198,13 +202,6 @@
             <groupId>org.easytesting</groupId>
             <artifactId>fest-assert</artifactId>
             <version>1.4</version>
-        </dependency>
-
-
-        <dependency>
-            <groupId>org.ow2.chameleon.everest</groupId>
-            <artifactId>everest-client-API</artifactId>
-            <version>${everestClientApiVersion}</version>
         </dependency>
 
     </dependencies>
