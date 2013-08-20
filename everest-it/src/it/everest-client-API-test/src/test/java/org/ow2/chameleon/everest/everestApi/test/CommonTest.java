@@ -1,6 +1,6 @@
 package org.ow2.chameleon.everest.everestApi.test;
 
-import org.ow2.chameleon.everest.impl.DefaultRequest;
+
 import org.ow2.chameleon.everest.services.*;
 import org.junit.Test;
 import org.ops4j.pax.exam.Option;
@@ -48,19 +48,7 @@ public class CommonTest extends BaseTest {
         assertThat("true").isEqualTo("true");
     }
 
-    /**
-     * Shortcut method to process a READ request on an everest resource.
-     *
-     * @param path the path of the resource to read
-     * @return the read resource
-     * @throws org.ow2.chameleon.everest.services.ResourceNotFoundException
-     *          if the resource cannot be found
-     * @throws org.ow2.chameleon.everest.services.IllegalActionOnResourceException
-     *          if READ is not a valid operation on the targeted resource
-     */
-    public Resource read(String path) throws ResourceNotFoundException, IllegalActionOnResourceException {
-        return everest.process(new DefaultRequest(Action.READ, Path.from(path), null));
-    }
+
 
 
 }
