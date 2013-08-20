@@ -28,11 +28,6 @@
     <packaging>bundle</packaging>
     <dependencies>
         <dependency>
-            <groupId>org.ow2.chameleon.everest</groupId>
-            <artifactId>everest-core</artifactId>
-            <version>${everestCoreVersion}</version>
-        </dependency>
-        <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.ipojo.annotations</artifactId>
         </dependency>
@@ -43,6 +38,11 @@
         <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.compendium</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.ow2.chameleon.everest</groupId>
+            <artifactId>everest-core</artifactId>
+            <version>${everestCoreVersion}</version>
         </dependency>
     </dependencies>
 

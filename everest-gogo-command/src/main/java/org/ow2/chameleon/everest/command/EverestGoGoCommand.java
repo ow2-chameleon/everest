@@ -21,7 +21,7 @@ package org.ow2.chameleon.everest.command;/*
  */
 
 import org.apache.felix.ipojo.annotations.*;
-import org.ow2.chameleon.everest.client.api.EverestClient;
+import org.ow2.chameleon.everest.client.EverestClient;
 import org.ow2.chameleon.everest.services.*;
 import org.apache.felix.service.command.Descriptor;
 
