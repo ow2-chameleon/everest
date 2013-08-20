@@ -137,7 +137,7 @@ public class ResourceContainer {
                 return this;
             }
         }
-       this.m_resource = null;
+        this.m_resource = null;
         return this;
     }
 
@@ -218,12 +218,10 @@ public class ResourceContainer {
      */
     public synchronized String retrieve(String metadataId) {
         if (m_resource == null) {
-            System.out.println("RESOURCE NULL");
             return null;
         }
         ResourceMetadata resourceMetadata = m_resource.getMetadata();
         for (String current : resourceMetadata.keySet()) {
-            System.out.println("METADATA CURRENT " + current + " VALUE " + resourceMetadata.get(current));
             if (current.equalsIgnoreCase(metadataId)) {
                 return resourceMetadata.get(current).toString();
             }
