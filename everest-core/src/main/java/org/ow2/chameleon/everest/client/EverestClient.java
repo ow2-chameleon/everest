@@ -13,10 +13,14 @@
  * limitations under the License.
  */
 
-package org.ow2.chameleon.everest.client.api;
+package org.ow2.chameleon.everest.client;
 
+
+import org.osgi.util.tracker.ServiceTracker;
+import org.osgi.util.tracker.ServiceTrackerCustomizer;
 import org.ow2.chameleon.everest.impl.DefaultRequest;
 import org.ow2.chameleon.everest.services.*;
+import org.osgi.framework.*;
 
 
 /*
@@ -25,7 +29,8 @@ import org.ow2.chameleon.everest.services.*;
  * Time: 14:22
  *
  */
-public class EverestClient extends ResourceContainer {
+
+public class EverestClient extends ResourceContainer implements ServiceTrackerCustomizer {
 
     /**
      * Service of everest-core
@@ -45,18 +50,63 @@ public class EverestClient extends ResourceContainer {
     }
 
     /**
+     * Tracker for services
+     */
+    private  ServiceTracker m_serviceTracker;
+
+
+    /**
+     * Tracker for services
+     */
+    private  BundleContext m_context;
+
+    /**
      * @param m_everest : Need the everest core service to browse the resource tree
      */
     public EverestClient(EverestService m_everest) {
         super(null);
+        m_serviceTracker = null;
+        m_context = null;
         try {
             m_resource = m_everest.process(new DefaultRequest(Action.READ, Path.from("/"), null));
+            m_currentPath = m_resource.getPath();
         } catch (IllegalActionOnResourceException e) {
 
         } catch (ResourceNotFoundException e) {
         }
         this.m_everest = m_everest;
-        m_currentPath = m_resource.getPath();
+
+
+    }
+
+    public EverestClient(BundleContext context) {
+        super(null);
+        m_context = context;
+        Filter serviceFilter = null;
+        String stringFilter = "(objectclass="+EverestService.class.getName()+")";
+        try {
+            serviceFilter = context.createFilter(stringFilter);
+        } catch (InvalidSyntaxException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+        m_serviceTracker = new ServiceTracker(context,serviceFilter, this);
+        m_serviceTracker.open();
+
+    }
+
+    public EverestClient(BundleContext context,Filter filter) {
+        super(null);
+        m_context = context;
+        String stringFilter = "(&(objectclass="+EverestService.class.getName()+")"+filter.toString()+")";
+        Filter serviceFilter = null;
+        try {
+            serviceFilter = context.createFilter(stringFilter);
+        } catch (InvalidSyntaxException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+        m_serviceTracker = new ServiceTracker(context,serviceFilter, this);
+        m_serviceTracker.open();
+
     }
 
     /**
@@ -182,5 +232,43 @@ public class EverestClient extends ResourceContainer {
     public synchronized AssertionString assertThat(String key) {
         return new AssertionString(key);
 
+    }
+
+
+
+
+    public Object addingService(ServiceReference serviceReference) {
+        if ( m_everest == null){
+
+            Object serviceId = serviceReference.getProperty(Constants.SERVICE_ID);
+            m_everest = (EverestService) m_context.getService(serviceReference);
+            try {
+                m_resource = m_everest.process(new DefaultRequest(Action.READ, Path.from("/"), null));
+                m_currentPath = m_resource.getPath();
+            } catch (IllegalActionOnResourceException e) {
+
+            } catch (ResourceNotFoundException e) {
+            }
+
+            return serviceId;
+        } else{
+            return null;
+        }
+    }
+
+    public void modifiedService(ServiceReference serviceReference, Object o) {
+        m_everest = (EverestService) serviceReference;
+    }
+
+    public void removedService(ServiceReference serviceReference, Object o) {
+        m_everest = null;
+    }
+
+    public boolean isEverestService(){
+        if( m_everest == null){
+            return false;
+        }else {
+            return true;
+        }
     }
 }

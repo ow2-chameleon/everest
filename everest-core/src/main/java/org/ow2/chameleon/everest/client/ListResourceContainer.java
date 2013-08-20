@@ -13,14 +13,13 @@
  * limitations under the License.
  */
 
-package org.ow2.chameleon.everest.client.api;/*
+package org.ow2.chameleon.everest.client;/*
  * User: Colin
  * Date: 17/07/13
  * Time: 15:14
  * 
  */
 
-import org.ow2.chameleon.everest.impl.DefaultRequest;
 import org.ow2.chameleon.everest.services.*;
 
 import java.util.ArrayList;

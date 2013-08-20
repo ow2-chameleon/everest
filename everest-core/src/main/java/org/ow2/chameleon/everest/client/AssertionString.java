@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package org.ow2.chameleon.everest.client.api;/*
+package org.ow2.chameleon.everest.client;/*
  * User: Colin
  * Date: 22/07/13
  * Time: 13:40
