@@ -29,6 +29,7 @@ import org.ow2.chameleon.everest.services.*;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class FileResource extends DefaultResource {
@@ -44,20 +45,26 @@ public class FileResource extends DefaultResource {
      */
     public final Path m_filePath;
 
+
     /**
      * Represented File
      */
 
     public final File m_representedFile;
 
+    /**
+     * Represented File
+     */
 
-    public FileResource(String name, Path parentPath, File fileObject) {
+    public final AbstractResourceCollection m_parent;
+
+    public FileResource(String name, Path parentPath, File fileObject,AbstractResourceCollection parent) {
         super(parentPath.add(Path.from(Path.SEPARATOR + name)));
         m_fileName = name;
         m_filePath = parentPath;
         m_representedFile = fileObject;
-
-        ArrayList<Relation> relations = new ArrayList<Relation>();
+        m_parent = parent;
+        List<Relation> relations = new ArrayList<Relation>();
 
         relations.add(new DefaultRelation(getPath(), Action.UPDATE, "Update:Permission",
                 new DefaultParameter()
@@ -65,7 +72,9 @@ public class FileResource extends DefaultResource {
                         .description("Update  permission on a file, $permission/$value , permission is readable & writable & executable,  value is true or false")
                         .optional(false)
                         .type(Map.class)));
+        relations.add(new DefaultRelation(getPath(), Action.DELETE, "Delete:File"));
         setRelations(relations);
+
     }
 
     @Override
@@ -134,4 +143,14 @@ public class FileResource extends DefaultResource {
         else return "";
     }
 
+    @Override
+    public Resource delete(Request request) throws IllegalActionOnResourceException {
+        m_parent.deleteSubFile(this);
+        if (m_representedFile.delete()){
+            return m_parent;
+
+        }else{
+            throw new IllegalActionOnResourceException(request,this);
+        }
+    }
 }

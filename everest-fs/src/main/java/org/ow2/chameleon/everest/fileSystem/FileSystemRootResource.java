@@ -59,11 +59,7 @@ public class FileSystemRootResource extends AbstractResourceCollection {
      */
     private static final FileSystemRootResource m_instance = new FileSystemRootResource();
 
-    /**
-     * Represented File
-     */
 
-    public File m_representedFile;
 
     public static FileSystemRootResource getInstance() {
         return m_instance;
@@ -73,44 +69,8 @@ public class FileSystemRootResource extends AbstractResourceCollection {
         super(m_fileSystemPath);
 
         m_representedFile = new File("/");
-
-
     }
 
 
-    @Override
-    public ResourceMetadata getMetadata() {
-        ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
 
-
-        metadataBuilder.set("name", m_representedFile.getName());
-        metadataBuilder.set("URI", m_representedFile.toURI());
-        metadataBuilder.set("path", m_representedFile.getPath());
-
-        metadataBuilder.set("numberOfChild", m_representedFile.listFiles().length);
-        List<String> listName = new ArrayList<String>();
-        for (String currentName : m_representedFile.list()) {
-            listName.add(currentName);
-        }
-
-        if (!listName.isEmpty()) {
-            metadataBuilder.set("nameChild", listName);
-        }
-
-        if (m_representedFile.isFile()) {
-            metadataBuilder.set("type", "FILE");
-        } else {
-            metadataBuilder.set("type", "DIRECTORY");
-        }
-
-        metadataBuilder.set("readable", m_representedFile.canRead());
-
-        metadataBuilder.set("writable", m_representedFile.canWrite());
-
-        metadataBuilder.set("hidden", m_representedFile.isHidden());
-
-
-        return metadataBuilder.build();
-
-    }
 }
