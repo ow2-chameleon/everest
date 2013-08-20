@@ -3,7 +3,7 @@ package org.ow2.chameleon.everest.fileSystem.test;
 import org.junit.Test;
 import org.ops4j.pax.exam.spi.reactors.ExamReactorStrategy;
 import org.ops4j.pax.exam.spi.reactors.PerMethod;
-import org.ow2.chameleon.everest.client.api.EverestClient;
+import org.ow2.chameleon.everest.client.EverestClient;
 import org.ow2.chameleon.everest.services.IllegalActionOnResourceException;
 import org.ow2.chameleon.everest.services.ResourceNotFoundException;
 
