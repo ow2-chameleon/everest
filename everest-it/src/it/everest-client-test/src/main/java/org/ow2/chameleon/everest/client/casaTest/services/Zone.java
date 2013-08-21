@@ -14,9 +14,17 @@ public class Zone {
 
     String m_luminosity;
 
+
+
+    float m_Temperature;
+
+    int   m_Surface ;
+
     public Zone(String name) {
         this.name = name;
         m_luminosity = "0";
+        m_Temperature = (float) 10.65;
+        m_Surface = 15;
     }
 
 
@@ -36,5 +44,11 @@ public class Zone {
         this.m_luminosity = m_luminosity;
     }
 
+    public float getM_Temperature() {
+        return m_Temperature;
+    }
 
+    public int getM_Surface() {
+        return m_Surface;
+    }
 }

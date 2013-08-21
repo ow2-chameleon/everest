@@ -44,6 +44,8 @@ public class ZoneResource extends AbstractResourceCollection {
         ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
         metadataBuilder.set("Name", m_zone.getName());
         metadataBuilder.set("Luminosity", m_zone.getM_luminosity());
+        metadataBuilder.set("Surface", m_zone.getM_Surface());
+        metadataBuilder.set("Temperature", m_zone.getM_Temperature());
         return metadataBuilder.build();
     }
 
