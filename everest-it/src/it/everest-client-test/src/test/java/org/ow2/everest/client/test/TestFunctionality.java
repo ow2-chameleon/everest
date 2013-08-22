@@ -18,6 +18,32 @@ import static org.fest.assertions.Assertions.assertThat;
 public class TestFunctionality extends CommonTest {
 
 
+
+    @Test
+    public void testRetrieve() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        EverestClient testAPI = new EverestClient(getContext());
+        try{
+            System.out.println( "Surface INT" + testAPI.read("/test/zone/room1").retrieve("Surface",Integer.class));
+       }catch(Exception e ){
+            assertThat(true).isEqualTo(false);
+        }
+        try{
+            System.out.println( "Surface FLOAT" + testAPI.read("/test/zone/room1").retrieve("Surface",Float.class));
+            assertThat(true).isEqualTo(false);
+        }catch(Exception e ){
+            e.printStackTrace();
+        }
+
+        try{
+            System.out.println( "Surface NUMBER" + testAPI.read("/test/zone/room1").retrieve("Surface",Number.class));
+            System.out.println( "Surface VALUE TO DOUBLE"  + testAPI.read("/test/zone/room1").retrieve("Surface",Number.class).doubleValue());
+        }catch(Exception e ){
+            assertThat(true).isEqualTo(false);
+        }
+
+
+    }
+
     @Test
     public void testBundleContext() throws ResourceNotFoundException, IllegalActionOnResourceException {
 
@@ -235,4 +261,4 @@ public class TestFunctionality extends CommonTest {
 
 
 
-    }
+}

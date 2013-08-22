@@ -119,6 +119,39 @@ public class ResourceContainer {
     }
 
     /**
+     * Get the list of all child of a resource
+     *
+     * @return Null if the resource haven't children
+     */
+    public synchronized ListResourceContainer children(ResourceFilter filter) {
+        List<ResourceContainer> returnResources = new ArrayList<ResourceContainer>();
+        if (m_resource == null) {
+            returnResources = null;
+            return new ListResourceContainer(returnResources);
+        }
+        if( filter == null){
+            return children();
+        }
+
+        List<Resource> childrenResources = m_resource.getResources();
+
+
+        for (Resource currentResource : childrenResources) {
+            if( filter.accept(currentResource)){
+                returnResources.add(new ResourceContainer(currentResource));
+            }
+        }
+
+        if (!(returnResources.isEmpty())) {
+            return new ListResourceContainer(returnResources);
+        }
+
+        returnResources = null;
+        return new ListResourceContainer(returnResources);
+
+    }
+
+    /**
      * Get a child identified by the name.
      *
      * @param name : Name of the child resource that you want to get
@@ -164,6 +197,48 @@ public class ResourceContainer {
             if (!(listPath.contains(currentPath))) {
                 listPath.add(currentPath);
                 returnResources.add(read(currentPath.toString()));
+            }
+        }
+
+        if (!(returnResources.isEmpty())) {
+            return new ListResourceContainer(returnResources);
+        }
+
+        returnResources = null;
+        return new ListResourceContainer(returnResources);
+
+    }
+
+    /**
+     * Get all the resource in relation with m_resource wich match with the filter
+     *
+     * @return
+     * @throws ResourceNotFoundException
+     */
+    public synchronized ListResourceContainer relations(RelationFilter filter) throws ResourceNotFoundException {
+        List<ResourceContainer> returnResources = new ArrayList<ResourceContainer>();
+
+        if (m_resource == null) {
+            returnResources = null;
+            return new ListResourceContainer(returnResources);
+        }
+        if (filter == null){
+            return relations();
+        }
+        Path currentPath;
+        List<Path> listPath = new ArrayList<Path>();
+        List<Relation> relations = m_resource.getRelations();
+
+        for (Relation current : relations) {
+            currentPath = current.getHref();
+
+            if (filter.accept(current) ){
+                if (!(listPath.contains(currentPath))) {
+
+                    listPath.add(currentPath);
+                    returnResources.add(read(currentPath.toString()));
+                }
+
             }
         }
 

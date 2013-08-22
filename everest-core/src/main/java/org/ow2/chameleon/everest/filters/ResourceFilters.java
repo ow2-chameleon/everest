@@ -15,9 +15,9 @@
 
 package org.ow2.chameleon.everest.filters;
 
-import org.ow2.chameleon.everest.services.Path;
-import org.ow2.chameleon.everest.services.Resource;
-import org.ow2.chameleon.everest.services.ResourceFilter;
+import org.ow2.chameleon.everest.services.*;
+
+import java.util.List;
 
 /**
  * A static class giving a couple of common resource filters
@@ -39,6 +39,8 @@ public class ResourceFilters {
             }
         };
     }
+
+
 
     public static ResourceFilter and(final ResourceFilter... filters) {
         return new ResourceFilter() {
@@ -74,6 +76,14 @@ public class ResourceFilters {
         };
     }
 
+    public static ResourceFilter isNotNull() {
+        return new ResourceFilter() {
+            public boolean accept(Resource resource) {
+                return (resource == null);
+            }
+        };
+    }
+
     public static ResourceFilter hasCanonicalPath(final Path path) {
         return new ResourceFilter() {
             public boolean accept(Resource resource) {
@@ -99,12 +109,174 @@ public class ResourceFilters {
         return hasPath(Path.from(path));
     }
 
+    public static ResourceFilter greaterThan(final String metadataId,final float valueToCompare) {
+        return new ResourceFilter() {
+            public boolean accept(Resource resource) {
+                try {
+                    float value = resource.getMetadata().get(metadataId,Float.class);
+                    return (value > valueToCompare);
+                } catch (IllegalArgumentException e1){
+                    try{
+                        int value = resource.getMetadata().get(metadataId,Integer.class);
+                        return (((float)value) > valueToCompare);
+                    } catch (IllegalArgumentException e2){
+                        return false;
+                    }
+                }
+            }
+        };
+    }
+
+    public static ResourceFilter lowerThan(final String metadataId,final float valueToCompare) {
+        return new ResourceFilter() {
+            public boolean accept(Resource resource) {
+                try {
+                    float value = resource.getMetadata().get(metadataId,Float.class);
+                    return (value < valueToCompare);
+                } catch (IllegalArgumentException e1){
+                    try{
+                        // Maybe can cast in an integer ... Not sur that usefull
+                        int value = resource.getMetadata().get(metadataId,Integer.class);
+                        return (((float)value) < valueToCompare);
+                    } catch (IllegalArgumentException e2){
+                        return false;
+                    }
+                }
+            }
+        };
+    }
+
+    public static ResourceFilter equalsTo(final String metadataId,final float valueToCompare) {
+        return new ResourceFilter() {
+            public boolean accept(Resource resource) {
+                try {
+                    Number value = resource.getMetadata().get(metadataId,Number.class);
+                    double valueDouble = value.doubleValue();
+                    return (valueDouble == valueToCompare);
+                } catch (IllegalArgumentException e1){
+                    try{
+                        // Maybe can cast in an integer ... Not sur that usefull
+                        int value = resource.getMetadata().get(metadataId,Integer.class);
+                        return (((float)value) == valueToCompare);
+                    } catch (IllegalArgumentException e2){
+                        return false;
+                    }
+                }
+            }
+        };
+    }
+
+    public static ResourceFilter keyExist(final String metadataId) {
+        return keyExistWithType(metadataId,Object.class);
+    }
+
+    public static <T> ResourceFilter keyExistWithType(final String metadataId,final Class<? extends T> clazz) {
+        return new ResourceFilter() {
+            public boolean accept(Resource resource) {
+                try{
+                    resource.getMetadata().get(metadataId,clazz);
+                    return true;
+                }catch (IllegalArgumentException e){
+                    return false;
+                }
+            }
+        };
+    }
+
+    public static  ResourceFilter stringStartWith(final String metadataId,final String stringToCompare) {
+        return new ResourceFilter() {
+            public boolean accept(Resource resource) {
+                try{
+                    String string = resource.getMetadata().get(metadataId,String.class);
+                    return  string.startsWith(stringToCompare);
+                }catch (IllegalArgumentException e){
+                    return false;
+                }
+            }
+        };
+
+    }
+
+    public static  ResourceFilter stringEndWith(final String metadataId,final String stringToCompare) {
+        return new ResourceFilter() {
+            public boolean accept(Resource resource) {
+                try{
+                    String string = resource.getMetadata().get(metadataId,String.class);
+                    return  string.endsWith(stringToCompare);
+                }catch (IllegalArgumentException e){
+                    return false;
+                }
+            }
+        };
+    }
+
+    public static  ResourceFilter stringContains(final String metadataId,final String stringToCompare) {
+        return new ResourceFilter() {
+            public boolean accept(Resource resource) {
+                try{
+                    String string = resource.getMetadata().get(metadataId,String.class);
+                    return  string.contains(stringToCompare);
+                }catch (IllegalArgumentException e){
+                    return false;
+                }
+            }
+        };
+    }
+
+
+    public static  ResourceFilter hasAtLeastChildren(final int numberMinOfChildren) {
+        return new ResourceFilter() {
+            public boolean accept(Resource resource) {
+                List<Resource> resourceList = resource.getResources();
+                if (resourceList.size() >= numberMinOfChildren){
+                    return true;
+                }else {
+                    return false;
+                }
+            }
+        };
+
+    }
+
+    public static <T> ResourceFilter hasAtLeastRelations(final int numberMinOfRelations) {
+        return new ResourceFilter() {
+            public boolean accept(Resource resource) {
+                List<Relation> resourceList = resource.getRelations();
+                if (resourceList == null || resourceList.isEmpty()){
+                    return false;
+                }else{
+                    if (resourceList.size() >= numberMinOfRelations){
+                        return true;
+                    }else {
+                        return false;
+                    }
+                }
+            }
+        };
+    }
+
+
+    public static ResourceFilter NotEqualTo(final String metadataId,final float valueToCompare) {
+        return not(equalsTo(metadataId,valueToCompare));
+    }
+
     public static ResourceFilter isSubResourceOf(final Resource root) {
         return new ResourceFilter() {
             public boolean accept(Resource resource) {
-                // TODO Change this....
-                return resource.getPath().toString().startsWith(root.getPath().toString())
-                        && !resource.getPath().equals(root.getPath());
+                List<Resource> resourceList = root.getResources();
+                if ( (resourceList == null) || (resourceList.isEmpty())){
+                    return false;
+                }else {
+                    return resourceList.contains(resource);
+                }
+            }
+        };
+    }
+
+    public static ResourceFilter isDescendentOf(final Resource root) {
+        return new ResourceFilter() {
+            public boolean accept(Resource resource) {
+                return resource.getPath().isDescendantOf(root.getPath());
             }
         };
     }

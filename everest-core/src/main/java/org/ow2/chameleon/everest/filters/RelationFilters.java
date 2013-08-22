@@ -112,6 +112,25 @@ public class RelationFilters {
         };
     }
 
-    // TODO hasParameter(String), hasParameter(String, Object)
+    public static <T> RelationFilter hasParameter(final String paramName, final Class<? extends T> clazz) {
+        return new RelationFilter() {
+            public boolean accept(Relation relation) {
+                if ((relation.getParameters() == null) || (relation.getParameters().isEmpty())){
+                    return false;
+                }else{
+                    for (Parameter parameter : relation.getParameters()){
+                        if(parameter.name().equals(paramName)){
+                            if (parameter.type().equals(clazz)){
+                                return true;
+                            }
+                        }
+                    }
+                    return false;
+                }
+            }
+        };
+    }
 
-}
+
+
+    }
