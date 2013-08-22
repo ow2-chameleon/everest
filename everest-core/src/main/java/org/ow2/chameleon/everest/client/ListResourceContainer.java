@@ -105,6 +105,35 @@ public class ListResourceContainer {
     }
 
     /**
+     * Get the children of each member of   m_resourcesContainer
+     *
+     * @return
+     */
+    public synchronized ListResourceContainer children(ResourceFilter filter) {
+
+        if ((m_resourcesContainer == null)  ) {
+            return this;
+        }
+        if (filter == null ){
+            return children();
+        }
+        List<ResourceContainer> returnResources = new ArrayList<ResourceContainer>();
+
+        for (ResourceContainer currentResourceContainer : m_resourcesContainer) {
+            if (!(currentResourceContainer.children(filter).m_resourcesContainer == null)) {
+                returnResources.addAll(currentResourceContainer.children().m_resourcesContainer);
+            }
+        }
+        if (!(returnResources.isEmpty())) {
+            m_resourcesContainer = returnResources;
+            return this;
+        }
+
+        this.m_resourcesContainer = null;
+        return this;
+    }
+
+    /**
      * Get the child identified by name of each member of   m_resourcesContainer
      *
      * @param name
@@ -153,6 +182,46 @@ public class ListResourceContainer {
         for (ResourceContainer current : m_resourcesContainer) {
             if (!(current.relations().m_resourcesContainer == null)) {
                 temp = current.relations().m_resourcesContainer;
+                for (ResourceContainer currentResource : temp) {
+                    // check if the resource is already save
+                    if (!(listPath.contains(currentResource.m_resource.getPath()))) {
+                        listPath.add(current.m_resource.getPath());
+                        returnResources.add(currentResource);
+                    }
+                }
+            }
+
+        }
+        if (!(returnResources.isEmpty())) {
+            m_resourcesContainer = returnResources;
+            return this;
+        }
+
+        this.m_resourcesContainer = null;
+        return this;
+    }
+
+    /**
+     * Get the all resource which are in relations with each member of m_resourcesContainer which match with the filter
+     *
+     * @return
+     * @throws ResourceNotFoundException
+     */
+    public synchronized ListResourceContainer relations(RelationFilter filter) throws ResourceNotFoundException {
+        if (m_resourcesContainer == null) {
+            return this;
+        }
+        if (filter == null){
+            return relations();
+        }
+
+        List<Path> listPath = new ArrayList<Path>();
+        List<ResourceContainer> returnResources = new ArrayList<ResourceContainer>();
+        List<ResourceContainer> temp;
+
+        for (ResourceContainer current : m_resourcesContainer) {
+            if (!(current.relations(filter).m_resourcesContainer == null)) {
+                temp = current.relations(filter).m_resourcesContainer;
                 for (ResourceContainer currentResource : temp) {
                     // check if the resource is already save
                     if (!(listPath.contains(currentResource.m_resource.getPath()))) {

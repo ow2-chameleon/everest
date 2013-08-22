@@ -565,6 +565,9 @@ public class IpojoRootResource extends ResourceMap {
     public void bindTypeDeclaration(TypeDeclaration type, ServiceReference<TypeDeclaration> ref) {
         // Find/create the intermediate level node: ipojo/declaration/type/$name
         String name = type.getComponentName();
+        if (name == null) {
+            return;
+        }
         AtomicInsertionResult<ResourceMap> i  = m_typeDeclarations.addResourceMapIfAbsent(
                 TYPE_DECLARATIONS.addElements(name), true,
                 String.format("types[%s]", name),
