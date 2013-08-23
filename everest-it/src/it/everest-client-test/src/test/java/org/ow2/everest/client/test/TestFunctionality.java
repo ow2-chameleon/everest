@@ -31,7 +31,6 @@ public class TestFunctionality extends CommonTest {
             System.out.println( "Surface FLOAT" + testAPI.read("/test/zone/room1").retrieve("Surface",Float.class));
             assertThat(true).isEqualTo(false);
         }catch(Exception e ){
-            e.printStackTrace();
         }
 
         try{
