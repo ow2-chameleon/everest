@@ -55,9 +55,41 @@ public class ResourceFilters {
         };
     }
 
+    public static ResourceFilter and(final List<ResourceFilter> filters) {
+        return new ResourceFilter() {
+            public boolean accept(Resource resource) {
+                if (filters == null || filters.isEmpty()){
+                    return false;
+                }
+                for (ResourceFilter filter : filters) {
+                    if (!filter.accept(resource)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        };
+    }
+
     public static ResourceFilter or(final ResourceFilter... filters) {
         return new ResourceFilter() {
             public boolean accept(Resource resource) {
+                for (ResourceFilter filter : filters) {
+                    if (filter.accept(resource)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        };
+    }
+
+    public static ResourceFilter or(final List<ResourceFilter> filters) {
+        return new ResourceFilter() {
+            public boolean accept(Resource resource) {
+                if (filters == null || filters.isEmpty()){
+                    return false;
+                }
                 for (ResourceFilter filter : filters) {
                     if (filter.accept(resource)) {
                         return true;
@@ -113,15 +145,11 @@ public class ResourceFilters {
         return new ResourceFilter() {
             public boolean accept(Resource resource) {
                 try {
-                    float value = resource.getMetadata().get(metadataId,Float.class);
-                    return (value > valueToCompare);
+                    Number value = resource.getMetadata().get(metadataId,Number.class);
+                    float valueToFloat = value.floatValue();
+                    return (valueToFloat > valueToCompare);
                 } catch (IllegalArgumentException e1){
-                    try{
-                        int value = resource.getMetadata().get(metadataId,Integer.class);
-                        return (((float)value) > valueToCompare);
-                    } catch (IllegalArgumentException e2){
-                        return false;
-                    }
+                    return false;
                 }
             }
         };
@@ -131,16 +159,11 @@ public class ResourceFilters {
         return new ResourceFilter() {
             public boolean accept(Resource resource) {
                 try {
-                    float value = resource.getMetadata().get(metadataId,Float.class);
-                    return (value < valueToCompare);
+                    Number value = resource.getMetadata().get(metadataId,Number.class);
+                    float valueToFloat = value.floatValue();
+                    return (valueToFloat < valueToCompare);
                 } catch (IllegalArgumentException e1){
-                    try{
-                        // Maybe can cast in an integer ... Not sur that usefull
-                        int value = resource.getMetadata().get(metadataId,Integer.class);
-                        return (((float)value) < valueToCompare);
-                    } catch (IllegalArgumentException e2){
-                        return false;
-                    }
+                    return false;
                 }
             }
         };
@@ -151,20 +174,28 @@ public class ResourceFilters {
             public boolean accept(Resource resource) {
                 try {
                     Number value = resource.getMetadata().get(metadataId,Number.class);
-                    double valueDouble = value.doubleValue();
-                    return (valueDouble == valueToCompare);
+                    float valueToFloat = value.floatValue();
+                    return (valueToFloat == valueToCompare);
                 } catch (IllegalArgumentException e1){
-                    try{
-                        // Maybe can cast in an integer ... Not sur that usefull
-                        int value = resource.getMetadata().get(metadataId,Integer.class);
-                        return (((float)value) == valueToCompare);
-                    } catch (IllegalArgumentException e2){
-                        return false;
-                    }
+                    return false;
                 }
             }
         };
     }
+
+    public static ResourceFilter equalsTo(final String metadataId,final String valueToCompare) {
+        return new ResourceFilter() {
+            public boolean accept(Resource resource) {
+                try {
+                    String value = resource.getMetadata().get(metadataId,String.class);
+                    return (value.equals(valueToCompare));
+                } catch (IllegalArgumentException e1){
+                    return false;
+                }
+            }
+        };
+    }
+
 
     public static ResourceFilter keyExist(final String metadataId) {
         return keyExistWithType(metadataId,Object.class);
@@ -272,6 +303,43 @@ public class ResourceFilters {
             }
         };
     }
+
+    public static ResourceFilter hasAtLeastRelationFilterMactch(final RelationFilter relationFilter,final int NumberMinOfRelationMatch) {
+        return new ResourceFilter() {
+            public boolean accept(Resource resource) {
+                List<Relation> resourceList = resource.getRelations();
+                if (resourceList == null || resourceList.isEmpty()){
+                    return false;
+                }else{
+                    int count = 0;
+                    for (Relation relation : resource.getRelations()){
+                        if (relationFilter.accept(relation)){
+                            count ++;
+                        }
+                    }
+                    if (count >= NumberMinOfRelationMatch){
+                        return true;
+                    }else{
+                        return false;
+                    }
+                }
+            }
+        };
+    }
+
+    public static ResourceFilter allRelationFilterMactch(final RelationFilter relationFilter) {
+        return new ResourceFilter() {
+            public boolean accept(Resource resource) {
+                List<Relation> resourceList = resource.getRelations();
+                if (resourceList == null || resourceList.isEmpty()){
+                    return false;
+                }else{
+                    return  hasAtLeastRelationFilterMactch(relationFilter,resourceList.size()).accept(resource);
+                }
+            }
+        };
+    }
+
 
     public static ResourceFilter isDescendentOf(final Resource root) {
         return new ResourceFilter() {
