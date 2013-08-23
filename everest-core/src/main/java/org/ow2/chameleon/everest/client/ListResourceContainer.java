@@ -454,8 +454,12 @@ public class ListResourceContainer {
         List<ResourceContainer> returnResources = new ArrayList<ResourceContainer>();
 
         for (ResourceContainer current : m_resourcesContainer) {
-            if (!(current.filter(filter) == null))
-                returnResources.add(current.filter(filter));
+             ResourceContainer temp = current.filter(filter);
+            if (!(temp.m_resource == null)) {
+                ResourceContainer temp1;
+                temp1 = new ResourceContainer(temp.m_resource);
+                returnResources.add(temp1);
+            }
         }
 
         if (!(returnResources.isEmpty())) {
