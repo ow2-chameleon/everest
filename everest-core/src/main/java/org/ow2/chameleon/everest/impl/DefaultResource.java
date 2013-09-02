@@ -80,7 +80,13 @@ public class DefaultResource implements Resource {
     }
 
     public List<Relation> getRelations() {
+
         Set<Relation> setRelation = new HashSet<Relation>();
+        if (relations != null){
+            for (Relation relation : relations) {
+                setRelation.add(relation);
+            }
+        }
         try {
             setRelation.add(new DefaultRelation(this.getCanonicalPath(), Action.READ, "Self", "Return the current resource \"" + this.getPath().getLast() + "\""));
         } catch (IndexOutOfBoundsException e) {
@@ -96,9 +102,7 @@ public class DefaultResource implements Resource {
             }
 
         if (relations != null && ((getResources() != null) || !(getResources().isEmpty()))) {
-            for (Relation relation : relations) {
-                setRelation.add(relation);
-            }
+
             for (Resource resource : getResources()) {
                 Relation currentRelation = new DefaultRelation(resource.getPath(), Action.READ, "Child:" + resource.getPath().getLast(), "Get the child  \"" + resource.getPath().getLast() + "\"");
                 setRelation.add(currentRelation);
@@ -111,9 +115,7 @@ public class DefaultResource implements Resource {
             }
             return new ArrayList<Relation>(setRelation);
         } else if (relations != null && ((getResources() == null) || (getResources().isEmpty()))) {
-            for (Relation relation : relations) {
-                setRelation.add(relation);
-            }
+
             return new ArrayList<Relation>(setRelation);
         } else {
             return new ArrayList<Relation>(setRelation);
