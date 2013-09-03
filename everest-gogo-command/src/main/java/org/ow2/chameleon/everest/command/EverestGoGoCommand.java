@@ -339,14 +339,13 @@ public class EverestGoGoCommand {
         }
         QueryFilter parserQuery = new QueryFilter(request,m_everestClient.getM_everest());
 
-        try {
+        try{
             ResourceFilter resourceFilter = parserQuery.input();
             ListResourceContainer filterResourceList = listResourceContainer.filter(resourceFilter);
             printResource(filterResourceList);
             session.put(LISTRESOURCE,filterResourceList);
-        } catch (org.ow2.chameleon.everest.queryCC.ParseException e) {
+        }catch (Exception e){
             e.printStackTrace();
-            return;
         }
     }
 
