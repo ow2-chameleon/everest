@@ -21,9 +21,13 @@ package org.ow2.chameleon.everest.command;/*
  */
 
 import org.apache.felix.ipojo.annotations.*;
-import org.ow2.chameleon.everest.client.EverestClient;
-import org.ow2.chameleon.everest.services.*;
+import org.apache.felix.service.command.CommandSession;
 import org.apache.felix.service.command.Descriptor;
+import org.ow2.chameleon.everest.client.EverestClient;
+import org.ow2.chameleon.everest.client.ListResourceContainer;
+import org.ow2.chameleon.everest.client.ResourceContainer;
+import org.ow2.chameleon.everest.queryCC.QueryFilter;
+import org.ow2.chameleon.everest.services.*;
 
 import java.util.List;
 
@@ -42,13 +46,15 @@ public class EverestGoGoCommand {
      * Defines the functions (commands).
      */
     @ServiceProperty(name = "osgi.command.function", value = "{}")
-    String[] m_function = new String[]{"create", "retrieve", "update", "delete", "assertThat", "child", "relation"};
+    String[] m_function = new String[]{"create", "retrieve", "update", "delete", "assertThat", "child", "relation","filter"};
 
 
     @Requires(optional = false)
     EverestService m_everest;
 
     EverestClient m_everestClient;
+
+    private final static String LISTRESOURCE = "LISTOFRESOURCE" ;
 
     @Validate
     public void start() {
@@ -107,17 +113,7 @@ public class EverestGoGoCommand {
                 Resource resource;
                 path = handleId[0];
                 resource = m_everestClient.read(path).retrieve();
-                if (resource.getPath().toString().equalsIgnoreCase("/")) {
-                    bufferOut = bufferOut + "Name : " + resource.getPath().toString() + "\n";
-                } else {
-                    bufferOut = bufferOut + "Name : " + resource.getPath().getLast().toString() + "\n";
-                }
-                bufferOut = bufferOut + "METADATA : \n";
-                ResourceMetadata resourceMetadata = resource.getMetadata();
-                for (String currentString : resourceMetadata.keySet()) {
-                    bufferOut = bufferOut + currentString + " : \"" + resourceMetadata.get(currentString) + "\"" + "\n";
-                }
-
+                printResource(resource);
             } else {
                 path = handleId[0];
                 Resource resource = m_everestClient.read(path).retrieve();
@@ -255,7 +251,9 @@ public class EverestGoGoCommand {
     }
 
     @Descriptor("Get child/children of a resource")
-    public void child(@Descriptor("create") String... handleId) {
+    public void child( @Descriptor("automatically supplied shell session") CommandSession session,
+                       @Descriptor("create") String... handleId
+    ) {
         String bufferOut = new String();
         try {
             String path;
@@ -264,46 +262,19 @@ public class EverestGoGoCommand {
             } else if (handleId.length == 1) {
                 path = handleId[0];
                 List<Resource> resources = m_everestClient.read(path).children().retrieve();
-
+                session.put(LISTRESOURCE,m_everestClient.read(path).children());
                 if (!(resources == null)) {
-                    bufferOut = bufferOut + "List of children :\n";
-                    for (Resource current : resources) {
-                        bufferOut = bufferOut + "\nCHILD :\n";
-                        bufferOut = bufferOut + "Resource name \"" + current.getPath().getLast().toString() + "\"  at : \"" + current.getPath().toString() + "\"\n";
-
-                        ResourceMetadata resourceMetadata = current.getMetadata();
-                        if (!(resourceMetadata.isEmpty())) {
-                            bufferOut = bufferOut + "\nMETADATA : \n";
-                            for (String currentString : resourceMetadata.keySet()) {
-                                bufferOut = bufferOut + currentString + " : \"" + resourceMetadata.get(currentString) + "\"" + "\n";
-                            }
-                        } else {
-                            bufferOut = bufferOut + "\nNo metadata\n";
-                        }
-                    }
+                    printResource(resources);
                 } else {
                     bufferOut = bufferOut + "\nNo children\n";
                 }
-
             } else {
                 path = handleId[0];
                 for (String currentString : handleId) {
                     if (!(currentString.equalsIgnoreCase(handleId[0]))) {
                         Resource resource = m_everestClient.read(path).child(currentString).retrieve();
                         if (!(resource == null)) {
-                            bufferOut = bufferOut + "\nCHILD :\n";
-                            bufferOut = bufferOut + "Resource name \"" + resource.getPath().getLast().toString() + "\" at : \"" + resource.getPath().toString() + "\"\n";
-
-                            ResourceMetadata resourceMetadata = resource.getMetadata();
-                            if (!(resourceMetadata.isEmpty())) {
-                                bufferOut = bufferOut + "METADATA :\n";
-                                for (String currentMetatdata : resourceMetadata.keySet()) {
-                                    bufferOut = bufferOut + currentMetatdata + " : \"" + resourceMetadata.get(currentMetatdata) + "\"" + "\n";
-                                }
-                            } else {
-                                bufferOut = bufferOut + "No metadata\n";
-                            }
-
+                            printResource(resource);
                         } else {
                             bufferOut = bufferOut + "\nNo child named : \"" + currentString + "\"\n";
                         }
@@ -322,8 +293,10 @@ public class EverestGoGoCommand {
 
     }
 
-    @Descriptor("Get relation/realtions of a resource")
-    public void relation(@Descriptor("create") String... handleId) {
+    @Descriptor("Get Resource target by relation/relations of a resource")
+    public void relation( @Descriptor("automatically supplied shell session") CommandSession session,
+                          @Descriptor("create") String... handleId
+    ) {
         String bufferOut = new String();
         try {
             String path;
@@ -332,61 +305,19 @@ public class EverestGoGoCommand {
             } else if (handleId.length == 1) {
                 path = handleId[0];
                 List<Resource> resources = m_everestClient.read(path).relations().retrieve();
-
-                if (!(resources == null)) {
-                    bufferOut = bufferOut + "List of Relations :\n";
-                    for (Resource current : resources) {
-                        bufferOut = bufferOut + "\nRelation with :\n";
-                        if (current.getPath().toString().equalsIgnoreCase("/")) {
-                            bufferOut = bufferOut + "Resource name \"/\" at : " + current.getPath().toString() + "\n";
-                        } else {
-                            bufferOut = bufferOut + "Resource name \"" + current.getPath().getLast().toString() + "\" at : \"" + current.getPath().toString() + "\"\n";
-
-                        }
-                        ResourceMetadata resourceMetadata = current.getMetadata();
-                        if (!(resourceMetadata.isEmpty())) {
-                            bufferOut = bufferOut + "METADATA : \n";
-                            for (String currentString : resourceMetadata.keySet()) {
-                                bufferOut = bufferOut + currentString + " : \"" + resourceMetadata.get(currentString) + "\"" + "\n";
-                            }
-                        } else {
-                            bufferOut = bufferOut + "\nNo metadata\n";
-                        }
-                    }
-                } else {
-                    bufferOut = bufferOut + "\nNo relations\n";
-                }
-
+                session.put(LISTRESOURCE,m_everestClient.read(path).relations());
+                printResource(resources);
             } else {
                 path = handleId[0];
                 for (String currentString : handleId) {
                     if (!(currentString.equalsIgnoreCase(handleId[0]))) {
                         Resource resource = m_everestClient.read(path).relation(currentString).retrieve();
-                        if (!(resource == null)) {
-                            bufferOut = bufferOut + "\nRelation with:\n";
-                            if (resource.getPath().toString().equalsIgnoreCase("/")) {
-                                bufferOut = bufferOut + "Resource name \"/\" at : " + resource.getPath().toString() + "\n";
-                            } else {
-                                bufferOut = bufferOut + "Resource name \"" + resource.getPath().getLast().toString() + "\" at : \"" + resource.getPath().toString() + "\"\n";
-
-                            }
-                            ResourceMetadata resourceMetadata = resource.getMetadata();
-                            if (!(resourceMetadata.isEmpty())) {
-                                bufferOut = bufferOut + "METADATA : \n";
-                                for (String currentMetatdata : resourceMetadata.keySet()) {
-                                    bufferOut = bufferOut + currentMetatdata + " : \"" + resourceMetadata.get(currentMetatdata) + "\"" + "\n";
-                                }
-                            } else {
-                                bufferOut = bufferOut + "No metadata\n";
-                            }
-                        } else {
-                            bufferOut = bufferOut + "\nNo relation named :\"" + currentString + "\"\n";
-                        }
+                        printResource(resource);
+                    } else {
+                        bufferOut = bufferOut + "\nNo relation named :\"" + currentString + "\"\n";
                     }
                 }
             }
-
-
         } catch (Exception e) {
             System.out.println(bufferOut);
             e.printStackTrace();
@@ -394,5 +325,104 @@ public class EverestGoGoCommand {
         }
         System.out.println(bufferOut);
 
+    }
+
+    @Descriptor("Apply a filter on a set of Resource")
+    public void filter(@Descriptor("automatically supplied shell session") CommandSession session,
+                       @Descriptor("request for the filter creation") String request
+    )   {
+        System.out.println("Request " + request);
+        ListResourceContainer listResourceContainer = (ListResourceContainer) session.get(LISTRESOURCE);
+        if ( listResourceContainer == null){
+            System.out.println(" NO ENTRY TO FILTER ");
+            return;
+        }
+        QueryFilter parserQuery = new QueryFilter(request,m_everestClient.getM_everest());
+
+        try {
+            ResourceFilter resourceFilter = parserQuery.input();
+            ListResourceContainer filterResourceList = listResourceContainer.filter(resourceFilter);
+            printResource(filterResourceList);
+            session.put(LISTRESOURCE,filterResourceList);
+        } catch (org.ow2.chameleon.everest.queryCC.ParseException e) {
+            e.printStackTrace();
+            return;
+        }
+    }
+
+
+    private void printResource(ListResourceContainer listResourceContainer){
+        if ((listResourceContainer == null) || (listResourceContainer.retrieve().isEmpty())) {
+            return;
+        }
+
+        for (Resource resource: listResourceContainer.retrieve()){
+            printResource(resource);
+            System.out.println("");
+        }
+    }
+
+    private void printResource(List<Resource> listResource){
+        if ((listResource == null) || (listResource.isEmpty())) {
+            return;
+        }
+
+        for (Resource resource: listResource){
+            printResource(resource);
+            System.out.println("");
+        }
+    }
+
+    private void printResource(Resource resource){
+        if (resource == null) {
+            return;
+        }
+        List<Relation> relationList = resource.getRelations();
+        ResourceMetadata resourceMetadata = resource.getMetadata();
+        System.out.println("Resource : " + resource.getPath());
+        System.out.println("{");
+        System.out.println("\tMetadata :");
+
+        if (!(resourceMetadata.isEmpty())) {
+            for (String currentString : resourceMetadata.keySet()) {
+                System.out.println("\t\t" + currentString + " : \"" + resourceMetadata.get(currentString) + "\"" + " : " +resourceMetadata.get(currentString).getClass().getName());
+            }
+        } else {
+            System.out.println( "\t\tNo metadata");
+        }
+        System.out.println("\t\t_relation :");
+        System.out.println("\t\t\t{");
+        if (!(relationList.isEmpty())) {
+            for(Relation relation : relationList){
+                System.out.println("\t\t\tname :" +relation.getName());
+                System.out.println("\t\t\thref :" +relation.getHref());
+                System.out.println("\t\t\taction :" +relation.getAction());
+                System.out.println("\t\t\tdescription :" +relation.getDescription());
+                List<Parameter> listParameters = relation.getParameters();
+
+                if ((listParameters != null) || (!listParameters.isEmpty()) ){
+                    System.out.println("\t\t\t_parameter");
+
+                    System.out.println("\t\t\t\t{");
+                    for (Parameter parameter : listParameters){
+                        System.out.println("\t\t\t\tname :"+parameter.name());
+                        System.out.println("\t\t\t\tclass :"+parameter.type().getName());
+                        System.out.println("\t\t\t\tdescription :"+parameter.description());
+                        System.out.println("\t\t\t\toptional :"+parameter.optional());
+                    }
+                    System.out.println("\t\t\t\t}");
+                }
+                System.out.println("\t\t\t}");
+            }
+        } else {
+            System.out.println( "\n\t\tNo relation");
+            System.out.println("\t\t\t}");
+        }
+        System.out.println("\t\t}");
+        System.out.println("\t}");
+    }
+
+    private void printResource(ResourceContainer resourceContainer){
+        printResource(resourceContainer.retrieve());
     }
 }
