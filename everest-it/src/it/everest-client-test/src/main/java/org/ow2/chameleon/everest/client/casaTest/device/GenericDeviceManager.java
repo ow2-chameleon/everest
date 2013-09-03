@@ -1,6 +1,7 @@
 package org.ow2.chameleon.everest.client.casaTest.device;
 
 import org.ow2.chameleon.everest.client.casaTest.AbstractResourceCollection;
+import org.ow2.chameleon.everest.core.Everest;
 import org.ow2.chameleon.everest.impl.DefaultParameter;
 import org.ow2.chameleon.everest.impl.DefaultRelation;
 import org.ow2.chameleon.everest.impl.ImmutableResourceMetadata;
@@ -95,7 +96,7 @@ public class GenericDeviceManager extends AbstractResourceCollection {
             resource = new GenericDeviceResource(newGenericDevice, this);
             m_genericDeviceResourcesMap.put(newGenericDevice.DEVICE_SERIAL_NUMBER, resource);
         }
-
+        Everest.postResource(ResourceEvent.CREATED,resource);
         return resource;
     }
 
@@ -107,6 +108,7 @@ public class GenericDeviceManager extends AbstractResourceCollection {
     }
 
     public void deleteresource(String key) {
-        m_genericDeviceResourcesMap.remove(key);
+        GenericDeviceResource removed = m_genericDeviceResourcesMap.remove(key);
+        Everest.postResource(ResourceEvent.DELETED,removed);
     }
 }
