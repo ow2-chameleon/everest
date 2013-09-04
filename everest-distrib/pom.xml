@@ -152,11 +152,6 @@
             <artifactId>everest-fs</artifactId>
             <version>${everestCasaVersion}</version>
         </dependency>
-        <dependency>
-            <groupId>org.ow2.chameleon.everest</groupId>
-            <artifactId>everest-queryCC</artifactId>
-            <version>${everestCasaVersion}</version>
-        </dependency>
     </dependencies>
 
     <build>
