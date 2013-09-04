@@ -26,7 +26,7 @@ import org.apache.felix.service.command.Descriptor;
 import org.ow2.chameleon.everest.client.EverestClient;
 import org.ow2.chameleon.everest.client.ListResourceContainer;
 import org.ow2.chameleon.everest.client.ResourceContainer;
-import org.ow2.chameleon.everest.queryCC.QueryFilter;
+import org.ow2.chameleon.everest.query.QueryFilter;
 import org.ow2.chameleon.everest.services.*;
 
 import java.util.List;
