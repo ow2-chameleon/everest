@@ -1,5 +1,9 @@
 package org.ow2.chameleon.everest.client;
 
+import org.ow2.chameleon.everest.services.Resource;
+
+import java.util.List;
+
 /**
  * Created with IntelliJ IDEA.
  * User: colin
@@ -9,6 +13,6 @@ package org.ow2.chameleon.everest.client;
  */
 public interface EverestListener {
 
-    public void getNewResult(ListResourceContainer resourceContainer);
+    public void getNewResult(List<Resource> resource);
 
 }

@@ -213,7 +213,10 @@ public class ResourceFilters {
         return new ResourceFilter() {
             public boolean accept(Resource resource) {
                 try{
-                    resource.getMetadata().get(metadataId,clazz);
+                    if( resource.getMetadata().get(metadataId,clazz) == null){
+                     return false;
+                    }
+
                     return true;
                 }catch (IllegalArgumentException e){
                     return false;
@@ -399,7 +402,7 @@ public class ResourceFilters {
 
     }
 
-    public static ResourceFilter allRelationFilterMactch(final RelationFilter relationFilter) {
+    public static ResourceFilter allRelationFilterMatch(final RelationFilter relationFilter) {
         return new ResourceFilter() {
             public boolean accept(Resource resource) {
                 List<Relation> resourceList = resource.getRelations();

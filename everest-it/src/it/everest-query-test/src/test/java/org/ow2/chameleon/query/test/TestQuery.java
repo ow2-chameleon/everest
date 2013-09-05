@@ -4,13 +4,15 @@ import org.junit.Test;
 import org.ops4j.pax.exam.spi.reactors.ExamReactorStrategy;
 import org.ops4j.pax.exam.spi.reactors.PerMethod;
 import org.ow2.chameleon.everest.client.EverestClient;
+import org.ow2.chameleon.everest.client.EverestListener;
+import org.ow2.chameleon.everest.client.ResourceContainer;
+import org.ow2.chameleon.everest.core.Everest;
 import org.ow2.chameleon.everest.query.ParseException;
 import org.ow2.chameleon.everest.query.QueryFilter;
-import org.ow2.chameleon.everest.services.IllegalActionOnResourceException;
-import org.ow2.chameleon.everest.services.Relation;
-import org.ow2.chameleon.everest.services.Resource;
-import org.ow2.chameleon.everest.services.ResourceNotFoundException;
+import org.ow2.chameleon.everest.services.*;
+import org.ow2.chameleon.testing.helpers.TimeUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.fest.assertions.Assertions.assertThat;
@@ -516,7 +518,6 @@ public class TestQuery extends CommonTest{
                 System.out.println(" Resource : " + resourceCurrent.getPath() + " SURFACE " + resourceCurrent.getMetadata() );
             }
         } catch (ParseException e) {
-
             assertThat(true).isEqualTo(false);
         }  catch (Exception e1) {
 
@@ -550,6 +551,112 @@ public class TestQuery extends CommonTest{
         }  catch (Exception e1) {
             e1.printStackTrace();
             assertThat(false).isEqualTo(true);
+        }
+    }
+
+    @Test
+    public void testEventHandlerUpdate() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        System.out.println("TEST Event Handler Update");
+        EverestClient testAPI = new EverestClient(getContext(),everest);
+        String request = "{SerialNumber:$exist}" ;
+        String[] topics = new String[]{"everest/*"};
+
+        TestListener test = new TestListener();
+        List<Resource> resourceContainers = testAPI.subscribe(test, request).retrieve();
+        testAPI.read("/test/devices").children().update().with("STATE_DEACTIVATED", "TRUE").doIt().retrieve();
+    }
+
+    @Test
+    public void testEventHandlerDelete() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        System.out.println("TEST Event Handler Delete");
+        EverestClient testAPI = new EverestClient(getContext(),everest);
+        String request = "{SerialNumber:$exist}" ;
+        String[] topics = new String[]{"everest/*"};
+
+        TestListener test = new TestListener();
+        List<Resource> resourceContainers = testAPI.subscribe(test, request).retrieve();
+        testAPI.read("/test/devices").children().delete().doIt().retrieve();
+    }
+
+    @Test
+    public void testEventHandlerCreate() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        System.out.println("TEST Event Handler Create");
+        EverestClient testAPI = new EverestClient(getContext(),everest);
+        String request = "{SerialNumber:$exist}" ;
+        String[] topics = new String[]{"everest/*"};
+
+        TestListener test = new TestListener();
+        List<Resource> resourceContainers = testAPI.subscribe(test, request).retrieve();
+        testAPI.read("/test/devices").create().with("serialNumber", "10-NewDevice").doIt().retrieve();
+    }
+
+
+    public class TestListener implements EverestListener {
+
+        List<Resource> m_resources = new ArrayList<Resource>();
+
+        public TestListener(){
+
+        }
+
+        public void getNewResult(List<Resource> resources) {
+            m_resources = resources;
+            if (resources == null || resources.isEmpty()){
+                System.out.println("LIST NULL");
+                return;
+            }
+            for(Resource resource : resources){
+                printResource(resource);
+            }
+        }
+
+        public void printResource(Resource resource){
+            if (resource == null) {
+                return;
+            }
+            List<Relation> relationList = resource.getRelations();
+            ResourceMetadata resourceMetadata = resource.getMetadata();
+            System.out.println("Resource : " + resource.getPath());
+            System.out.println("{");
+            System.out.println("\tMetadata :");
+
+            if (!(resourceMetadata.isEmpty())) {
+                for (String currentString : resourceMetadata.keySet()) {
+                    System.out.println("\t\t" + currentString + " : \"" + resourceMetadata.get(currentString) + "\"" + " : " +resourceMetadata.get(currentString).getClass().getName());
+                }
+            } else {
+                System.out.println( "\t\tNo metadata");
+            }
+            System.out.println("\t\t_relation :");
+            System.out.println("\t\t\t{");
+            if (!(relationList.isEmpty())) {
+                for(Relation relation : relationList){
+                    System.out.println("\t\t\tname :" +relation.getName());
+                    System.out.println("\t\t\thref :" +relation.getHref());
+                    System.out.println("\t\t\taction :" +relation.getAction());
+                    System.out.println("\t\t\tdescription :" +relation.getDescription());
+                    List<Parameter> listParameters = relation.getParameters();
+
+                    if ((listParameters != null) || (!listParameters.isEmpty()) ){
+                        System.out.println("\t\t\t_parameter");
+
+                        System.out.println("\t\t\t\t{");
+                        for (Parameter parameter : listParameters){
+                            System.out.println("\t\t\t\tname :"+parameter.name());
+                            System.out.println("\t\t\t\tclass :"+parameter.type().getName());
+                            System.out.println("\t\t\t\tdescription :"+parameter.description());
+                            System.out.println("\t\t\t\toptional :"+parameter.optional());
+                        }
+                        System.out.println("\t\t\t\t}");
+                    }
+                    System.out.println("\t\t\t}");
+                }
+            } else {
+                System.out.println( "\n\t\tNo relation");
+                System.out.println("\t\t\t}");
+            }
+            System.out.println("\t\t}");
+            System.out.println("\t}");
         }
     }
 }

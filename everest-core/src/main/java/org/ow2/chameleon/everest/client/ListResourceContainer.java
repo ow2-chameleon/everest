@@ -38,10 +38,9 @@ public class ListResourceContainer {
         m_resourcesContainer.add(resourceContainer);
     }
 
-    public ListResourceContainer(List<ResourceContainer> listresource) {
-        this.m_resourcesContainer = listresource;
+    public ListResourceContainer(List<ResourceContainer> listResource) {
+        this.m_resourcesContainer = listResource;
     }
-
     /**
      * Get the list of parent of the m_resourcesContainer. If 2 resources have the same parent, he appears just one time in
      * the return.
@@ -51,8 +50,7 @@ public class ListResourceContainer {
      */
     public synchronized ListResourceContainer parent() throws ResourceNotFoundException {
 
-        if (m_resourcesContainer == null) {
-
+        if (m_resourcesContainer == null || m_resourcesContainer.isEmpty()) {
             return this;
         }
 
@@ -68,14 +66,7 @@ public class ListResourceContainer {
                 }
             }
         }
-
-        if (!(returnResources.isEmpty())) {
-            m_resourcesContainer = returnResources;
-            return this;
-        }
-
-
-        this.m_resourcesContainer = null;
+        m_resourcesContainer = returnResources;
         return this;
     }
 
@@ -86,7 +77,7 @@ public class ListResourceContainer {
      */
     public synchronized ListResourceContainer children() {
 
-        if (m_resourcesContainer == null) {
+        if (m_resourcesContainer == null || m_resourcesContainer.isEmpty()) {
 
             return this;
         }
@@ -97,12 +88,7 @@ public class ListResourceContainer {
                 returnResources.addAll(currentResourceContainer.children().m_resourcesContainer);
             }
         }
-        if (!(returnResources.isEmpty())) {
-            m_resourcesContainer = returnResources;
-            return this;
-        }
-
-        this.m_resourcesContainer = null;
+        m_resourcesContainer = returnResources;
         return this;
     }
 
@@ -113,7 +99,7 @@ public class ListResourceContainer {
      */
     public synchronized ListResourceContainer children(ResourceFilter filter) {
 
-        if ((m_resourcesContainer == null)  ) {
+        if ((m_resourcesContainer == null)|| m_resourcesContainer.isEmpty()  ) {
             return this;
         }
         if (filter == null ){
@@ -126,12 +112,7 @@ public class ListResourceContainer {
                 returnResources.addAll(currentResourceContainer.children().m_resourcesContainer);
             }
         }
-        if (!(returnResources.isEmpty())) {
-            m_resourcesContainer = returnResources;
-            return this;
-        }
-
-        this.m_resourcesContainer = null;
+        m_resourcesContainer = returnResources;
         return this;
     }
 
@@ -143,7 +124,7 @@ public class ListResourceContainer {
      */
     public synchronized ListResourceContainer child(String name) {
 
-        if (m_resourcesContainer == null) {
+        if (m_resourcesContainer == null || m_resourcesContainer.isEmpty() ) {
             return this;
         }
         List<ResourceContainer> returnResources = new ArrayList<ResourceContainer>();
@@ -153,18 +134,11 @@ public class ListResourceContainer {
             if ( temp.m_resource != null) {
                 ResourceContainer temp1;
                 temp1 = new ResourceContainer(temp.m_resource);
-               returnResources.add(temp);
+                returnResources.add(temp);
             }
         }
-        if (!(returnResources.isEmpty())) {
-           m_resourcesContainer = returnResources;
-            return this;
-        }
-
-        this.m_resourcesContainer = null;
+        m_resourcesContainer = returnResources;
         return this;
-
-
     }
 
     /**
@@ -174,7 +148,7 @@ public class ListResourceContainer {
      * @throws ResourceNotFoundException
      */
     public synchronized ListResourceContainer relations() throws ResourceNotFoundException {
-        if (m_resourcesContainer == null) {
+        if (m_resourcesContainer == null|| m_resourcesContainer.isEmpty()) {
             return this;
         }
         List<Path> listPath = new ArrayList<Path>();
@@ -194,12 +168,7 @@ public class ListResourceContainer {
             }
 
         }
-        if (!(returnResources.isEmpty())) {
-            m_resourcesContainer = returnResources;
-            return this;
-        }
-
-        this.m_resourcesContainer = null;
+        m_resourcesContainer = returnResources;
         return this;
     }
 
@@ -210,7 +179,7 @@ public class ListResourceContainer {
      * @throws ResourceNotFoundException
      */
     public synchronized ListResourceContainer relations(RelationFilter filter) throws ResourceNotFoundException {
-        if (m_resourcesContainer == null) {
+        if (m_resourcesContainer == null || m_resourcesContainer.isEmpty()) {
             return this;
         }
         if (filter == null){
@@ -234,12 +203,7 @@ public class ListResourceContainer {
             }
 
         }
-        if (!(returnResources.isEmpty())) {
-            m_resourcesContainer = returnResources;
-            return this;
-        }
-
-        this.m_resourcesContainer = null;
+        m_resourcesContainer = returnResources;
         return this;
     }
 
@@ -251,7 +215,7 @@ public class ListResourceContainer {
      * @throws ResourceNotFoundException
      */
     public synchronized ListResourceContainer relation(String relationName) throws ResourceNotFoundException {
-        if (m_resourcesContainer == null) {
+        if (m_resourcesContainer == null || m_resourcesContainer.isEmpty()) {
             return this;
         }
         List<Path> listPath = new ArrayList<Path>();
@@ -265,13 +229,9 @@ public class ListResourceContainer {
                 }
             }
         }
-        if (!(returnResources.isEmpty())) {
-            m_resourcesContainer = returnResources;
-            return this;
-        }
-
-        this.m_resourcesContainer = null;
+        m_resourcesContainer = returnResources;
         return this;
+
     }
 
     /**
@@ -282,16 +242,16 @@ public class ListResourceContainer {
      */
     public synchronized List<String> retrieve(String metadataId) {
 
-        if (m_resourcesContainer == null) {
+        if (m_resourcesContainer == null || m_resourcesContainer.isEmpty()) {
             return null;
         }
 
         List<String> returnList = new ArrayList<String>();
 
         for (ResourceContainer current : m_resourcesContainer) {
-           if (current.retrieve(metadataId) != null) {
-               System.out.println(current.retrieve().getMetadata());
-               returnList.add(current.retrieve(metadataId));
+            if (current.retrieve(metadataId) != null) {
+                System.out.println(current.retrieve().getMetadata());
+                returnList.add(current.retrieve(metadataId));
             }
         }
 
@@ -311,7 +271,7 @@ public class ListResourceContainer {
      */
     public synchronized List<Resource> retrieve() {
 
-        if (m_resourcesContainer == null) {
+        if (m_resourcesContainer == null || m_resourcesContainer.isEmpty()) {
             return null;
         }
 
@@ -338,7 +298,7 @@ public class ListResourceContainer {
      * @return
      */
     public synchronized <T> List<T> retrieve(String metadataId, Class<T> clazz) {
-        if (m_resourcesContainer == null) {
+        if (m_resourcesContainer == null || m_resourcesContainer.isEmpty()) {
             return null;
         }
 
@@ -364,8 +324,8 @@ public class ListResourceContainer {
      * @return
      */
     public synchronized ListResourceContainer update() {
-        if (m_resourcesContainer == null) {
-            return null;
+        if (m_resourcesContainer == null || m_resourcesContainer.isEmpty()) {
+            return this;
         }
 
         for (ResourceContainer current : m_resourcesContainer) {
@@ -382,8 +342,8 @@ public class ListResourceContainer {
      */
     public synchronized ListResourceContainer create() {
 
-        if (m_resourcesContainer == null) {
-            return null;
+        if (m_resourcesContainer == null || m_resourcesContainer.isEmpty()) {
+            return this;
         }
         for (ResourceContainer current : m_resourcesContainer) {
             current.create();
@@ -397,8 +357,8 @@ public class ListResourceContainer {
      * @return
      */
     public synchronized ListResourceContainer delete() {
-        if (m_resourcesContainer == null) {
-            return null;
+        if (m_resourcesContainer == null || m_resourcesContainer.isEmpty()) {
+            return this;
         }
 
         for (ResourceContainer current : m_resourcesContainer) {
@@ -413,8 +373,8 @@ public class ListResourceContainer {
      * @return
      */
     public synchronized ListResourceContainer with(String key, Object value) {
-        if (m_resourcesContainer == null) {
-            return null;
+        if (m_resourcesContainer == null || m_resourcesContainer.isEmpty()) {
+            return this;
         }
 
         for (ResourceContainer current : m_resourcesContainer) {
@@ -433,7 +393,7 @@ public class ListResourceContainer {
      *
      */
     public synchronized ListResourceContainer doIt() throws ResourceNotFoundException, IllegalActionOnResourceException {
-        if (m_resourcesContainer == null) {
+        if (m_resourcesContainer == null || m_resourcesContainer.isEmpty()) {
             return null;
         }
 
@@ -449,14 +409,14 @@ public class ListResourceContainer {
 
 
     public synchronized ListResourceContainer filter(ResourceFilter filter) {
-        if (m_resourcesContainer == null) {
-            return null;
+        if (m_resourcesContainer == null || m_resourcesContainer.isEmpty()) {
+            return this;
         }
 
         List<ResourceContainer> returnResources = new ArrayList<ResourceContainer>();
 
         for (ResourceContainer current : m_resourcesContainer) {
-             ResourceContainer temp = current.filter(filter);
+            ResourceContainer temp = current.filter(filter);
             if (!(temp.m_resource == null)) {
                 ResourceContainer temp1;
                 temp1 = new ResourceContainer(temp.m_resource);
@@ -464,15 +424,42 @@ public class ListResourceContainer {
             }
         }
 
-        if (!(returnResources.isEmpty())) {
-            m_resourcesContainer = returnResources;
-            return this;
-        }
 
-        this.m_resourcesContainer = null;
+        m_resourcesContainer = returnResources;
         return this;
+
     }
 
+    @Override
+    public boolean equals(Object obj){
+        if (obj == null) return false;
+        if (obj == this) return true;
+        if (!(obj instanceof ListResourceContainer)){
+            return false;
+        }
 
+        ListResourceContainer oRef = (ListResourceContainer) obj;
+        if( (this.m_resourcesContainer == null) && (oRef.m_resourcesContainer == null)){
+            return true;
+        } else if (((this.m_resourcesContainer != null) && (oRef.m_resourcesContainer == null)) || ((this.m_resourcesContainer == null) && (oRef.m_resourcesContainer != null)) ){
+            return false;
+        }
 
+        if ( this.m_resourcesContainer.size() != oRef.m_resourcesContainer.size()) return false;
+        for( ResourceContainer resourceContainer : m_resourcesContainer){
+            if (!(this.m_resourcesContainer.contains(resourceContainer))){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hashcode = 0;
+        for (ResourceContainer resourceContainer : m_resourcesContainer){
+            hashcode += resourceContainer.hashCode();
+        }
+        return hashcode;
+    }
 }

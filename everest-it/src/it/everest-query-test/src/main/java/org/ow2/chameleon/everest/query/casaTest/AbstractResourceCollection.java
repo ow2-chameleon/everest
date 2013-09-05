@@ -28,7 +28,10 @@ public abstract class AbstractResourceCollection extends DefaultReadOnlyResource
         super(path);
     }
 
-
+    @Override
+    public boolean isObservable(){
+        return true;
+    }
 
 
 }

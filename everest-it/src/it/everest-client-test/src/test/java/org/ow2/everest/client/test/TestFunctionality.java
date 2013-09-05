@@ -274,32 +274,5 @@ public class TestFunctionality extends CommonTest {
 
     }
 
-    @Test
-    public void testEventHandler() throws ResourceNotFoundException, IllegalActionOnResourceException {
-        System.out.println("TEST Event Handler");
-        EverestClient testAPI = new EverestClient(getContext(),everest);
-        String request = "sggsdd" ;
-        String[] topics = new String[]{"everest/*"};
 
-
-        testAPI.subscribe(new TestListener(), request, topics);
-//        EventAdmin e = getContext().getService(getContext().getServiceReference(EventAdmin.class));
-//        e.sendEvent(new Event("everest/tata", new HashMap<String, Object>()));
-
-        Everest.postResource(ResourceEvent.UPDATED, testAPI.read("/test/devices").retrieve());
-
-        testAPI.read("/test/devices").children().update().with("STATE_DEACTIVATED", "TRUE").doIt().retrieve();
-    }
-
-
-    public class TestListener implements EverestListener{
-
-        public TestListener(){
-
-        }
-
-        public void getNewResult(ListResourceContainer resourceContainer) {
-            System.out.println("GET NEW RESULT ");
-        }
-    }
 }

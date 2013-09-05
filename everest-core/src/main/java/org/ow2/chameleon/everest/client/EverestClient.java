@@ -35,7 +35,7 @@ import java.util.*;
  *
  */
 
-public class EverestClient extends ResourceContainer implements ServiceTrackerCustomizer {
+public class EverestClient extends ResourceContainer implements ServiceTrackerCustomizer,EventHandler {
 
 
 
@@ -87,6 +87,7 @@ public class EverestClient extends ResourceContainer implements ServiceTrackerCu
         } catch (ResourceNotFoundException e) {
         }
         this.m_everest = m_everest;
+        registerEventHandler();
     }
 
     public EverestClient(EverestService m_everest) {
@@ -130,7 +131,7 @@ public class EverestClient extends ResourceContainer implements ServiceTrackerCu
         }
         m_serviceTracker = new ServiceTracker(context,serviceFilter, this);
         m_serviceTracker.open();
-
+        registerEventHandler();
     }
 
     /**
@@ -258,6 +259,35 @@ public class EverestClient extends ResourceContainer implements ServiceTrackerCu
 
     }
 
+
+
+    public ListResourceContainer subscribe(EverestListener everestListener, String request) {
+        synchronized (m_lock) {
+
+            if (m_listeners.keySet().contains(everestListener))
+                throw new IllegalArgumentException("Listener already put in EverestListener list");
+            else {
+                CustomEventAdmin customEventAdmin = new CustomEventAdmin(m_context,everestListener,request,this);
+                m_listeners.put(everestListener, customEventAdmin);
+                return  customEventAdmin.getM_lastRequestResult();
+            }
+        }
+    }
+
+    public void unSubscribe(EverestListener  everestListener) {
+        //defensive method
+        synchronized (m_lock) {
+            if (m_listeners.keySet().contains(everestListener))
+                m_listeners.remove(everestListener);
+            //else do nothing
+        }
+    }
+
+
+    /*
+    * =================================
+    * SERVICE TRACKER IMPLEMENTATION
+     */
     public Object addingService(ServiceReference serviceReference) {
         if ( m_everest == null){
 
@@ -277,25 +307,6 @@ public class EverestClient extends ResourceContainer implements ServiceTrackerCu
         }
     }
 
-    public void subscribe(EverestListener everestListener, String request, String... topics) {
-        synchronized (m_lock) {
-            CustomEventAdmin customEventAdmin = new CustomEventAdmin(m_context,everestListener,request,topics);
-            if (m_listeners.keySet().contains(everestListener))
-                throw new IllegalArgumentException("Listener already put in EverestListener list");
-            else
-                m_listeners.put(everestListener, customEventAdmin);
-        }
-    }
-
-    public void unSubscribe(EverestListener  everestListener) {
-        //defensive method
-        synchronized (m_lock) {
-            if (m_listeners.keySet().contains(everestListener))
-                m_listeners.remove(everestListener);
-            //else do nothing
-        }
-    }
-
     public void modifiedService(ServiceReference serviceReference, Object o) {
         m_everest = (EverestService) serviceReference;
     }
@@ -303,18 +314,41 @@ public class EverestClient extends ResourceContainer implements ServiceTrackerCu
     public void removedService(ServiceReference serviceReference, Object o) {
         m_everest = null;
     }
+    /* ================================*/
 
-    public boolean isEverestService(){
-        if( m_everest == null){
-            return false;
-        }else {
-            return true;
+
+    /*
+   * =================================
+   * EVENT ADMIN HANDLER
+    */
+    public void handleEvent(Event event) {
+
+        if ((m_listeners != null)&&(!m_listeners.isEmpty())){
+            Object eventType = event.getProperty("eventType");
+            System.out.println("Event !!!");
+            for(EverestListener currentListener : m_listeners.keySet()){
+                if (ResourceEvent.CREATED.toString().equals(eventType)) {
+                    m_listeners.get(currentListener).CreateEvent();
+
+                } else if (ResourceEvent.DELETED.toString().equals(eventType)) {
+                    m_listeners.get(currentListener).DeleteEvent();
+
+                } else if (ResourceEvent.UPDATED.toString().equals(eventType)) {
+                    m_listeners.get(currentListener).UpdateEvent();
+
+                }
+            }
         }
     }
 
-    public EverestService getM_everest() {
-        return m_everest;
+    protected void registerEventHandler() {
+        Hashtable<String, Object> props = new Hashtable<String, Object>();
+        props.put(EventConstants.EVENT_TOPIC, new  String[]{"everest/*", "everest"});
+        m_context.registerService(EventHandler.class.getName(), this, props);
     }
+    /*================================
+    */
+
 
     public List<Resource> getAllResource() {
         try {
@@ -344,4 +378,18 @@ public class EverestClient extends ResourceContainer implements ServiceTrackerCu
     }
 
 
+
+
+
+    public boolean isEverestService(){
+        if( m_everest == null){
+            return false;
+        }else {
+            return true;
+        }
+    }
+
+    public EverestService getM_everest() {
+        return m_everest;
+    }
 }

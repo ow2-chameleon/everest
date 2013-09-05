@@ -1,5 +1,6 @@
 package org.ow2.chameleon.everest.query.casaTest.device;
 
+import org.ow2.chameleon.everest.core.Everest;
 import org.ow2.chameleon.everest.query.casaTest.AbstractResourceCollection;
 import org.ow2.chameleon.everest.query.casaTest.zone.ZoneManager;
 import org.ow2.chameleon.everest.impl.DefaultParameter;
@@ -54,10 +55,10 @@ public class GenericDeviceResource extends AbstractResourceCollection {
     public ResourceMetadata getMetadata() {
         ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
         metadataBuilder.set("SerialNumber", m_genericDevice.DEVICE_SERIAL_NUMBER);
-        metadataBuilder.set("State Activated", m_genericDevice.STATE_ACTIVATED);
-        metadataBuilder.set("State Deactivated", m_genericDevice.STATE_DEACTIVATED);
-        metadataBuilder.set("State Property Name", m_genericDevice.STATE_PROPERTY_NAME);
-        metadataBuilder.set("State Unknown", m_genericDevice.STATE_UNKNOWN);
+        metadataBuilder.set("StateActivated", m_genericDevice.STATE_ACTIVATED);
+        metadataBuilder.set("StateDeactivated", m_genericDevice.STATE_DEACTIVATED);
+        metadataBuilder.set("StatePropertyName", m_genericDevice.STATE_PROPERTY_NAME);
+        metadataBuilder.set("StateUnknown", m_genericDevice.STATE_UNKNOWN);
         return metadataBuilder.build();
     }
 
@@ -67,18 +68,23 @@ public class GenericDeviceResource extends AbstractResourceCollection {
         Map<String, ?> newMap = request.parameters();
         if (newMap != null) {
             for (String key : newMap.keySet()) {
-                if (key.contentEquals("STATE_DEACTIVATED"))
+                if (key.contentEquals("STATE_DEACTIVATED")){
                     m_genericDevice.setSTATE_DEACTIVATED(newMap.get(key).toString());
+                    Everest.postResource(ResourceEvent.UPDATED,this);
+                }
                 else if (key.contentEquals("zone")) {
                     m_genericDevice.zone = newMap.get(key).toString();
                     Relation relations = new DefaultRelation(ZoneManager.getInstance().getPath().add(Path.from(Path.SEPARATOR + m_genericDevice.zone)), Action.READ, "Location");
                     setRelations(relations);
 
                     ZoneManager.getInstance().setChildLocation(m_genericDevice.DEVICE_SERIAL_NUMBER, newMap.get(key).toString());
+                    Everest.postResource(ResourceEvent.UPDATED,this);
                 } else if (key.contentEquals("State Unknown")) {
                     m_genericDevice.setSTATE_UNKNOWN(newMap.get(key).toString());
+                    Everest.postResource(ResourceEvent.UPDATED, this);
                 } else if (key.contentEquals("State Activated")) {
                     m_genericDevice.setSTATE_ACTIVATED(newMap.get(key).toString());
+                    Everest.postResource(ResourceEvent.UPDATED,this);
                 }
             }
         }
@@ -88,6 +94,7 @@ public class GenericDeviceResource extends AbstractResourceCollection {
     @Override
     public Resource delete(Request request) throws IllegalActionOnResourceException {
         m_genericDeviceManager.deleteresource(m_genericDevice.DEVICE_SERIAL_NUMBER);
+        Everest.postResource(ResourceEvent.DELETED,this);
         return (m_genericDeviceManager);
     }
 }

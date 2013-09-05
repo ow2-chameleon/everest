@@ -1,5 +1,6 @@
 package org.ow2.chameleon.everest.query.casaTest.zone;
 
+import org.ow2.chameleon.everest.core.Everest;
 import org.ow2.chameleon.everest.query.casaTest.AbstractResourceCollection;
 import org.ow2.chameleon.everest.query.casaTest.device.GenericDeviceManager;
 import org.ow2.chameleon.everest.query.casaTest.services.Zone;
@@ -56,6 +57,7 @@ public class ZoneResource extends AbstractResourceCollection {
                 relations = getRelations();
                 relations.remove(current);
                 setRelations(relations);
+
             }
         }
     }
@@ -70,6 +72,7 @@ public class ZoneResource extends AbstractResourceCollection {
     @Override
     public Resource delete(Request request) throws IllegalActionOnResourceException {
         m_ZoneManager.deleteresource(m_zone.getName());
+        Everest.postResource(ResourceEvent.DELETED, this);
         return (m_ZoneManager);
     }
 

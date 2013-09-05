@@ -2,6 +2,7 @@ package org.ow2.chameleon.everest.query.casaTest.zone;
 
 
 
+import org.ow2.chameleon.everest.core.Everest;
 import org.ow2.chameleon.everest.impl.DefaultParameter;
 import org.ow2.chameleon.everest.impl.DefaultRelation;
 import org.ow2.chameleon.everest.impl.ImmutableResourceMetadata;
@@ -102,10 +103,12 @@ public class ZoneManager extends AbstractResourceCollection {
                     Zone newZone = new Zone(newMap.get(key).toString());
                     resource = new ZoneResource(newZone, this);
                     m_zoneResourcesMap.put(newZone.getName(), resource);
+                    Everest.postResource(ResourceEvent.CREATED, this);
                 }
 
             }
         }
+
         return resource;
     }
 

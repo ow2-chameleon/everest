@@ -1,5 +1,6 @@
 package org.ow2.chameleon.everest.query.casaTest.device;
 
+import org.ow2.chameleon.everest.core.Everest;
 import org.ow2.chameleon.everest.query.casaTest.AbstractResourceCollection;
 import org.ow2.chameleon.everest.impl.DefaultParameter;
 import org.ow2.chameleon.everest.impl.DefaultRelation;
@@ -97,7 +98,7 @@ public class GenericDeviceManager extends AbstractResourceCollection {
             resource = new GenericDeviceResource(newGenericDevice, this);
             m_genericDeviceResourcesMap.put(newGenericDevice.DEVICE_SERIAL_NUMBER, resource);
         }
-
+        Everest.postResource(ResourceEvent.CREATED, resource);
         return resource;
     }
 

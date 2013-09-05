@@ -1,17 +1,14 @@
 package org.ow2.chameleon.everest.client;
 
 import org.osgi.framework.BundleContext;
-import org.osgi.service.event.Event;
 import org.osgi.service.event.EventConstants;
 import org.osgi.service.event.EventHandler;
 import org.ow2.chameleon.everest.filters.ResourceFilters;
 import org.ow2.chameleon.everest.query.QueryFilter;
-import org.ow2.chameleon.everest.services.ResourceEvent;
+import org.ow2.chameleon.everest.services.Resource;
 import org.ow2.chameleon.everest.services.ResourceFilter;
 
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -24,17 +21,21 @@ public class CustomEventAdmin  {
 
     BundleContext m_context;
 
-    private EverestListener everestListener;
+    private EverestListener m_everestListener;
 
-    private String request;
-
+    private String m_request;
 
     private ResourceFilter m_currentFilter;
 
-    public CustomEventAdmin(BundleContext context,EverestListener everestListener , String request) {
+    private EverestClient m_parentClient;
+
+    private ListResourceContainer m_lastRequestResult;
+
+    public CustomEventAdmin(BundleContext context,EverestListener everestListener , String request,EverestClient client) {
         this.m_context = context;
-        this.everestListener = everestListener;
-        this.request = request;
+        this.m_everestListener = everestListener;
+        this.m_request = request;
+        m_parentClient = client;
         try{
             QueryFilter queryFilter = new QueryFilter(request,EverestClient.m_everest);
             m_currentFilter = queryFilter.input();
@@ -42,9 +43,34 @@ public class CustomEventAdmin  {
             e.printStackTrace();
             m_currentFilter = ResourceFilters.none();
         }
+
+        List<Resource> resourceList = m_parentClient.getAllResource();
+        List<ResourceContainer> resourceContainers = new ArrayList<ResourceContainer>();
+        for(Resource resource : resourceList){
+            resourceContainers.add(new ResourceContainer(resource));
+        }
+        ListResourceContainer listResourceContainer = new ListResourceContainer(resourceContainers);
+        m_lastRequestResult = listResourceContainer.filter(m_currentFilter);
     }
 
+    protected void CreateEvent() {
+        List<Resource> resourceList = m_parentClient.getAllResource();
+        List<ResourceContainer> resourceContainers = new ArrayList<ResourceContainer>();
+        for(Resource resource : resourceList){
+            resourceContainers.add(new ResourceContainer(resource));
+        }
+        ListResourceContainer listResourceContainer = new ListResourceContainer(resourceContainers);
+        listResourceContainer.filter(m_currentFilter);
+        compareResult(listResourceContainer);
+    }
 
+    protected void UpdateEvent() {
+        CreateEvent();
+    }
+
+    protected void DeleteEvent() {
+        CreateEvent();
+    }
 
     protected void registerEventHandler(String... topics) {
         Hashtable<String, Object> props = new Hashtable<String, Object>();
@@ -56,17 +82,44 @@ public class CustomEventAdmin  {
     }
 
 
-    public EverestListener getEverestListener() {
-        return everestListener;
+    public EverestListener getM_everestListener() {
+        return m_everestListener;
     }
 
-    public String getRequest() {
-        return request;
+    public String getM_request() {
+        return m_request;
     }
 
     public ResourceFilter getM_currentFilter() {
         return m_currentFilter;
     }
 
+    public ListResourceContainer getM_lastRequestResult() {
+        return m_lastRequestResult;
+    }
 
+
+    public void compareResult(ListResourceContainer resultRequest) {
+        if((resultRequest.retrieve() == null ) && (m_lastRequestResult.retrieve() != null )){
+            m_everestListener.getNewResult(null);
+            m_lastRequestResult = resultRequest;
+
+        }else if((resultRequest.retrieve() == null) && (m_lastRequestResult.retrieve() == null )){
+
+        }else if((resultRequest.retrieve() != null) && (m_lastRequestResult.retrieve() == null)){
+            m_everestListener.getNewResult(resultRequest.retrieve());
+            m_lastRequestResult = resultRequest;
+
+        }else{
+
+            if(!m_lastRequestResult.equals(resultRequest)){
+                m_lastRequestResult = resultRequest;
+                m_everestListener.getNewResult(resultRequest.retrieve());
+
+            }else{
+                m_lastRequestResult = resultRequest;
+
+            }
+        }
+    }
 }
