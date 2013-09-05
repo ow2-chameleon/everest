@@ -2,6 +2,7 @@ package org.ow2.chameleon.everest.client.casaTest.device;
 
 import org.ow2.chameleon.everest.client.casaTest.AbstractResourceCollection;
 import org.ow2.chameleon.everest.client.casaTest.zone.ZoneManager;
+import org.ow2.chameleon.everest.core.Everest;
 import org.ow2.chameleon.everest.impl.DefaultParameter;
 import org.ow2.chameleon.everest.impl.DefaultRelation;
 import org.ow2.chameleon.everest.impl.ImmutableResourceMetadata;
@@ -80,6 +81,7 @@ public class GenericDeviceResource extends AbstractResourceCollection {
                 } else if (key.contentEquals("State Activated")) {
                     m_genericDevice.setSTATE_ACTIVATED(newMap.get(key).toString());
                 }
+                Everest.postResource(ResourceEvent.UPDATED,this);
             }
         }
         return this;

@@ -1,0 +1,1046 @@
+options {
+    STATIC=false;
+}
+
+PARSER_BEGIN(QueryFilter)
+
+package org.ow2.chameleon.everest.query;
+
+import java.io.StringReader;
+import org.ow2.chameleon.everest.services.ResourceFilter;
+import org.ow2.chameleon.everest.filters.ResourceFilters;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import org.ow2.chameleon.everest.services.EverestService;
+import org.ow2.chameleon.everest.services.RelationFilter;
+import org.ow2.chameleon.everest.filters.RelationFilters;
+
+public class QueryFilter {
+    String m_parameter="";
+    String m_stringValue="";
+    double m_numberValue;
+     ResourceFilter m_filter;
+    StringBuffer m_stringBuffer = new StringBuffer();
+     /**
+     * Service of everest-core
+     */
+     public static EverestService m_everest;
+     public QueryFilter(String string,EverestService everest){
+            this(new StringReader(string));
+            m_everest = everest;
+
+     }
+}
+
+PARSER_END(QueryFilter)
+
+/**
+* Skipped token
+*/
+
+TOKEN : {<SPACE_CHARACTER: ([" ","\n","\r","\t"])+ > }
+
+
+/**
+* Custom token
+*/
+TOKEN : { < START_FILTER: "{" > }
+TOKEN : { < END_FILTER: "}" > }
+TOKEN : { < PV_DELIMITER: ":" >}
+TOKEN : { < START_OR: "[" >}
+TOKEN : { < END_OR: "]" >}
+TOKEN : { < STRING_DELIMITER: (["\"","\'"]) >}
+TOKEN : { < VALUE: (["a"-"z","A"-"Z","0"-"9","."])+ > }
+
+/*
+*Special  parameter
+*/
+TOKEN : { < OR: "$or" > }
+TOKEN : { < RELATION: "$relation" > }
+TOKEN : { < CHILD: "$child" > }
+TOKEN : { < NOT: "$not" > }
+TOKEN : { < AND: "," > }
+
+/*
+*Special  value
+*/
+TOKEN : { < EXIST: "$exist" > }
+
+/*
+*Special numeric SubFilter
+*/
+TOKEN : { < GREATER_THAN: "$gt" > }
+TOKEN : { < LOWER_THAN: "$lt" > }
+TOKEN : { < EQUALS: "$equals" > }
+TOKEN : { < EMPTY: "$empty" > }
+
+/*
+*Special string SubFilter
+*/
+TOKEN : { < START: "$start" > }
+TOKEN : { < END: "$end" > }
+TOKEN : { < CONTAINS: "$contains" > }
+TOKEN : { < REGEXP: "$regexp" > }
+
+/*
+*Special relation SubFilter
+*/
+TOKEN : { < HREF: "$href" > }
+TOKEN : { < ACTION: "$action" > }
+TOKEN : { < NAME: "$name" > }
+TOKEN : { < RESOURCE: "$resource" > }
+
+/*
+*Special type SubFilter
+*/
+TOKEN : { < TYPE: "$type" > }
+
+/*
+*Special Logical SubFilter
+*/
+TOKEN : { < IN: "$in" > }
+
+ResourceFilter input() :
+{}
+{
+  m_filter = parameterFilter() <EOF>
+  {return m_filter;}
+}
+
+void parameter(Token t) :
+{}
+{
+    {m_stringBuffer.append(t.image);}
+    {m_parameter = m_stringBuffer.toString();}
+    {m_stringBuffer.setLength(0);}
+}
+
+void numberValue() :
+{
+     Token t;
+}
+{
+    t = <VALUE>
+    { try{
+        m_numberValue = Double.parseDouble(t.image);
+       }catch(NumberFormatException e){
+          e.printStackTrace();
+       }
+    }
+
+}
+
+void stringValue() :
+{
+
+     Token t;
+}
+{
+    (t = <VALUE> {m_stringBuffer.append(t.image);} stringValue()
+
+     |
+
+     t = <SPACE_CHARACTER> {m_stringBuffer.append(t.image);} stringValue()
+
+     |
+
+     <STRING_DELIMITER>  {m_stringValue = m_stringBuffer.toString(); m_stringBuffer.setLength(0);}  )
+
+
+}
+
+
+ResourceFilter parameterFilter() :
+{
+    String returnFilter="";
+    String delimiter="";
+    ResourceFilter filter = null;
+     List<ResourceFilter> filters = new ArrayList();
+     Token t;
+}
+{
+     skipSpace()
+     <START_FILTER>
+      skipSpace()
+     (
+
+      t = <VALUE>
+      parameter(t)
+       skipSpace()
+      <PV_DELIMITER>
+
+      skipSpace()
+      (
+          <STRING_DELIMITER> stringValue() filter=createStringEqualsFilter()
+      |
+          <START_FILTER> filter=subValueFilter()
+      |
+         <EXIST>
+         {filter = ResourceFilters.keyExist(m_parameter);}
+      |
+          <EMPTY>
+          {filter = ResourceFilters.empty(m_parameter);}
+      |
+          <START_OR>
+          skipSpace()
+          {filter = arrayFilter();}
+
+      |
+          numberValue() filter=createNumberEqualsFilter()
+      )
+     |
+        <NOT>
+        skipSpace()
+        <PV_DELIMITER>
+        skipSpace()
+        <START_FILTER>
+        skipSpace()
+        {
+          filters = subParameterFilter();
+        }
+     |
+       <OR>
+       skipSpace()
+       <PV_DELIMITER>
+       skipSpace()
+       <START_OR>
+       skipSpace()
+       <START_FILTER>
+       skipSpace()
+       {
+          filters = subParameterFilter();
+          filter = ResourceFilters.or(filters);
+       }
+       skipSpace()
+       <END_OR>
+     |
+      <START_FILTER>
+      skipSpace()
+      {
+        filters = subParameterFilter();
+        filter = ResourceFilters.and(filters);
+      }
+      |
+         <RELATION>
+         skipSpace()
+         <PV_DELIMITER>
+         skipSpace()
+         <START_FILTER>
+         skipSpace()
+         {
+            filter = relationFilter();
+         }
+
+     )
+
+     skipSpace()
+     <END_FILTER>
+     skipSpace()
+     {
+        return filter;
+     }
+}
+
+
+ResourceFilter arrayFilter() :
+{
+   ResourceFilter filter = null;
+   List<ResourceFilter> filters = new ArrayList();
+}
+{
+ (
+  <STRING_DELIMITER>
+   (
+       stringValue()
+       {filters.add(ResourceFilters.arrayContains(m_parameter,m_stringValue));}
+       (
+         <AND>
+         <STRING_DELIMITER>
+         |
+         {}
+       )
+   )+
+   <END_OR>
+   {filter = ResourceFilters.or(filters);}
+   {return filter;}
+  |
+  (
+    numberValue()
+     {filters.add(ResourceFilters.arrayContains(m_parameter,m_numberValue));}
+     (
+       <AND>
+       |
+       {}
+     )
+   )+
+   <END_OR>
+   {filter = ResourceFilters.or(filters);}
+   {return filter;}
+ )
+}
+
+ResourceFilter relationFilter() :
+{
+ List<RelationFilter> relationFilters = null;
+ RelationFilter relationFilter = null;
+ ResourceFilter resourceFilter = null;
+ Token t;
+}
+{
+
+    (
+        <HREF>
+        skipSpace()
+        <PV_DELIMITER>
+        skipSpace()
+        (
+            <STRING_DELIMITER> stringValue() {relationFilter = buildHrefEqualFilter();}
+        |
+            <START_FILTER> {relationFilter = HrefFilter();}
+        )
+     |
+        <NAME>
+        skipSpace()
+        <PV_DELIMITER>
+        skipSpace()
+        (
+            <STRING_DELIMITER> stringValue() {relationFilter = buildNameEqualFilter();}
+        |
+            <START_FILTER> {relationFilter = nameFilter();}
+        )
+     |
+        <ACTION>
+        skipSpace()
+        <PV_DELIMITER>
+        skipSpace()
+        <STRING_DELIMITER> stringValue() {relationFilter = buildActionEqualFilter();}
+     |
+        <RESOURCE>
+        skipSpace()
+        <PV_DELIMITER>
+        {
+            relationFilter = buildResourceBasedRelationFilter();
+        }
+
+     |
+        <START_FILTER>
+        skipSpace()
+        {
+            relationFilters.addAll(subRelationFilter());
+            relationFilter = RelationFilters.and(relationFilters);
+        }
+
+      |
+        <OR>
+        skipSpace()
+        skipSpace()
+        <PV_DELIMITER>
+        skipSpace()
+        <START_OR>
+        skipSpace()
+        <START_FILTER>
+        skipSpace()
+        {
+          relationFilters.addAll(subRelationFilter());
+          relationFilter = RelationFilters.or(relationFilters);
+        }
+        skipSpace()
+        <END_OR>
+
+    )
+    skipSpace()
+    <END_FILTER>
+    skipSpace()
+    {
+        return  ResourceFilters.hasAtLeastRelationFilterMatch(relationFilter);
+    }
+}
+
+List<RelationFilter> subRelationFilter() :
+{
+ List<RelationFilter> filters = new ArrayList<RelationFilter>();
+ RelationFilter relationFilter = null;
+ ResourceFilter resourceFilter = null;
+ Token t;
+}
+{
+     skipSpace()
+    (
+        <HREF>
+        skipSpace()
+        <PV_DELIMITER>
+        skipSpace()
+        (
+            <STRING_DELIMITER> stringValue() {filters.add(buildHrefEqualFilter());}
+        |
+            <START_FILTER> {filters.add(HrefFilter());}
+        )
+     |
+        <NAME>
+        skipSpace()
+        <PV_DELIMITER>
+        skipSpace()
+        (
+            <STRING_DELIMITER> stringValue() {filters.add(buildNameEqualFilter());}
+        |
+            <START_FILTER> {filters.add(nameFilter());}
+        )
+     |
+        <ACTION>
+        skipSpace()
+        <PV_DELIMITER>
+        skipSpace()
+        <STRING_DELIMITER> stringValue() {filters.add(buildActionEqualFilter());}
+     |
+        <RESOURCE>
+        skipSpace()
+        <PV_DELIMITER>
+        {
+           filters.add(buildResourceBasedRelationFilter());
+        }
+
+
+    )
+    skipSpace()
+    <END_FILTER>
+    (
+           (
+              <AND>
+              skipSpace()
+              <START_FILTER>
+              {filters.addAll(subRelationFilter());}
+           )
+           |
+           {return filters;}
+          )
+
+     {return filters;}
+}
+
+
+
+RelationFilter HrefFilter() :
+{
+ RelationFilter filter;
+}
+{
+    skipSpace()
+     (
+        <EQUALS>
+         skipSpace()
+         <PV_DELIMITER>
+         skipSpace()
+         filter = buildHrefEqualFilter()
+      |
+        <END>
+         skipSpace()
+         <PV_DELIMITER>
+         skipSpace()
+         filter = buildHrefEndFilter()
+      |
+        <START>
+        skipSpace()
+        <PV_DELIMITER>
+        skipSpace()
+        filter = buildHrefStartFilter()
+     |
+       <CONTAINS>
+        skipSpace()
+        <PV_DELIMITER>
+        skipSpace()
+        filter = buildHrefContainsFilter()
+     |
+       <REGEXP>
+       skipSpace()
+       <PV_DELIMITER>
+       skipSpace()
+       filter = buildHrefRegexpFilter()
+     )
+     skipSpace()
+     <END_FILTER>
+     skipSpace()
+     {return filter;}
+}
+
+RelationFilter nameFilter() :
+{
+ RelationFilter filter;
+}
+{
+ skipSpace()
+     (
+        <EQUALS>
+         skipSpace()
+         <PV_DELIMITER>
+         skipSpace()
+         filter = buildNameEqualFilter()
+      |
+        <END>
+         skipSpace()
+         <PV_DELIMITER>
+         skipSpace()
+         filter = buildNameEndFilter()
+      |
+        <START>
+        skipSpace()
+        <PV_DELIMITER>
+        skipSpace()
+        filter = buildNameStartFilter()
+     |
+       <CONTAINS>
+        skipSpace()
+        <PV_DELIMITER>
+        skipSpace()
+        filter = buildNameContainsFilter()
+     |
+       <REGEXP>
+       skipSpace()
+       <PV_DELIMITER>
+       skipSpace()
+       filter = buildNameRegexpFilter()
+     )
+     skipSpace()
+     <END_FILTER>
+     skipSpace()
+     {return filter;}
+}
+
+
+List<ResourceFilter> subParameterFilter() :
+{
+
+      List<ResourceFilter> filters = new ArrayList();
+    ResourceFilter filter = null;
+    Token t;
+}
+{
+        skipSpace()
+     (
+       t = <VALUE>
+       parameter(t)
+        skipSpace()
+       <PV_DELIMITER>
+
+       skipSpace()
+       (
+           <STRING_DELIMITER> stringValue() filter=createStringEqualsFilter()
+       |
+           <START_FILTER> filter=subValueFilter()
+       |
+            <EXIST>
+            {filter = ResourceFilters.keyExist(m_parameter);}
+       |
+           <EMPTY>
+           {filter = ResourceFilters.empty(m_parameter);}
+       |
+             <START_OR>
+             skipSpace()
+             {filter = arrayFilter();}
+       |
+           numberValue() filter=createNumberEqualsFilter()
+       )
+       {filters.add(filter);}
+      |
+         <NOT>
+         skipSpace()
+         <PV_DELIMITER>
+         skipSpace()
+         <START_FILTER>
+         skipSpace()
+         {
+             List<ResourceFilter> filtersTempNot = subParameterFilter();
+             ResourceFilter filterTemp = ResourceFilters.and(filtersTempNot);
+             filter = ResourceFilters.not(filterTemp);
+             filters.add(filter);
+         }
+      |
+        <OR>
+        skipSpace()
+        <PV_DELIMITER>
+        skipSpace()
+        <START_OR>
+        skipSpace()
+        <START_FILTER>
+        skipSpace()
+        {
+           List<ResourceFilter> filtersTempOr = subParameterFilter();
+           filter = ResourceFilters.or(filtersTempOr);
+           filters.add(filter);
+        }
+        skipSpace()
+        <END_OR>
+      |
+       <START_FILTER>
+       skipSpace()
+       {
+          List<ResourceFilter> filtersTempAnd = subParameterFilter();
+         filter = ResourceFilters.and(filtersTempAnd);
+         filters.add(filter);
+       }
+      )
+
+      <END_FILTER>
+      (
+       (
+          <AND>
+          skipSpace()
+          <START_FILTER>
+          {filters.addAll(subParameterFilter());}
+       )
+       |
+       {return filters;}
+      )
+
+      {return filters;}
+}
+
+
+ResourceFilter subValueFilter() :
+{
+  ResourceFilter filter = null;
+  List<ResourceFilter> filters = new ArrayList();
+}
+{
+    skipSpace()
+    (
+        <GREATER_THAN>
+         skipSpace()
+         <PV_DELIMITER>
+         skipSpace()
+         filter = buildGreaterThanFilter()
+     |
+        <LOWER_THAN>
+         skipSpace()
+         <PV_DELIMITER>
+         skipSpace()
+         filter = buildLowerThanFilter()
+     |
+       <EQUALS>
+        skipSpace()
+        <PV_DELIMITER>
+        skipSpace()
+        filter = buildEqualFilter()
+     |
+       <END>
+        skipSpace()
+        <PV_DELIMITER>
+        skipSpace()
+        filter = buildEndFilter()
+     |
+       <START>
+       skipSpace()
+       <PV_DELIMITER>
+       skipSpace()
+       filter = buildStartFilter()
+    |
+      <CONTAINS>
+       skipSpace()
+       <PV_DELIMITER>
+       skipSpace()
+       filter = buildContainFilter()
+    |
+      <REGEXP>
+      skipSpace()
+      <PV_DELIMITER>
+      skipSpace()
+
+      filter = buildRegexpFilter()
+    |
+      <TYPE>
+      skipSpace()
+      <PV_DELIMITER>
+      skipSpace()
+      filter = buildTypeFilter()
+    |
+     <IN>
+     skipSpace()
+     <PV_DELIMITER>
+     skipSpace()
+     <START_OR>
+     skipSpace()
+     (
+        <STRING_DELIMITER>
+        {filter = inStringFilter();}
+     |
+        {filter = inNumberFilter();}
+     )
+    |
+       <NOT>
+       skipSpace()
+       <PV_DELIMITER>
+       skipSpace()
+       <START_FILTER>
+       skipSpace()
+       {
+               filters = subSubValueFilter();
+               ResourceFilter filterTemp = ResourceFilters.and(filters);
+               filter = ResourceFilters.not(filterTemp);
+       }
+    |
+      <OR>
+      skipSpace()
+      <PV_DELIMITER>
+      skipSpace()
+      <START_OR>
+      skipSpace()
+      <START_FILTER>
+      skipSpace()
+      {
+        filters = subSubValueFilter();
+        filter = ResourceFilters.or(filters);
+      }
+      skipSpace()
+      <END_OR>
+    |
+     <START_FILTER>
+     skipSpace()
+     {
+        filters = subSubValueFilter();
+        filter = ResourceFilters.and(filters);
+     }
+
+    )
+    skipSpace()
+    <END_FILTER>
+    skipSpace()
+    {return filter;}
+}
+
+ResourceFilter inStringFilter() :
+{
+ ResourceFilter filter = null;
+ List<ResourceFilter> filters = new ArrayList();
+}
+{
+    (   stringValue()
+        {filters.add(ResourceFilters.equalsTo(m_parameter,m_stringValue));}
+        (
+          <AND>
+          <STRING_DELIMITER>
+          |
+          {}
+        )
+    )+
+    <END_OR>
+    {filter = ResourceFilters.or(filters);}
+    {return filter;}
+}
+
+ResourceFilter inNumberFilter() :
+{
+   ResourceFilter filter = null;
+   List<ResourceFilter> filters = new ArrayList();
+}
+{
+  (   numberValue()
+      {filters.add(ResourceFilters.equalsTo(m_parameter,m_numberValue));}
+      (
+        <AND>
+        |
+        {}
+      )
+  )+
+  <END_OR>
+  {filter = ResourceFilters.or(filters);}
+  {return filter;}
+
+}
+
+List<ResourceFilter> subSubValueFilter() :
+{
+  List<ResourceFilter> filters = new ArrayList();
+}
+{
+    skipSpace()
+    (
+          <GREATER_THAN>
+           skipSpace()
+           <PV_DELIMITER>
+           skipSpace()
+           {filters.add(buildGreaterThanFilter());}
+           skipSpace()
+      |
+             <LOWER_THAN>
+              skipSpace()
+              <PV_DELIMITER>
+              skipSpace()
+             { filters.add(buildLowerThanFilter());}
+              skipSpace()
+      |
+            <EQUALS>
+             skipSpace()
+             <PV_DELIMITER>
+             skipSpace()
+             {filters.add(buildEqualFilter());}
+             skipSpace()
+      |
+            <END>
+             skipSpace()
+             <PV_DELIMITER>
+             skipSpace()
+             {filters.add(buildEndFilter());}
+             skipSpace()
+      |
+            <START>
+            skipSpace()
+            <PV_DELIMITER>
+            skipSpace()
+            {filters.add(buildStartFilter());}
+            skipSpace()
+     |
+           <CONTAINS>
+            skipSpace()
+            <PV_DELIMITER>
+            skipSpace()
+            {filters.add( buildContainFilter());}
+            skipSpace()
+     |
+           <REGEXP>
+           skipSpace()
+           <PV_DELIMITER>
+           skipSpace()
+           {filters.add( buildRegexpFilter());}
+           skipSpace()
+     |
+           <TYPE>
+           skipSpace()
+           <PV_DELIMITER>
+           skipSpace()
+           {filters.add(buildTypeFilter());}
+           skipSpace()
+     |
+          <IN>
+          skipSpace()
+          <PV_DELIMITER>
+     |
+          <END_FILTER>
+          (
+           (
+             <AND>
+             skipSpace()
+             <START_FILTER>
+             {filters.addAll(subSubValueFilter());}
+           )
+           |
+           {
+            filters.add(ResourceFilters.none());
+            return filters;
+           }
+          )
+     |
+         <OR>
+         skipSpace()
+         <PV_DELIMITER>
+         skipSpace()
+         <START_OR>
+         skipSpace()
+         <START_FILTER>
+         skipSpace()
+         {
+            List<ResourceFilter> returnFilters = new ArrayList();
+            returnFilters.addAll(subSubValueFilter());
+            filters.add(ResourceFilters.or(returnFilters));
+         }
+         skipSpace()
+         <END_OR>
+    )
+
+    <END_FILTER>
+    (
+     (
+        <AND>
+        skipSpace()
+        <START_FILTER>
+        {filters.addAll(subSubValueFilter());}
+     )
+     |
+     {return filters;}
+     )
+
+    {return filters;}
+}
+
+
+void skipSpace() :
+{}
+{
+  <SPACE_CHARACTER> {} | {}
+}
+
+
+/*
+* Filter Builder
+*/
+ResourceFilter createStringEqualsFilter() :
+{
+   List<ResourceFilter> filters = new ArrayList();
+}
+{
+    {
+        filters.add(ResourceFilters.arrayContains(m_parameter,m_stringValue));
+        filters.add(ResourceFilters.equalsTo(m_parameter,m_stringValue));
+        return ResourceFilters.or(filters);
+    }
+}
+
+ResourceFilter createNumberEqualsFilter() :
+{
+   List<ResourceFilter> filters = new ArrayList();
+}
+{
+    {
+        filters.add(ResourceFilters.arrayContains(m_parameter,m_numberValue));
+        filters.add(ResourceFilters.equalsTo(m_parameter,m_numberValue));
+        return ResourceFilters.or(filters);
+    }
+}
+
+ResourceFilter buildEmptyFilter() :
+{}
+{
+     {return ResourceFilters.empty(m_parameter);}
+}
+
+ResourceFilter buildGreaterThanFilter() :
+{}
+{
+     numberValue()
+
+     {return ResourceFilters.greaterThan(m_parameter,m_numberValue);}
+}
+
+ResourceFilter buildLowerThanFilter() :
+{}
+{
+     numberValue()
+     {return ResourceFilters.lowerThan(m_parameter,m_numberValue);}
+}
+
+ResourceFilter buildEqualFilter() :
+{}
+{
+    (
+        <STRING_DELIMITER> stringValue() {return createStringEqualsFilter();}
+    |
+        numberValue() {return createNumberEqualsFilter();}
+    )
+}
+
+
+ResourceFilter buildEndFilter() :
+{}
+{
+    <STRING_DELIMITER> stringValue() {return ResourceFilters.stringEndWith(m_parameter,m_stringValue);}
+}
+
+ResourceFilter buildStartFilter() :
+{}
+{
+     <STRING_DELIMITER> stringValue() {return ResourceFilters.stringStartWith(m_parameter,m_stringValue);}
+}
+
+ResourceFilter buildContainFilter() :
+{}
+{
+    <STRING_DELIMITER> stringValue() {return ResourceFilters.stringContains(m_parameter,m_stringValue);}
+}
+
+RelationFilter buildResourceBasedRelationFilter() :
+{}
+{
+     {
+        ResourceFilter resourceFilter = parameterFilter();
+        RelationFilter relationFilter = RelationFilters.targetChild(m_everest,resourceFilter);
+        return relationFilter;
+     }
+}
+
+
+RelationFilter buildHrefContainsFilter() :
+{}
+{
+     {
+        return RelationFilters.containsHref(m_stringValue);
+     }
+}
+
+RelationFilter buildHrefEqualFilter() :
+{}
+{
+      { return RelationFilters.hasHref(m_stringValue);}
+}
+
+RelationFilter buildHrefStartFilter() :
+{}
+{
+     {return RelationFilters.startWithHref(m_stringValue);}
+}
+
+RelationFilter buildHrefEndFilter() :
+{}
+{
+     {return RelationFilters.endWithHref(m_stringValue);}
+}
+
+RelationFilter buildHrefRegexpFilter() :
+{}
+{
+     {return null;}
+}
+
+
+RelationFilter buildNameEqualFilter() :
+{}
+{
+     {return RelationFilters.hasName(m_stringValue);}
+}
+
+RelationFilter buildNameContainsFilter() :
+{}
+{
+     {
+        return RelationFilters.containsName(m_stringValue);
+     }
+}
+
+RelationFilter buildNameStartFilter() :
+{}
+{
+     {return RelationFilters.startWithName(m_stringValue);}
+}
+
+RelationFilter buildNameEndFilter() :
+{}
+{
+     {return RelationFilters.endWithName(m_stringValue);}
+}
+
+RelationFilter buildNameRegexpFilter() :
+{}
+{
+     {return null;}
+}
+
+
+RelationFilter buildActionEqualFilter() :
+{}
+{
+     {return RelationFilters.hasAction(m_stringValue);}
+}
+
+
+ResourceFilter buildRegexpFilter() :
+{}
+{
+     <STRING_DELIMITER>
+     stringValue()
+     {return ResourceFilters.regExp(m_parameter,m_stringValue);}
+}
+
+ResourceFilter buildTypeFilter() :
+{}
+{
+     {return null;}
+}
+

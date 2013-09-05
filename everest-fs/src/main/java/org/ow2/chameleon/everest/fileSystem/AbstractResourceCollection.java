@@ -25,9 +25,14 @@ import org.ow2.chameleon.everest.services.*;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 
 
 /**
@@ -75,7 +80,7 @@ public abstract class AbstractResourceCollection extends DefaultReadOnlyResource
     @Override
     public Resource process(Request request) throws IllegalActionOnResourceException, ResourceNotFoundException {
 
-       // 1) Substract our path from the request path.
+        // 1) Substract our path from the request path.
         Path rel = request.path().subtract(this.getPath());
         // 2) The request is targeting us...
         if (request.path().equals(getPath())) {
@@ -95,9 +100,9 @@ public abstract class AbstractResourceCollection extends DefaultReadOnlyResource
         boolean isDirectory = true;
         File tempFileObject = null;
 
-       tempFileObject = new File(request.path().subtract(FileSystemRootResource.getInstance().getPath()).toString());
+        tempFileObject = new File(request.path().subtract(FileSystemRootResource.getInstance().getPath()).toString());
         if (!(tempFileObject.exists())) {
-           throw new ResourceNotFoundException(request);
+            throw new ResourceNotFoundException(request);
         }
 
 
@@ -202,6 +207,8 @@ public abstract class AbstractResourceCollection extends DefaultReadOnlyResource
         String name = null;
         String type = null;
         String url = null;
+        String checksum = null;
+        Map<Object,Object> headers = null;
         Map<String, ?> newMap = request.parameters();
         if (newMap != null) {
             for (String key : newMap.keySet()) {
@@ -210,63 +217,71 @@ public abstract class AbstractResourceCollection extends DefaultReadOnlyResource
                 }
                 if (key.equalsIgnoreCase("type")) {
                     type = newMap.get(key).toString();
-                    System.out.println("Type" + type);
                 }
                 if (key.equalsIgnoreCase("url")) {
                     url = newMap.get(key).toString();
-                    downloadAndVerifyBundle(m_representedFile, url);
+                }
+                if (key.equalsIgnoreCase("checksum")) {
+                    checksum = newMap.get(key).toString();
+                }
+                if (key.equalsIgnoreCase("headers")) {
+                    try
+                    {
+                        headers = (Map<Object,Object>) newMap.get(key);
+                    }  catch (Exception e){
+                       headers = null;
+                    }
                 }
             }
-            if (name == null) {
-                return null;
-            }
-            if (type == null) {
-                return null;
+
+            if (url != null) {
+                downloadAndVerifyBundle(m_representedFile, url,checksum,headers);
             }
 
-            if (type.equalsIgnoreCase("file")) {
+            if (name != null && type != null) {
+                if (type.equalsIgnoreCase("file")) {
 
-                File file = new File(getFilePath() + "/" + name);
-                try {
-                    if (file.createNewFile()) {
-                        FileResource fileResource = new FileResource(name, getPath(), file,this);
-                        m_subFileResource.add(fileResource);
-                        return fileResource;
+                    File file = new File(getFilePath() + "/" + name);
+                    try {
+                        if (file.createNewFile()) {
+                            FileResource fileResource = new FileResource(name, getPath(), file,this);
+                            m_subFileResource.add(fileResource);
+                            return fileResource;
+                        } else {
+                            return null;
+                        }
+
+                    } catch (IOException e) {
+                        return null;
+                    }
+
+                } else if (type.equalsIgnoreCase("directory")) {
+                    File file = new File(getFilePath() + "/" + name);
+
+
+                    if (file.mkdir()) {
+                        DirectoryResource directoryResource = new DirectoryResource(name, getPath(), file,this);
+                        m_subDirectoryResource.add(directoryResource);
+                        return directoryResource;
                     } else {
                         return null;
                     }
 
-                } catch (IOException e) {
-                    return null;
-                }
 
-            } else if (type.equalsIgnoreCase("directory")) {
-                File file = new File(getFilePath() + "/" + name);
-
-
-                if (file.mkdir()) {
-                    DirectoryResource directoryResource = new DirectoryResource(name, getPath(), file,this);
-                    m_subDirectoryResource.add(directoryResource);
-                    return directoryResource;
                 } else {
                     return null;
                 }
 
-
-            } else {
-                return null;
             }
-
         }
         return null;
-
     }
 
     public String getFilePath() {
         return m_representedFile.getPath();
     }
 
-    private File downloadAndVerifyBundle(File directory, String urlString) {
+    private File downloadAndVerifyBundle(File directory, String urlString, String checksum,Map<Object,Object> headers) {
         File cachedFile = null;
         InputStream input = null;
         OutputStream output = null;
@@ -299,7 +314,43 @@ public abstract class AbstractResourceCollection extends DefaultReadOnlyResource
                 }
             }
         }
-        return cachedFile;
+        if (checksum!=null) {
+            try {
+                String fileChecksum = checksum(cachedFile, "SHA1");
+                if (!fileChecksum.equals(checksum)) {
+                    return null;
+                }
+            } catch (NoSuchAlgorithmException e) {
+                // log
+                System.out.println("Failed to find the checksum algorithm " + "SHA1");
+            } catch (IOException e) {
+                return null;
+            }
+        }
+
+        try {
+            // check if the file contains the bundle with correct manifest
+            JarFile jarFile = new JarFile(cachedFile);
+            Manifest manifest = jarFile.getManifest();
+            Attributes mainAttributes = manifest.getMainAttributes();
+            if(headers!=null){
+                for (Map.Entry entry : headers.entrySet()) {
+                    String keyString = entry.getKey().toString();
+                    if (mainAttributes.getValue(keyString) != null) {
+                        if (!mainAttributes.getValue(keyString).equals(headers.get(keyString))) {
+                            // FAIL! should delete the downloaded file
+                            deleteDirectory(directory);
+                            //             FileUtils.deleteDirectory(directory);
+                            return null;
+                        }
+                    }
+                }
+            }
+            return cachedFile;
+        }catch (IOException e) {
+            // log
+            return null;
+        }
     }
 
     private String calculateFileName(URL url) {
@@ -355,5 +406,44 @@ public abstract class AbstractResourceCollection extends DefaultReadOnlyResource
                 fileList[i].delete();
             }
         }
+    }
+
+    /**
+     * Find the checksum of the file according to the algorithm name
+     * @param file file
+     * @param algo algorithm name
+     * @return checksum
+     * @throws NoSuchAlgorithmException if cannot find the algorithm
+     * @throws IOException can occur while reading the given file
+     */
+    public  String checksum(File file, String algo) throws NoSuchAlgorithmException, IOException {
+        MessageDigest sha = MessageDigest.getInstance(algo);
+        FileInputStream fis = new FileInputStream(file);
+
+        byte[] data = new byte[1024];
+        int read = 0;
+        while ((read = fis.read(data)) != -1) {
+            sha.update(data, 0, read);
+        }
+        ;
+        byte[] hashBytes = sha.digest();
+
+        return checksumBytesToString(hashBytes);
+    }
+
+    /**
+     * Converts a message digest byte array into a String based
+     * on the hex values appearing in the array.
+     */
+    private  String checksumBytesToString(byte[] digestBytes) {
+        StringBuffer hexString = new StringBuffer();
+        for (int i=0; i<digestBytes.length; i++) {
+            String hex=Integer.toHexString(0xff & digestBytes[i]);
+            if(hex.length() == 1) {
+                hexString.append('0');
+            }
+            hexString.append(hex);
+        }
+        return hexString.toString();
     }
 }

@@ -16,11 +16,16 @@
 package org.ow2.chameleon.everest.client;
 
 
+import org.osgi.framework.*;
+import org.osgi.service.event.Event;
+import org.osgi.service.event.EventConstants;
+import org.osgi.service.event.EventHandler;
 import org.osgi.util.tracker.ServiceTracker;
 import org.osgi.util.tracker.ServiceTrackerCustomizer;
 import org.ow2.chameleon.everest.impl.DefaultRequest;
 import org.ow2.chameleon.everest.services.*;
-import org.osgi.framework.*;
+
+import java.util.*;
 
 
 /*
@@ -30,7 +35,9 @@ import org.osgi.framework.*;
  *
  */
 
-public class EverestClient extends ResourceContainer implements ServiceTrackerCustomizer {
+public class EverestClient extends ResourceContainer implements ServiceTrackerCustomizer,EventHandler {
+
+
 
     /**
      * Service of everest-core
@@ -41,6 +48,7 @@ public class EverestClient extends ResourceContainer implements ServiceTrackerCu
      * path of the current resource point by the EverestClient
      */
     public Path m_currentPath;
+
 
     /**
      * @return @m_currentPath
@@ -60,9 +68,28 @@ public class EverestClient extends ResourceContainer implements ServiceTrackerCu
      */
     private  BundleContext m_context;
 
+    private Map<EverestListener, CustomEventAdmin> m_listeners = new HashMap<EverestListener, CustomEventAdmin>();
+
+    private Object m_lock = new Object();
+
     /**
      * @param m_everest : Need the everest core service to browse the resource tree
      */
+    public EverestClient(BundleContext context, EverestService m_everest) {
+        super(null);
+        m_serviceTracker = null;
+        m_context = context;
+        try {
+            m_resource = m_everest.process(new DefaultRequest(Action.READ, Path.from("/"), null));
+            m_currentPath = m_resource.getPath();
+        } catch (IllegalActionOnResourceException e) {
+
+        } catch (ResourceNotFoundException e) {
+        }
+        this.m_everest = m_everest;
+        registerEventHandler();
+    }
+
     public EverestClient(EverestService m_everest) {
         super(null);
         m_serviceTracker = null;
@@ -75,8 +102,6 @@ public class EverestClient extends ResourceContainer implements ServiceTrackerCu
         } catch (ResourceNotFoundException e) {
         }
         this.m_everest = m_everest;
-
-
     }
 
     public EverestClient(BundleContext context) {
@@ -106,7 +131,7 @@ public class EverestClient extends ResourceContainer implements ServiceTrackerCu
         }
         m_serviceTracker = new ServiceTracker(context,serviceFilter, this);
         m_serviceTracker.open();
-
+        registerEventHandler();
     }
 
     /**
@@ -236,7 +261,33 @@ public class EverestClient extends ResourceContainer implements ServiceTrackerCu
 
 
 
+    public ListResourceContainer subscribe(EverestListener everestListener, String request) {
+        synchronized (m_lock) {
 
+            if (m_listeners.keySet().contains(everestListener))
+                throw new IllegalArgumentException("Listener already put in EverestListener list");
+            else {
+                CustomEventAdmin customEventAdmin = new CustomEventAdmin(m_context,everestListener,request,this);
+                m_listeners.put(everestListener, customEventAdmin);
+                return  customEventAdmin.getM_lastRequestResult();
+            }
+        }
+    }
+
+    public void unSubscribe(EverestListener  everestListener) {
+        //defensive method
+        synchronized (m_lock) {
+            if (m_listeners.keySet().contains(everestListener))
+                m_listeners.remove(everestListener);
+            //else do nothing
+        }
+    }
+
+
+    /*
+    * =================================
+    * SERVICE TRACKER IMPLEMENTATION
+     */
     public Object addingService(ServiceReference serviceReference) {
         if ( m_everest == null){
 
@@ -263,6 +314,72 @@ public class EverestClient extends ResourceContainer implements ServiceTrackerCu
     public void removedService(ServiceReference serviceReference, Object o) {
         m_everest = null;
     }
+    /* ================================*/
+
+
+    /*
+   * =================================
+   * EVENT ADMIN HANDLER
+    */
+    public void handleEvent(Event event) {
+
+        if ((m_listeners != null)&&(!m_listeners.isEmpty())){
+            Object eventType = event.getProperty("eventType");
+            System.out.println("Event !!!");
+            for(EverestListener currentListener : m_listeners.keySet()){
+                if (ResourceEvent.CREATED.toString().equals(eventType)) {
+                    m_listeners.get(currentListener).CreateEvent();
+
+                } else if (ResourceEvent.DELETED.toString().equals(eventType)) {
+                    m_listeners.get(currentListener).DeleteEvent();
+
+                } else if (ResourceEvent.UPDATED.toString().equals(eventType)) {
+                    m_listeners.get(currentListener).UpdateEvent();
+
+                }
+            }
+        }
+    }
+
+    protected void registerEventHandler() {
+        Hashtable<String, Object> props = new Hashtable<String, Object>();
+        props.put(EventConstants.EVENT_TOPIC, new  String[]{"everest/*", "everest"});
+        m_context.registerService(EventHandler.class.getName(), this, props);
+    }
+    /*================================
+    */
+
+
+    public List<Resource> getAllResource() {
+        try {
+            List<Resource> resourceList = new ArrayList<Resource>();
+            resourceList.add(this.read("/").retrieve());
+            List<Resource> returnList = getAllResourceRecursive(resourceList);
+            return returnList;
+        }catch (ResourceNotFoundException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+        return null;
+    }
+
+    private List<Resource> getAllResourceRecursive(List<Resource> resources) {
+        List<Resource> resourceList = new ArrayList<Resource>(resources);
+
+        for (Resource current : resources){
+            List<Resource> temp = current.getResources();
+            if ((temp != null) && (!temp.isEmpty())){
+                resourceList.addAll(getAllResourceRecursive(temp));
+            }
+
+        }
+
+        return resourceList;
+
+    }
+
+
+
+
 
     public boolean isEverestService(){
         if( m_everest == null){
@@ -270,5 +387,9 @@ public class EverestClient extends ResourceContainer implements ServiceTrackerCu
         }else {
             return true;
         }
+    }
+
+    public EverestService getM_everest() {
+        return m_everest;
     }
 }

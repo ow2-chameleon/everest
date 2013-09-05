@@ -29,9 +29,15 @@
     <version>1.0-SNAPSHOT</version>
 
     <packaging>pom</packaging>
-
+      <modules>
+          <module>src/it/everest-query-test</module>
+          <module>src/it/everest-fileSystem-test</module>
+          <module>src/it/everest-client-test</module>
+      </modules>
     <properties>
         <exam.version>3.0.1</exam.version>
+
+
         <url.version>1.5.1</url.version>
     </properties>
     <dependencies>
@@ -197,7 +203,6 @@
             <artifactId>everest-system</artifactId>
             <version>${everestSystemVersion}</version>
         </dependency>
-
         <dependency>
             <groupId>org.easytesting</groupId>
             <artifactId>fest-assert</artifactId>

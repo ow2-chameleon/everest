@@ -23,7 +23,7 @@ public class TestFileSystem extends CommonTest{
 
     @Test
     public void testRead() throws ResourceNotFoundException {
-        EverestClient testAPI = new EverestClient(everest);
+        EverestClient testAPI = new EverestClient(getContext());
 
         System.out.println("DIR PATH " + path);
         assertThat(testAPI.read("/fs"+path).retrieve("Type")).isEqualTo("DIRECTORY");
@@ -31,7 +31,7 @@ public class TestFileSystem extends CommonTest{
 
     @Test
     public void testCreateWithName() throws ResourceNotFoundException, IllegalActionOnResourceException {
-        EverestClient testAPI = new EverestClient(everest);
+        EverestClient testAPI = new EverestClient(getContext());
 
         System.out.println("DIR PATH " + path);
         testAPI.read("/fs"+path).create().with("type","FILE").with("name","toto").doIt();
@@ -51,7 +51,7 @@ public class TestFileSystem extends CommonTest{
 
     @Test
     public void testCreateWithDownload() throws ResourceNotFoundException, IllegalActionOnResourceException {
-        EverestClient testAPI = new EverestClient(everest);
+        EverestClient testAPI = new EverestClient(getContext());
         testAPI.read("/fs"+path).create().with("url","http://apache.opensourcemirror.com//felix/org.apache.felix.configadmin-1.6.0.jar").doIt();
         String filePath = "/fs"+path+"/org.apache.felix.configadmin-1.6.0.jar" ;
         assertThat(testAPI.read(filePath).retrieve("type")).isEqualTo("FILE");
@@ -68,7 +68,7 @@ public class TestFileSystem extends CommonTest{
 
     @Test
     public void testUpdatePermission() throws ResourceNotFoundException, IllegalActionOnResourceException {
-        EverestClient testAPI = new EverestClient(everest);
+        EverestClient testAPI = new EverestClient(getContext());
 
         System.out.println("DIR PATH " + path);
         testAPI.read("/fs"+path).create().with("type","FILE").with("name","toto").doIt();
@@ -95,7 +95,7 @@ public class TestFileSystem extends CommonTest{
 
     @Test
     public void testDeleteDirectory() throws ResourceNotFoundException, IllegalActionOnResourceException {
-        EverestClient testAPI = new EverestClient(everest);
+        EverestClient testAPI = new EverestClient(getContext());
 
         System.out.println("DIR PATH " + path);
         testAPI.read("/fs"+path).create().with("type","DIRECTORY").with("name","toto").doIt();
@@ -127,7 +127,6 @@ public class TestFileSystem extends CommonTest{
 
         }
     }
-
 
 }
 

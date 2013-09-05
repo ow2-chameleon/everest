@@ -45,5 +45,8 @@ public abstract class AbstractResourceCollection extends DefaultReadOnlyResource
         return relations;
     }
 
-
+    @Override
+    public boolean isObservable(){
+       return true;
+    }
 }

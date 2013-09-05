@@ -1,15 +1,23 @@
 package org.ow2.everest.client.test;
 
+import com.google.inject.Inject;
+import org.osgi.framework.BundleContext;
+import org.osgi.service.event.Event;
+import org.osgi.service.event.EventAdmin;
+import org.osgi.service.event.EventConstants;
+import org.osgi.service.event.EventHandler;
 import org.ow2.chameleon.everest.client.EverestClient;
-import org.ow2.chameleon.everest.services.Action;
-import org.ow2.chameleon.everest.services.IllegalActionOnResourceException;
-import org.ow2.chameleon.everest.services.Resource;
-import org.ow2.chameleon.everest.services.ResourceNotFoundException;
+import org.ow2.chameleon.everest.client.EverestListener;
+import org.ow2.chameleon.everest.client.ListResourceContainer;
+import org.ow2.chameleon.everest.core.Everest;
+import org.ow2.chameleon.everest.services.*;
 import org.junit.Test;
 import org.ops4j.pax.exam.spi.reactors.ExamReactorStrategy;
 import org.ops4j.pax.exam.spi.reactors.PerMethod;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 
 import static org.fest.assertions.Assertions.assertThat;
@@ -17,21 +25,21 @@ import static org.fest.assertions.Assertions.assertThat;
 @ExamReactorStrategy(PerMethod.class)
 public class TestFunctionality extends CommonTest {
 
-
+    @Inject
+    EventAdmin eventAdmin;
 
     @Test
     public void testRetrieve() throws ResourceNotFoundException, IllegalActionOnResourceException {
         EverestClient testAPI = new EverestClient(getContext());
         try{
             System.out.println( "Surface INT" + testAPI.read("/test/zone/room1").retrieve("Surface",Integer.class));
-       }catch(Exception e ){
+        }catch(Exception e ){
             assertThat(true).isEqualTo(false);
         }
         try{
             System.out.println( "Surface FLOAT" + testAPI.read("/test/zone/room1").retrieve("Surface",Float.class));
             assertThat(true).isEqualTo(false);
         }catch(Exception e ){
-            e.printStackTrace();
         }
 
         try{
@@ -55,7 +63,7 @@ public class TestFunctionality extends CommonTest {
     @Test
     public void testRead() throws ResourceNotFoundException, IllegalActionOnResourceException {
 
-        EverestClient testAPI = new EverestClient(everest);
+        EverestClient testAPI = new EverestClient(getContext(),everest);
         assertThat(testAPI.read("/test").retrieve("Name")).isEqualTo("test");
 
     }
@@ -63,7 +71,7 @@ public class TestFunctionality extends CommonTest {
     @Test
     public void testCreate() throws ResourceNotFoundException, IllegalActionOnResourceException {
 
-        EverestClient testAPI = new EverestClient(everest);
+        EverestClient testAPI = new EverestClient(getContext(),everest);
 
         assertThat(testAPI.create("/test/devices").with("serialNumber", "1100").doIt().retrieve("Serial Number")).isEqualTo("1100");
 
@@ -83,7 +91,7 @@ public class TestFunctionality extends CommonTest {
     @Test
     public void testChildren() throws ResourceNotFoundException, IllegalActionOnResourceException {
 
-        EverestClient testAPI = new EverestClient(everest);
+        EverestClient testAPI = new EverestClient(getContext(),everest);
 
         List<Resource> resourceList = testAPI.read("/test").children().retrieve();
         for (Resource current : resourceList) {
@@ -125,7 +133,7 @@ public class TestFunctionality extends CommonTest {
     @Test
     public void testUpdate() throws ResourceNotFoundException, IllegalActionOnResourceException {
         System.out.println("TEST UPDATE");
-        EverestClient testAPI = new EverestClient(everest);
+        EverestClient testAPI = new EverestClient(getContext(),everest);
 
         List<Resource> resourceList = testAPI.read("/test/devices").children().update().with("STATE_DEACTIVATED", "TRUE").doIt().retrieve();
 
@@ -159,7 +167,7 @@ public class TestFunctionality extends CommonTest {
     @Test
     public void testDelete() throws ResourceNotFoundException, IllegalActionOnResourceException {
         System.out.println("TEST DELETE");
-        EverestClient testAPI = new EverestClient(everest);
+        EverestClient testAPI = new EverestClient(getContext(),everest);
 
         testAPI.read("/test/zone/room1").delete().doIt();
 
@@ -178,7 +186,7 @@ public class TestFunctionality extends CommonTest {
     @Test
     public void testDeleteClient() throws ResourceNotFoundException, IllegalActionOnResourceException {
         System.out.println("TEST DELETE");
-        EverestClient testAPI = new EverestClient(everest);
+        EverestClient testAPI = new EverestClient(getContext(),everest);
 
         testAPI.delete("/test/zone/room2").doIt();
         assertThat(testAPI.read("/test/zone").child("room2").retrieve()).isEqualTo(null);
@@ -188,7 +196,7 @@ public class TestFunctionality extends CommonTest {
     @Test
     public void testRelation() throws ResourceNotFoundException, IllegalActionOnResourceException {
         System.out.println("TEST Relation");
-        EverestClient testAPI = new EverestClient(everest);
+        EverestClient testAPI = new EverestClient(getContext(),everest);
 
         Resource resource = testAPI.read("/test/devices").relation("create").retrieve();
         System.out.println(resource.getPath());
@@ -214,7 +222,7 @@ public class TestFunctionality extends CommonTest {
     @Test
     public void testParent() throws ResourceNotFoundException, IllegalActionOnResourceException {
         System.out.println("TEST Parent");
-        EverestClient testAPI = new EverestClient(everest);
+        EverestClient testAPI = new EverestClient(getContext(),everest);
 
         Resource resource = testAPI.read("/test/zone").parent().retrieve();
         assertThat(resource.getPath().getLast()).isEqualTo("test");
@@ -235,7 +243,7 @@ public class TestFunctionality extends CommonTest {
 
     @Test
     public void testAssertResource() throws ResourceNotFoundException, IllegalActionOnResourceException {
-        EverestClient testAPI = new EverestClient(everest);
+        EverestClient testAPI = new EverestClient(getContext(),everest);
 
         assertThat(testAPI.assertThat(testAPI.read("/test/zone").retrieve()).exist()).isEqualTo(true);
 
@@ -248,7 +256,7 @@ public class TestFunctionality extends CommonTest {
 
     @Test
     public void testGetter() throws ResourceNotFoundException, IllegalActionOnResourceException {
-        EverestClient testAPI = new EverestClient(everest);
+        EverestClient testAPI = new EverestClient(getContext(),everest);
 
         testAPI.read("/test/devices").create();
         assertThat( testAPI.read("/test/devices").getM_currentAction()).isEqualTo(Action.READ);
@@ -259,6 +267,12 @@ public class TestFunctionality extends CommonTest {
 
     }
 
+    @Test
+    public void testgetAll() throws ResourceNotFoundException, IllegalActionOnResourceException {
+        EverestClient testAPI = new EverestClient(getContext(),everest);
+        List<Resource> resourceList = testAPI.getAllResource();
+
+    }
 
 
 }
