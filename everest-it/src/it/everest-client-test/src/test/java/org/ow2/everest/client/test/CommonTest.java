@@ -27,8 +27,6 @@ public class CommonTest extends BaseTest {
 
 
         return options(  // everest bundles
-                systemProperty("ipojo.processing.synchronous").value("true"),
-                systemProperty("everest.processing.synchronous").value("true"),
                 mavenBundle("org.ow2.chameleon.everest", "everest-core").versionAsInProject(),
                 mavenBundle("org.ow2.chameleon.everest", "everest-system").versionAsInProject(),
             // Fest assert JARs wrapped as bundles
