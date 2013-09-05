@@ -337,9 +337,8 @@ public class EverestGoGoCommand {
             System.out.println(" NO ENTRY TO FILTER ");
             return;
         }
-        QueryFilter parserQuery = new QueryFilter(request,m_everestClient.getM_everest());
-
         try{
+            QueryFilter parserQuery = new QueryFilter(request,m_everestClient.getM_everest());
             ResourceFilter resourceFilter = parserQuery.input();
             ListResourceContainer filterResourceList = listResourceContainer.filter(resourceFilter);
             printResource(filterResourceList);
