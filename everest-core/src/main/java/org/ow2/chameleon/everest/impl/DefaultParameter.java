@@ -112,4 +112,22 @@ public class DefaultParameter implements Parameter {
     public void setOptional(boolean optional) {
         this.optional = optional;
     }
+
+    @Override
+    public boolean equals(Object obj){
+        if (obj == null) return false;
+        if (obj == this) return true;
+        if (!(obj instanceof DefaultParameter)){
+
+            return false;
+        }
+        Parameter oRef = (Parameter) obj;
+        return ( (this.getName().equals(oRef.name())) && (this.type().equals(oRef.type())) && (this.description().equals(oRef.description())) &&( oRef.optional() == this.optional()) ) ;
+    }
+
+    @Override
+    public int hashCode() {
+        String string = this.getDescription() + getName() + getType() +optional();
+        return string.hashCode();
+    }
 }

@@ -1,0 +1,118 @@
+<div style="width: 940px;">
+    <header class="jumbotron subhead">
+        <div class="row" id="banner">
+            <div class="span12">
+                <div class="pull-left">
+                    <a href="index.html" id="bannerLeft"><h1><span class="color-highlight">OW2 Chameleon</span> ~ Everest</h1></a>
+                    <p class="lead">Will kick your ass.</p>
+                </div>
+                <div class="pull-right">
+                    <img src="images/everest-logo.png">
+                </div>
+            </div>
+        </div>
+    </header>
+</div>
+
+<div class="intro">
+    <div class="span12">
+        <div class="row">
+
+            <div class="span6">
+                <code>Everest</code>, an elegant approach to represent dynamic systems
+            </div>
+
+            <div class="span6">
+                <a href="http://chameleon.ow2.org">
+                    <img src="img/chameleon-project.png" style="width: 60%;">
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+<div class="clearfix"></div>
+
+<div class="features">
+    <div class="row">
+        <div class="span12">
+
+            <!-- Features hero -->
+            <div class="hero">
+                <!-- Title. Don't forget the <span> tag -->
+                <h3><span>Concepts</span></h3>
+                <!-- para -->
+                <p>OSGi-based systems are very powerful, but terribly hard to analyze. Understanding what's going on, analyzing
+                    unresolved bundles, unresolved service dependencies and so on, is the key to mastering the power of OSGi.</p>
+                <p>Everest is a framework that builds a uniform resource-based representation for a very wide variety of resources composing your system. It's RESTFul, implements HATEOS, extensible and malleable.</p>
+
+            </div>
+
+            <!-- Features -->
+            <div class="ifeature">
+
+                <div class="ifeat">
+                    <div class="row">
+                        <div class="span6">
+                            <h4>Everest Core</h4>
+                            <p>The <code>Everest Core</code> relies on Hypermedia as the Engine of Application State (HATEOAS) principles. It proposes simple concepts that helps to implement a *true* REST architectural style for representating resources. </p>
+                            <div class="button"><a href="everest-core/index.html">Read more</a></div>
+                        </div>
+                        <div class="span6">
+                            <h4>Everest OSGi</h4>
+                            <p>This domain is a resource-base representation of OSGi entities, including :
+                            <li>framework</li>
+                            <li>bundles</li>
+                            <li>packages</li>
+                            <li>services</li>
+                            <li>configurations</li>
+                            <li>log entries</li>
+                            <li>deployment packages</li>
+                            </p>
+                            <div class="button"><a href="everest-osgi/index.html">Read more</a></div>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                </div>
+
+                <div class="ifeat">
+                    <div class="row">
+                        <div class="span6">
+                            <h4>Everest iPOJO</h4>
+                            <p>This is the documentation of the everest iPOJO domain. This domain is a resource-base representation of Apache Felix iPOJO entities, including:
+
+                            <li>Component instances</li>
+                            <li>Component factories</li>
+                            <li>Handlers</li>
+                            <li>Declarations</li>   </p>
+                            <div class="button"><a href="everest-ipojo/index.html">Read more</a></div>
+                        </div>
+                        <div class="span6">
+                            <h4>Everest servlet</h4>
+                            <p> Everest Servlet : // TO DO</p>
+                            <div class="button"><a href="everest-servlet/index.html">Read more</a></div>
+                        </div>
+                        <div class="Read more"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="license">
+    <div class="row">
+        <div class="span12">
+
+            <!-- Features hero -->
+            <div class="hero">
+                <!-- Title. Don't forget the <span> tag -->
+                <h3><span>License</span></h3>
+                <!-- para -->
+                <p>The Evrest project is part of the OW2 Chameleon project and is licensed under the Apache Software
+                    License 2.0.</p>
+            </div>
+        </div>
+    </div>
+</div>

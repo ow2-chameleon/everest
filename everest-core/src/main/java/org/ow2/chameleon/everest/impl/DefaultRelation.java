@@ -77,4 +77,22 @@ public class DefaultRelation implements Relation {
     public List<Parameter> getParameters() {
         return params;
     }
+
+    @Override
+    public boolean equals(Object obj){
+        if (obj == null) return false;
+        if (obj == this) return true;
+        if (!(obj instanceof DefaultRelation)){
+
+            return false;
+        }
+        Relation oRef = (Relation) obj;
+        return ( (oRef.getName().equals(this.getName())) && (oRef.getDescription().equals(this.getDescription())) && (oRef.getAction() == this.getAction()) && (oRef.getParameters().equals(this.getParameters())) && (oRef.getHref()==this.getHref())  ) ;
+    }
+
+    @Override
+    public int hashCode() {
+        String string = this.getDescription()+this.getAction().toString()+this.getName()+this.getHref().toString()+this.getParameters().toString();
+        return string.hashCode();
+    }
 }

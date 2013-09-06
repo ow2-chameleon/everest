@@ -28,9 +28,13 @@ import org.ow2.chameleon.everest.impl.ImmutableResourceMetadata;
 import org.ow2.chameleon.everest.services.*;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 
 public class FileResource extends DefaultResource {
 
@@ -99,6 +103,14 @@ public class FileResource extends DefaultResource {
 
         metadataBuilder.set("hidden", m_representedFile.isHidden());
 
+        try {
+            // check if the file contains the bundle with correct manifest
+            JarFile jarFile = new JarFile(m_representedFile);
+            Manifest manifest = jarFile.getManifest();
+            Attributes mainAttributes = manifest.getMainAttributes();
+            metadataBuilder.set("manifest",manifest);
+        }catch (Exception e) {
+        }
         return metadataBuilder.build();
 
 

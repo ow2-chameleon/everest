@@ -17,18 +17,21 @@
 <project name="everest" xmlns="http://maven.apache.org/DECORATION/1.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/DECORATION/1.0.0 http://maven.apache.org/xsd/decoration-1.0.0.xsd">
-    <bannerLeft>
-        <name>everest</name>
-        <src>images/everest-logo.png</src>
-        <href>#</href>
-    </bannerLeft>
 
-    <skin>
+    <publishDate position="bottom" format="yyyy-MM-dd"/>
+    <version position="bottom"/>
+
+    <!--skin>
         <groupId>org.apache.maven.skins</groupId>
         <artifactId>maven-fluido-skin</artifactId>
         <version>1.3.0</version>
+    </skin-->
+    <skin>
+        <groupId>lt.velykis.maven.skins</groupId>
+        <artifactId>reflow-maven-skin</artifactId>
+        <version>1.0.0</version>
     </skin>
-    <custom>
+    <!--custom>
         <fluidoSkin>
             <topBarEnabled>false</topBarEnabled>
             <sideBarEnabled>true</sideBarEnabled>
@@ -39,65 +42,177 @@
                 <ribbonColor>black</ribbonColor>
             </gitHub>
         </fluidoSkin>
+    </custom-->
+
+    <custom>
+        <reflowSkin>
+            <protocolRelativeURLs>false</protocolRelativeURLs>
+            <smoothScroll>true</smoothScroll>
+
+            <theme>site</theme>
+
+            <highlightJs>true</highlightJs>
+            <highlightJsTheme>github</highlightJsTheme>
+
+            <brand>
+                <name>
+                    <![CDATA[
+                        <span class="color-highlight">OW2 Chameleon</span> ~ Everest
+                    ]]>
+                </name>
+                <href>index.html</href>
+            </brand>
+
+            <slogan>Will kick your ass.</slogan>
+
+            <titleTemplate>%2$s | %1$s</titleTemplate>
+
+            <toc>sidebar</toc>
+            <tocTopMax>6</tocTopMax>
+            <topNav>Documentation|Contribute</topNav>
+            <navbarInverse>true</navbarInverse>
+
+            <bottomNav maxSpan="9" >
+                <column>Main</column>
+                <column>Contribute</column>
+                <column>Download</column>
+            </bottomNav>
+            <bottomDescription>
+                <![CDATA[
+          <span class="color-highlight">OW2 Chameleon Everest</span> ~ Will kick your ass.
+        ]]>
+            </bottomDescription>
+
+            <breadcrumbs>false</breadcrumbs>
+
+            <pages>
+
+                <index project="everest">
+                    <!-- Override the title -->
+                    <titleTemplate>OW2 Chameleon ~ Everest</titleTemplate>
+                    <!-- no breadcrumbs on the main index page -->
+                    <!-- no ToC on the main index page -->
+                    <toc>false</toc>
+                    <markPageHeader>false</markPageHeader>
+                    <sections>
+                        <body />
+                        <sidebar />
+                    </sections>
+                </index>
+                <contribute>
+                    <breadcrumbs>false</breadcrumbs>
+                </contribute>
+
+                <!-- Disable source highlighting for Maven reports -->
+                <source-repository>
+                    <highlightJs>false</highlightJs>
+                </source-repository>
+                <issue-tracking>
+                    <highlightJs>false</highlightJs>
+                    <toc>false</toc>
+                </issue-tracking>
+                <license>
+                    <highlightJs>false</highlightJs>
+                    <toc>false</toc>
+                </license>
+                <!-- Disable ToC for some Maven reports -->
+                <project-info>
+                    <toc>false</toc>
+                </project-info>
+                <dependencies>
+                    <tocTopMax>4</tocTopMax>
+                </dependencies>
+                <downloads>
+                    <toc>false</toc>
+                </downloads>
+
+
+            </pages>
+
+            <skinAttribution>false</skinAttribution>
+
+        </reflowSkin>
     </custom>
 
     <body>
         <head>
-            <!-- because the structure is not flat we must use absolute urls -->
-            <link rel="stylesheet" href="http://bourretp.github.io/everest/snapshot/css/site.css" type="text/css"/>
-            <link rel="stylesheet" href="http://bourretp.github.io/everest/snapshot/css/bootstrap.css" type="text/css" />
-            <link rel="stylesheet" href="http://bourretp.github.io/everest/snapshot/css/custom.css" type="text/css" />
-            <link rel="stylesheet" href="http://bourretp.github.io/everest/snapshot/css/fonts.css" type="text/css" />
-            <link rel="stylesheet" href="http://bourretp.github.io/everest/snapshot/css/color_schemes.css" type="text/css" />
+            <link rel="stylesheet" href="css/font-awesome.css"/>
+            <link type="text/css" href="css/orange.css" rel="stylesheet" media="screen"/>
+            <link type="text/css" href="css/style.css" rel="stylesheet" media="screen"/>
         </head>
 
-        <menu name="everest">
-            <item name="About" href="about.html"/>
-            <item name="Downloads" href="downloads.html"/>
-            <item name="Documentation" href="documentation.html"/>
-            <item name="Hello Everest!" href="hello-everest.html"/>
+        <links>
+            <item name="Download" href="downloads.html" />
+            <item name="GitHub project" href="http://github.com/ow2-chameleon/everest" />
+        </links>
+
+        <breadcrumbs>
+            <item name="Everest" href="/" />
+        </breadcrumbs>
+
+        <menu name="Main" inherit="top">
+            <item name="everest" href="about.html"/>
+            <item name="everest-core" href="everest-core/index.html"/>
+            <item name="everest-OSGi" href="everest-osgi/index.html"/>
+            <item name="everest-iPOJO" href="everest-ipojo/index.html"/>
+            <item name="everest-servlet" href="everest-servlet/index.html"/>
+            <item name="everest-System" href="everest-system/index.html"/>
+            <item name="GitHub project" href="http://github.com/ow2-chameleon/everest" />
         </menu>
-        
-        <menu name="everest-core">
-            <item name="Home" href="everest-core/index.html"/>
-            <item name="Getting Started" href="everest-core/getting-started.html"/>
-            <item name="Concepts" href="everest-core/concepts.html"/>
+        <menu name="Download" inherit="top">
+            <item name="Download" href="downloads.html" />
+            <item name="License" href="license.html" />
         </menu>
-        
-        <menu name="everest-servlet">
-            <item name="Home" href="everest-servlet/index.html"/>
+        <menu name="Documentation">
+            <item name="everest" href="about.html">
+                <item name="About" href="about.html"/>
+                <item name="Downloads" href="downloads.html"/>
+                <item name="Documentation" href="documentation.html"/>
+                <item name="Hello Everest!" href="hello-everest.html"/>
+            </item>
+            <item name="everest-core" href="everest-core/index.html">
+                <item name="Home" href="everest-core/index.html"/>
+                <item name="Getting Started" href="everest-core/getting-started.html"/>
+                <item name="Concepts" href="everest-core/concepts.html"/>
+            </item>
+            <item name="everest-OSGi" href="everest-osgi/index.html">
+                <item name="Home" href="everest-osgi/index.html"/>
+                <item name="Tutorials" href="everest-osgi/index.html#tutorials"/>
+                <item name="Root" href="everest-osgi/index.html#osgi-root-resource"/>
+                <item name="Bundles" href="everest-osgi/index.html#bundle"/>
+                <item name="Packages" href="everest-osgi/index.html#package"/>
+                <item name="Services" href="everest-osgi/index.html#service"/>
+                <item name="Configurations" href="everest-osgi/index.html#configuration"/>
+                <item name="Logs" href="everest-osgi/index.html#log-entry"/>
+                <item name="Deployment Packages" href="everest-osgi/index.html#deployment-package"/>
+            </item>
+            <item name="everest-iPOJO" href="everest-ipojo/index.html">
+                <item name="Home" href="everest-ipojo/index.html"/>
+                <item name="Reference Card" href="everest-ipojo/ReferenceCard.html"/>
+                <item name="Root" href="everest-ipojo/Root.html"/>
+                <item name="Instances" href="everest-ipojo/Instances.html"/>
+                <item name="Instance service dependencies" href="everest-ipojo/ServiceDependencies.html"/>
+                <item name="Instance service providings" href="everest-ipojo/ServiceProvidings.html"/>
+                <item name="Factories" href="everest-ipojo/Factories.html"/>
+                <item name="Handlers" href="everest-ipojo/Handlers.html"/>
+                <item name="Instance declarations" href="everest-ipojo/InstanceDeclarations.html"/>
+                <item name="Type declarations" href="everest-ipojo/TypeDeclarations.html"/>
+                <item name="Extension declarations" href="everest-ipojo/ExtensionDeclarations.html"/>
+            </item>
+            <item name="everest-servlet" href="everest-servlet/index.html">
+                <item name="Home" href="everest-servlet/index.html"/>
+            </item>
+            <item name="everest-System" href="everest-system/index.html">
+                <item name="Home" href="everest-system/index.html"/>
+            </item>
         </menu>
 
-        <menu name="everest-System">
-            <item name="Home" href="everest-system/index.html"/>
+        <menu name="Contribute" inherit="bottom">
+            <item name="Contribute" href="contribution.html" />
+            <item name="Sources" href="source-repository.html"/>
+            <item name="Issues" href="http://github.com/ow2-chameleon/everest/issues/" />
+            <item name="Fork on GitHub" href="http://github.com/ow2-chameleon/everest" />
         </menu>
-        
-        <menu name="everest-OSGi">
-            <item name="Home" href="everest-osgi/index.html"/>
-            <item name="Tutorials" href="everest-osgi/index.html#tutorials"/>
-            <item name="Root" href="everest-osgi/index.html#osgi-root-resource"/>
-            <item name="Bundles" href="everest-osgi/index.html#bundle"/>
-            <item name="Packages" href="everest-osgi/index.html#package"/>
-            <item name="Services" href="everest-osgi/index.html#service"/>
-            <item name="Configurations" href="everest-osgi/index.html#configuration"/>
-            <item name="Logs" href="everest-osgi/index.html#log-entry"/>
-            <item name="Deployment Packages" href="everest-osgi/index.html#deployment-package"/>
-        </menu>
-        
-        <menu name="everest-iPOJO">
-            <item name="Home" href="everest-ipojo/index.html"/>
-            <item name="Reference Card" href="everest-ipojo/ReferenceCard.html"/>
-            <item name="Root" href="everest-ipojo/Root.html"/>
-            <item name="Instances" href="everest-ipojo/Instances.html"/>
-            <item name="Instance service dependencies" href="everest-ipojo/ServiceDependencies.html"/>
-            <item name="Instance service providings" href="everest-ipojo/ServiceProvidings.html"/>
-            <item name="Factories" href="everest-ipojo/Factories.html"/>
-            <item name="Handlers" href="everest-ipojo/Handlers.html"/>
-            <item name="Instance declarations" href="everest-ipojo/InstanceDeclarations.html"/>
-            <item name="Type declarations" href="everest-ipojo/TypeDeclarations.html"/>
-            <item name="Extension declarations" href="everest-ipojo/ExtensionDeclarations.html"/>
-        </menu>
-
-        <menu ref="reports"/>
+        <menu name="Maven documentation" ref="reports" inherit="bottom"/>
     </body>
 </project>

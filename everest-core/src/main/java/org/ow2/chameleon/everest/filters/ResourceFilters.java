@@ -17,7 +17,11 @@ package org.ow2.chameleon.everest.filters;
 
 import org.ow2.chameleon.everest.services.*;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A static class giving a couple of common resource filters
@@ -55,9 +59,41 @@ public class ResourceFilters {
         };
     }
 
+    public static ResourceFilter and(final List<ResourceFilter> filters) {
+        return new ResourceFilter() {
+            public boolean accept(Resource resource) {
+                if (filters == null || filters.isEmpty()){
+                    return false;
+                }
+                for (ResourceFilter filter : filters) {
+                    if (!filter.accept(resource)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        };
+    }
+
     public static ResourceFilter or(final ResourceFilter... filters) {
         return new ResourceFilter() {
             public boolean accept(Resource resource) {
+                for (ResourceFilter filter : filters) {
+                    if (filter.accept(resource)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        };
+    }
+
+    public static ResourceFilter or(final List<ResourceFilter> filters) {
+        return new ResourceFilter() {
+            public boolean accept(Resource resource) {
+                if (filters == null || filters.isEmpty()){
+                    return false;
+                }
                 for (ResourceFilter filter : filters) {
                     if (filter.accept(resource)) {
                         return true;
@@ -109,62 +145,65 @@ public class ResourceFilters {
         return hasPath(Path.from(path));
     }
 
-    public static ResourceFilter greaterThan(final String metadataId,final float valueToCompare) {
-        return new ResourceFilter() {
-            public boolean accept(Resource resource) {
-                try {
-                    float value = resource.getMetadata().get(metadataId,Float.class);
-                    return (value > valueToCompare);
-                } catch (IllegalArgumentException e1){
-                    try{
-                        int value = resource.getMetadata().get(metadataId,Integer.class);
-                        return (((float)value) > valueToCompare);
-                    } catch (IllegalArgumentException e2){
-                        return false;
-                    }
-                }
-            }
-        };
-    }
-
-    public static ResourceFilter lowerThan(final String metadataId,final float valueToCompare) {
-        return new ResourceFilter() {
-            public boolean accept(Resource resource) {
-                try {
-                    float value = resource.getMetadata().get(metadataId,Float.class);
-                    return (value < valueToCompare);
-                } catch (IllegalArgumentException e1){
-                    try{
-                        // Maybe can cast in an integer ... Not sur that usefull
-                        int value = resource.getMetadata().get(metadataId,Integer.class);
-                        return (((float)value) < valueToCompare);
-                    } catch (IllegalArgumentException e2){
-                        return false;
-                    }
-                }
-            }
-        };
-    }
-
-    public static ResourceFilter equalsTo(final String metadataId,final float valueToCompare) {
+    public static ResourceFilter greaterThan(final String metadataId,final double valueToCompare) {
         return new ResourceFilter() {
             public boolean accept(Resource resource) {
                 try {
                     Number value = resource.getMetadata().get(metadataId,Number.class);
-                    double valueDouble = value.doubleValue();
-                    return (valueDouble == valueToCompare);
+                    if (value == null )return false;
+                    float valueToFloat = value.floatValue();
+                    return (valueToFloat > valueToCompare);
                 } catch (IllegalArgumentException e1){
-                    try{
-                        // Maybe can cast in an integer ... Not sur that usefull
-                        int value = resource.getMetadata().get(metadataId,Integer.class);
-                        return (((float)value) == valueToCompare);
-                    } catch (IllegalArgumentException e2){
-                        return false;
-                    }
+                    return false;
                 }
             }
         };
     }
+
+    public static ResourceFilter lowerThan(final String metadataId,final double valueToCompare) {
+        return new ResourceFilter() {
+            public boolean accept(Resource resource) {
+                try {
+                    Number value = resource.getMetadata().get(metadataId,Number.class);
+                    if (value == null )return false;
+                    float valueToFloat = value.floatValue();
+                    return (valueToFloat < valueToCompare);
+                } catch (IllegalArgumentException e1){
+                    return false;
+                }
+            }
+        };
+    }
+
+    public static ResourceFilter equalsTo(final String metadataId,final double valueToCompare) {
+        return new ResourceFilter() {
+            public boolean accept(Resource resource) {
+                try {
+                    Number value = resource.getMetadata().get(metadataId,Number.class);
+                    if (value == null )return false;
+                    float valueToFloat = value.floatValue();
+                    return (valueToFloat == valueToCompare);
+                } catch (IllegalArgumentException e1){
+                    return false;
+                }
+            }
+        };
+    }
+
+    public static ResourceFilter equalsTo(final String metadataId,final String valueToCompare) {
+        return new ResourceFilter() {
+            public boolean accept(Resource resource) {
+                try {
+                    String value = resource.getMetadata().get(metadataId,String.class);
+                    if (value == null )return false;
+                    return (value.equals(valueToCompare));
+                } catch (IllegalArgumentException e1){
+                    return false;
+                }
+            }
+        };
+    }
+
 
     public static ResourceFilter keyExist(final String metadataId) {
         return keyExistWithType(metadataId,Object.class);
@@ -174,7 +213,10 @@ public class ResourceFilters {
         return new ResourceFilter() {
             public boolean accept(Resource resource) {
                 try{
-                    resource.getMetadata().get(metadataId,clazz);
+                    if( resource.getMetadata().get(metadataId,clazz) == null){
+                     return false;
+                    }
+
                     return true;
                 }catch (IllegalArgumentException e){
                     return false;
@@ -188,10 +230,31 @@ public class ResourceFilters {
             public boolean accept(Resource resource) {
                 try{
                     String string = resource.getMetadata().get(metadataId,String.class);
+                    if (string == null )return false;
                     return  string.startsWith(stringToCompare);
                 }catch (IllegalArgumentException e){
                     return false;
                 }
+            }
+        };
+
+    }
+
+    public static  ResourceFilter regExp(final String metadataId,final String regExp) {
+        return new ResourceFilter() {
+            public boolean accept(Resource resource) {
+                try{
+                    Pattern pattern;
+                    Matcher matcher;
+                    pattern = Pattern.compile(regExp);
+                    String string = resource.getMetadata().get(metadataId,String.class);
+                    if (string == null )return false;
+                    matcher = pattern.matcher(string);
+                    return  matcher.find();
+                }catch (Exception  e){
+                    return false;
+                }
+
             }
         };
 
@@ -202,6 +265,7 @@ public class ResourceFilters {
             public boolean accept(Resource resource) {
                 try{
                     String string = resource.getMetadata().get(metadataId,String.class);
+                    if (string == null )return false;
                     return  string.endsWith(stringToCompare);
                 }catch (IllegalArgumentException e){
                     return false;
@@ -215,7 +279,25 @@ public class ResourceFilters {
             public boolean accept(Resource resource) {
                 try{
                     String string = resource.getMetadata().get(metadataId,String.class);
+                    if (string == null )return false;
                     return  string.contains(stringToCompare);
+                }catch (IllegalArgumentException e){
+                    return false;
+                }
+            }
+        };
+    }
+
+    public static  ResourceFilter empty(final String metadataId) {
+        return new ResourceFilter() {
+            public boolean accept(Resource resource) {
+                try{
+                    Object obj = resource.getMetadata().get(metadataId,Object.class);
+                    if (obj == null){
+                        return true;
+                    }else{
+                        return false;
+                    }
                 }catch (IllegalArgumentException e){
                     return false;
                 }
@@ -256,9 +338,11 @@ public class ResourceFilters {
     }
 
 
-    public static ResourceFilter NotEqualTo(final String metadataId,final float valueToCompare) {
+    public static ResourceFilter NotEqualTo(final String metadataId,final double valueToCompare) {
         return not(equalsTo(metadataId,valueToCompare));
     }
+
+
 
     public static ResourceFilter isSubResourceOf(final Resource root) {
         return new ResourceFilter() {
@@ -273,7 +357,66 @@ public class ResourceFilters {
         };
     }
 
-    public static ResourceFilter isDescendentOf(final Resource root) {
+    public static ResourceFilter hasAtLeastRelationFilterMatch(final RelationFilter relationFilter) {
+        return new ResourceFilter() {
+            public boolean accept(Resource resource) {
+                List<Relation> resourceList = resource.getRelations();
+                if (resourceList == null || resourceList.isEmpty()){
+                    return false;
+                }else{
+                    List<Relation> relations = resource.getRelations();
+                    for (Relation relation : relations){
+                        if (relationFilter.accept(relation)){
+                           return true;
+                        }
+                    }
+                    return false;
+                }
+            }
+        };
+
+    }
+
+    public static ResourceFilter hasAtLeastRelationFilterMatch(final RelationFilter relationFilter,final int NumberMinOfRelationMatch) {
+        return new ResourceFilter() {
+            public boolean accept(Resource resource) {
+                List<Relation> resourceList = resource.getRelations();
+                if (resourceList == null || resourceList.isEmpty()){
+                    return false;
+                }else{
+                    int count = 0;
+                    List<Relation> relations = resource.getRelations();
+                    for (Relation relation : relations){
+                        if (relationFilter.accept(relation)){
+                            count ++;
+                        }
+                        if (count >= NumberMinOfRelationMatch){
+                            return true;
+                        }
+
+                    }
+                    return false;
+                }
+            }
+        };
+
+    }
+
+    public static ResourceFilter allRelationFilterMatch(final RelationFilter relationFilter) {
+        return new ResourceFilter() {
+            public boolean accept(Resource resource) {
+                List<Relation> resourceList = resource.getRelations();
+                if (resourceList == null || resourceList.isEmpty()){
+                    return false;
+                }else{
+                    return  hasAtLeastRelationFilterMatch(relationFilter,resourceList.size()).accept(resource);
+                }
+            }
+        };
+    }
+
+
+    public static ResourceFilter isDescendentOf( final Resource root) {
         return new ResourceFilter() {
             public boolean accept(Resource resource) {
                 return resource.getPath().isDescendantOf(root.getPath());
@@ -281,4 +424,48 @@ public class ResourceFilters {
         };
     }
 
+    public static ResourceFilter arrayContains(final String metadataId,final String value) {
+        return new ResourceFilter() {
+            public boolean accept(Resource resource) {
+                try{
+                    Collection<Object> collection = resource.getMetadata().get(metadataId,Collection.class);
+                    if (collection == null )return false;
+                    for (Object current : collection){
+                        if ( current instanceof String ){
+                            if (value.equals((String)current)){
+                                return true;
+                            }
+                        }
+                    }
+                    return  false;
+                }catch (IllegalArgumentException e){
+                    return false;
+                }
+            }
+        };
+    }
+
+    public static ResourceFilter arrayContains(final String metadataId, final double value) {
+        return new ResourceFilter() {
+            public boolean accept(Resource resource) {
+                try{
+                    Collection<Object> collection = resource.getMetadata().get(metadataId,Collection.class);
+                    if (collection == null )return false;
+                    for (Object current : collection){
+                        if ( current instanceof Number ){
+                            Number valueToNumber = (Number) current;
+                            double valueToDouble = valueToNumber.doubleValue();
+                            if (valueToDouble == value){
+                                return true;
+                            }
+                        }
+                    }
+                    return  false;
+                }catch (IllegalArgumentException e){
+                    return false;
+                }
+            }
+        };
+
+    }
 }
