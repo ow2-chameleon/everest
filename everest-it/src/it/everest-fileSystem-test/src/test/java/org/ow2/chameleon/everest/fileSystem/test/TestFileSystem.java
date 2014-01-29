@@ -52,7 +52,7 @@ public class TestFileSystem extends CommonTest{
     @Test
     public void testCreateWithDownload() throws ResourceNotFoundException, IllegalActionOnResourceException {
         EverestClient testAPI = new EverestClient(getContext());
-        testAPI.read("/fs"+path).create().with("url","http://apache.opensourcemirror.com//felix/org.apache.felix.configadmin-1.6.0.jar").doIt();
+        testAPI.read("/fs"+path).create().with("url","http://archive.apache.org/dist/felix/org.apache.felix.configadmin-1.6.0.jar").doIt();
         String filePath = "/fs"+path+"/org.apache.felix.configadmin-1.6.0.jar" ;
         assertThat(testAPI.read(filePath).retrieve("type")).isEqualTo("FILE");
         assertThat(testAPI.read(filePath).retrieve("name")).isEqualTo("org.apache.felix.configadmin-1.6.0.jar");
