@@ -51,7 +51,7 @@
         <!--
         Chameleon version
         -->
-        <chameleon.version>1.0.0-SNAPSHOT</chameleon.version>
+        <chameleon.version>1.0.2</chameleon.version>
 
         <!--
         JavaServelet API version
