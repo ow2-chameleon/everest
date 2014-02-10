@@ -174,6 +174,7 @@ public class IpojoRootResource extends ResourceMap {
      * These maps are indexed by the order of arrival of the declarations (ugly, but what else?).
      */
     private final ResourceMap m_instanceDeclarations = new ResourceMap(INSTANCE_DECLARATIONS, true);
+    private final Map<String, Integer> m_instanceDeclarationCounters = new HashMap<String, Integer>();
 
     /**
      * Type declarations, indexed by declared type name.
@@ -492,17 +493,19 @@ public class IpojoRootResource extends ResourceMap {
         ResourceMap namedInstances = i.resource;
         // Add the instance declaration resource: ipojo/declaration/instance/$name/$index
         // We need to hold the :ipojo/declaration/instance/$name WRITE lock because we need to _atomically_ :
-        // - get its size to generate the instance declaration index
+        // - get its counter to generate the instance declaration index
         // - add the InstanceDeclarationResource resource
         namedInstances.m_lock.writeLock().lock();
         InstanceDeclarationResource r;
         try {
-            String index = String.valueOf(namedInstances.size());
+            int j = (i.wasPresent) ? m_instanceDeclarationCounters.get(name) : 0;
+            String index = String.valueOf(j);
             r = new InstanceDeclarationResource(index, instance, ref);
             namedInstances.addResource(
                     r,
                     String.format("instance[%s]", index),
                     String.format("Instance declaration with name '%s' and index %s", name, index));
+            m_instanceDeclarationCounters.put(name, j+1);
         } finally {
             namedInstances.m_lock.writeLock().unlock();
         }
@@ -543,6 +546,7 @@ public class IpojoRootResource extends ResourceMap {
                 if (namedInstances.isEmpty()) {
                     // Last standing instance declaration with that name.
                     m_instanceDeclarations.removeResource(namedInstances);
+                    m_instanceDeclarationCounters.remove(instance.getInstanceName());
                     wasLast = true;
                 }
             } finally {
