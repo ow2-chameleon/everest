@@ -18,6 +18,7 @@ package org.ow2.chameleon.everest.ipojo;
 import org.apache.felix.ipojo.ComponentInstance;
 import org.apache.felix.ipojo.Factory;
 import org.apache.felix.ipojo.InstanceStateListener;
+import org.apache.felix.ipojo.PrimitiveInstanceDescription;
 import org.apache.felix.ipojo.architecture.Architecture;
 import org.apache.felix.ipojo.architecture.InstanceDescription;
 import org.apache.felix.ipojo.architecture.PropertyDescription;
@@ -111,38 +112,33 @@ public class InstanceResource extends ResourceMap implements InstanceStateListen
                                 .optional(true)
                 ));
 
-        // Add service dependencies
+        // Add service dependencies for primitive components
         addResource(m_dependencies, "dependencies", "The service dependencies of this component instance");
-        @SuppressWarnings("unchecked")
-        DependencyHandlerDescription dhd = (DependencyHandlerDescription)
-                instance.getInstanceDescription().getHandlerDescription("org.apache.felix.ipojo:requires");
-        if (dhd != null) {
-            for (DependencyDescription d : dhd.getDependencies()) {
+        if (instance.getInstanceDescription() instanceof  PrimitiveInstanceDescription) {
+            PrimitiveInstanceDescription pid = (PrimitiveInstanceDescription) instance.getInstanceDescription();
+            for (DependencyDescription d : pid.getDependencies()) {
                 String id = d.getId();
                 m_dependencies.addResource(
                         new ServiceDependencyResource(this, d),
-                        "dependency[" + id + "]",
+                        String.format("dependency[%s]", id),
                         String.format("Service dependency '%s'", id));
             }
         }
 
-        // Add service providings
+        // Add service providing for primitive components
         addResource(m_providings, "providings", "The service providings of this component instance");
-        @SuppressWarnings("unchecked")
-        ProvidedServiceHandlerDescription phd = (ProvidedServiceHandlerDescription)
-                instance.getInstanceDescription().getHandlerDescription("org.apache.felix.ipojo:provides");
-        if (phd != null) {
-            ProvidedServiceDescription[] providedServices = phd.getProvidedServices();
+        if (instance.getInstanceDescription() instanceof  PrimitiveInstanceDescription) {
+            PrimitiveInstanceDescription pid = (PrimitiveInstanceDescription) instance.getInstanceDescription();
+            ProvidedServiceDescription[] providedServices = pid.getProvidedServices();
             for (int i = 0; i < providedServices.length; i++) {
                 ProvidedServiceDescription p = providedServices[i];
                 String id = Integer.toString(i);
                 m_providings.addResource(
                         new ServiceProvidingResource(this, id, p),
-                        "providing[" + id + "]",
+                        String.format("providing[%s]", id),
                         String.format("Service providing '%s'", id));
             }
         }
-
         // TODO add relation on declaration (tricky because declarations are (most of the time) unnamed)
     }
 

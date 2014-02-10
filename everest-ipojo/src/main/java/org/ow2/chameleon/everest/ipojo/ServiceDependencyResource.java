@@ -57,18 +57,23 @@ public class ServiceDependencyResource extends DefaultReadOnlyResource implement
     @Override
     public ResourceMetadata getMetadata() {
         ResourceMetadata m = super.getMetadata();
-        DependencyDescription d = m_description.get();
-        if (d == null) {
+        DependencyDescription description = m_description.get();
+        if (description == null) {
             return m;
         } else {
             return new ImmutableResourceMetadata.Builder()
-                    .set("state", stateToString(d.getState()))
-                    .set("filter", d.getFilter())
-                    .set("policy", policyToString(d.getPolicy()))
-                    .set("comparator", d.getComparator())
-                    .set("isAggregate", d.isMultiple())
-                    .set("isOptional", d.isOptional())
-                    .set("isFrozen", d.isFrozen())
+                    .set("id", description.getId())
+                    .set("specification", description.getSpecification())
+                    .set("isNullable", description.supportsNullable())
+                    .set("isProxy", description.isProxy())
+                    .set("defaultImplementation", description.getDefaultImplementation())
+                    .set("state", stateToString(description.getState()))
+                    .set("filter", description.getFilter())
+                    .set("policy", policyToString(description.getPolicy()))
+                    .set("comparator", description.getComparator())
+                    .set("isAggregate", description.isMultiple())
+                    .set("isOptional", description.isOptional())
+                    .set("isFrozen", description.isFrozen())
                     .build();
         }
     }
