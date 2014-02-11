@@ -16,6 +16,7 @@
 package org.ow2.chameleon.everest.osgi;
 
 import org.apache.felix.ipojo.annotations.*;
+import org.osgi.service.log.LogReaderService;
 import org.ow2.chameleon.everest.core.Everest;
 import org.ow2.chameleon.everest.impl.AbstractResourceManager;
 import org.ow2.chameleon.everest.impl.DefaultParameter;
@@ -31,10 +32,6 @@ import org.ow2.chameleon.everest.services.*;
 import org.osgi.framework.*;
 import org.osgi.framework.startlevel.FrameworkStartLevel;
 import org.osgi.framework.wiring.FrameworkWiring;
-import org.osgi.service.cm.ConfigurationAdmin;
-import org.osgi.service.cm.ConfigurationListener;
-import org.osgi.service.deploymentadmin.DeploymentAdmin;
-import org.osgi.service.log.LogReaderService;
 import org.osgi.util.tracker.BundleTracker;
 import org.osgi.util.tracker.BundleTrackerCustomizer;
 import org.osgi.util.tracker.ServiceTracker;
@@ -153,15 +150,26 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
     private final ServiceResourceManager m_serviceResourceManager;
 
     /**
+     * Tracker for configuration admin service
+     */
+    private final ServiceTracker m_configAdminTracker;
+
+    /**
+     * Tracker for deployment admin service
+     */
+    private final ServiceTracker m_deploymentAdminTracker;
+
+    /**
      * First level resource manager for config admin
      * Present only if configuration admin service is found
      */
     private ConfigAdminResourceManager m_configResourceManager;
 
+
     /**
      * Service registration for configuration listener
      */
-    private ServiceRegistration<ConfigurationListener> m_configurationListenerServiceRegistration;
+    private ServiceRegistration m_configurationListenerServiceRegistration;
 
     /**
      * First level resource manager for deployment package admin
@@ -222,6 +230,8 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
             throw new RuntimeException(e.getMessage());
         }
 
+        m_configAdminTracker = new ServiceTracker(m_context, ConfigAdminTracker.clazz,new ConfigAdminTracker(this));
+        m_deploymentAdminTracker = new ServiceTracker(m_context, DeploymentAdminTracker.clazz,new DeploymentAdminTracker(this));
         m_bundleTracker = new BundleTracker(m_context, stateMask, this);
         m_serviceTracker = new ServiceTracker(m_context, allServicesFilter, this);
 
@@ -252,6 +262,8 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
         m_context.addFrameworkListener(this);
         m_bundleTracker.open();
         m_serviceTracker.open(true);
+        m_configAdminTracker.open();
+        m_deploymentAdminTracker.open();
     }
 
     @Invalidate
@@ -260,6 +272,8 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
         m_context.removeFrameworkListener(this);
         m_bundleTracker.close();
         m_serviceTracker.close();
+        m_configAdminTracker.close();
+        m_deploymentAdminTracker.close();
     }
 
     @Override
@@ -355,17 +369,19 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
     // Config Admin Bind / Unbind
     // =================================================================================================================
 
-    @Bind(id = "configadmin", optional = true, aggregate = false)
-    public void bindConfigAdmin(ConfigurationAdmin configAdmin) {
+    //@Bind(id = "configadmin", specification = "org.osgi.service.cm.ConfigurationAdmin", optional = true, aggregate = false)
+    public void bindConfigAdmin(ServiceReference configAdminRef) { // org.osgi.service.cm.ConfigurationAdmin
         synchronized (resourceLock) {
+            Object configAdmin = m_context.getService(configAdminRef);
             m_configResourceManager = new ConfigAdminResourceManager(configAdmin);
-            m_configurationListenerServiceRegistration = m_context.registerService(ConfigurationListener.class, m_configResourceManager, null);
+            m_configurationListenerServiceRegistration = m_context.
+                    registerService(/*ConfigurationListener.class*/"org.osgi.service.cm.ConfigurationListener", m_configResourceManager, null);
         }
         Everest.postResource(ResourceEvent.UPDATED, this);
     }
 
-    @Unbind(id = "configadmin")
-    public void unbindConfigAdmin(ConfigurationAdmin configAdmin) {
+    //@Unbind(id = "configadmin")
+    public void unbindConfigAdmin(ServiceReference configAdminRef) {
         synchronized (resourceLock) {
             m_configurationListenerServiceRegistration.unregister();
             m_configResourceManager = null;
@@ -376,16 +392,17 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
     // Deploy Admin Bind / Unbind
     // =================================================================================================================
 
-    @Bind(id = "deploymentadmin", optional = true, aggregate = false)
-    public void bindDeploymentAdmin(DeploymentAdmin deploymentAdmin) {
+    //@Bind(id = "deploymentadmin", specification = "org.osgi.service.deploymentadmin.DeploymentAdmin", optional = true, aggregate = false)
+    public void bindDeploymentAdmin(ServiceReference deploymentAdminRef) { // org.osgi.service.deploymentadmin.DeploymentAdmin
         synchronized (resourceLock) {
+            Object deploymentAdmin = m_context.getService(deploymentAdminRef);
             m_deploymentResourceManager = new DeploymentAdminResourceManager(deploymentAdmin);
         }
         Everest.postResource(ResourceEvent.UPDATED, this);
     }
 
-    @Unbind(id = "deploymentadmin")
-    public void unbindDeploymentAdmin(DeploymentAdmin deploymentAdmin) {
+    //@Unbind(id = "deploymentadmin")
+    public void unbindDeploymentAdmin(ServiceReference deploymentAdminRef) {
         synchronized (resourceLock) {
             m_deploymentResourceManager = null;
         }
@@ -396,7 +413,7 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
     // =================================================================================================================
 
     @Bind(id = "logservice", optional = true, aggregate = false)
-    public void bindLogService(LogReaderService logService) {
+    public void bindLogService(LogReaderService logService) { // LogServiceReader
         synchronized (resourceLock) {
             m_logResourceManager = new LogServiceResourceManager(logService);
         }
@@ -404,7 +421,7 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
     }
 
     @Unbind(id = "logservice")
-    public void unbindLogService(LogReaderService logService) {
+    public void unbindLogService(ServiceReference logServiceRef) {
         synchronized (resourceLock) {
             m_logResourceManager = null;
         }
@@ -473,6 +490,55 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
             case FrameworkEvent.PACKAGES_REFRESHED:
                 Everest.postResource(ResourceEvent.UPDATED, this);
                 break;
+        }
+    }
+
+
+    private class ConfigAdminTracker implements ServiceTrackerCustomizer{
+
+        public static final String clazz = "org.osgi.service.cm.ConfigurationAdmin";
+
+        private OsgiRootResource rootResource;
+
+        public ConfigAdminTracker(OsgiRootResource rootResource) {
+            this.rootResource = rootResource;
+        }
+
+        public Object addingService(ServiceReference reference) {
+            rootResource.bindConfigAdmin(reference);
+            return reference;
+        }
+
+        public void modifiedService(ServiceReference reference, Object service) {
+            //noop
+        }
+
+        public void removedService(ServiceReference reference, Object service) {
+            rootResource.unbindConfigAdmin(reference);
+        }
+    }
+
+    public class DeploymentAdminTracker implements ServiceTrackerCustomizer{
+
+        public static final String clazz = "org.osgi.service.deploymentadmin.DeploymentAdmin";
+
+        OsgiRootResource rootResource;
+
+        public DeploymentAdminTracker(OsgiRootResource rootResource) {
+            this.rootResource = rootResource;
+        }
+
+        public Object addingService(ServiceReference reference) {
+            rootResource.bindDeploymentAdmin(reference);
+            return reference;
+        }
+
+        public void modifiedService(ServiceReference reference, Object service) {
+            //noop
+        }
+
+        public void removedService(ServiceReference reference, Object service) {
+            rootResource.unbindDeploymentAdmin(reference);
         }
     }
 }

@@ -15,10 +15,13 @@
 
 package org.ow2.chameleon.everest.osgi.config;
 
+import org.osgi.framework.ServiceReference;
+import org.osgi.util.tracker.ServiceTrackerCustomizer;
 import org.ow2.chameleon.everest.core.Everest;
 import org.ow2.chameleon.everest.impl.DefaultParameter;
 import org.ow2.chameleon.everest.impl.DefaultRelation;
 import org.ow2.chameleon.everest.osgi.AbstractResourceCollection;
+import org.ow2.chameleon.everest.osgi.OsgiRootResource;
 import org.ow2.chameleon.everest.services.*;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.service.cm.Configuration;
@@ -79,9 +82,9 @@ public class ConfigAdminResourceManager extends AbstractResourceCollection imple
      *
      * @param configAdmin {@code ConfigurationAdmin}
      */
-    public ConfigAdminResourceManager(ConfigurationAdmin configAdmin) {
+    public ConfigAdminResourceManager(Object configAdmin) {
         super(CONFIG_PATH);
-        this.m_configAdmin = configAdmin;
+        this.m_configAdmin = (ConfigurationAdmin) configAdmin;
 
         setRelations(new DefaultRelation(getPath(), Action.CREATE, "create",
                 new DefaultParameter()

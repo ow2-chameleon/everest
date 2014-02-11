@@ -66,9 +66,9 @@ public class DeploymentAdminResourceManager extends AbstractResourceCollection {
      *
      * @param deploymentAdmin {@code DeploymentAdmin}
      */
-    public DeploymentAdminResourceManager(DeploymentAdmin deploymentAdmin) {
+    public DeploymentAdminResourceManager(Object deploymentAdmin) {
         super(DEPLOY_PATH);
-        this.m_deploymentAdmin = deploymentAdmin;
+        this.m_deploymentAdmin = (DeploymentAdmin) deploymentAdmin;
         setRelations(new DefaultRelation(getPath(), Action.CREATE, INSTALL_PARAMETER,
                 new DefaultParameter()
                         .name(INPUT_PARAMETER)
