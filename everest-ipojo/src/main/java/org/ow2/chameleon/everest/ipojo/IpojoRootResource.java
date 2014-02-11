@@ -15,9 +15,8 @@
 
 package org.ow2.chameleon.everest.ipojo;
 
-import org.apache.felix.ipojo.ComponentInstance;
-import org.apache.felix.ipojo.Factory;
-import org.apache.felix.ipojo.HandlerFactory;
+import org.apache.felix.ipojo.*;
+import org.apache.felix.ipojo.Handler;
 import org.apache.felix.ipojo.annotations.*;
 import org.apache.felix.ipojo.architecture.Architecture;
 import org.apache.felix.ipojo.architecture.InstanceDescription;
@@ -31,6 +30,7 @@ import org.apache.felix.ipojo.extender.InstanceDeclaration;
 import org.apache.felix.ipojo.extender.TypeDeclaration;
 import org.osgi.framework.*;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.util.*;
 
@@ -416,6 +416,10 @@ public class IpojoRootResource extends ResourceMap {
     public void bindHandler(HandlerFactory handler, ServiceReference<HandlerFactory> ref) {
         // Find/create the intermediate level node : ipojo/handler/$ns
         String ns = handler.getNamespace();
+        // HACK
+        if (! "primitive".equals(handler.getType())) {
+            ns += "." + handler.getType();
+        }
         AtomicInsertionResult<ResourceMap> i = m_handlers.addResourceMapIfAbsent(
                 HANDLERS.addElements(ns), true,
                 String.format("handlers[%s]", ns),
@@ -424,7 +428,9 @@ public class IpojoRootResource extends ResourceMap {
 
         // Add the handler resource : ipojo/handler/$ns/$name
         HandlerResource r = new HandlerResource(handler, ref);
-        String name = String.valueOf(handler.getName());
+        System.out.println("Creating handler resource for " + handler.getNamespace() + ":" + handler.getName() + " "
+                + handler.getType() + " - " + r.getPath() + " (parent: " + nsHandlers.getPath() + ")");
+        String name = String.valueOf(handler.getNamespace() + ":" + handler.getName());
         nsHandlers.addResource(
                 r,
                 String.format("handler[%s]", name),
@@ -572,6 +578,12 @@ public class IpojoRootResource extends ResourceMap {
         if (name == null) {
             return;
         }
+
+        // Exclude handlers
+        if ("handler".equals(type.getComponentMetadata().getName())) {
+            return;
+        }
+
         AtomicInsertionResult<ResourceMap> i  = m_typeDeclarations.addResourceMapIfAbsent(
                 TYPE_DECLARATIONS.addElements(name), true,
                 String.format("types[%s]", name),
@@ -579,6 +591,9 @@ public class IpojoRootResource extends ResourceMap {
         ResourceMap namedTypes = i.resource;
         // Add the type declaration resource: ipojo/declaration/type/$name/$version
         String version = String.valueOf(type.getComponentVersion());
+        if (version == null) {
+            version = "0.0.0";
+        }
         TypeDeclarationResource r = new TypeDeclarationResource(type, ref);
         namedTypes.addResource(
                 r,

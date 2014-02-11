@@ -47,10 +47,14 @@ public class HandlerResource extends DefaultReadOnlyResource implements FactoryS
     private final WeakReference<HandlerFactory> m_handler;
 
     public HandlerResource(HandlerFactory handler, ServiceReference<HandlerFactory> ref) {
-        super(HANDLERS.addElements(handler.getNamespace(), handler.getName()),
+        super(
+                ! "primitive".equals(handler.getType()) ?
+                        HANDLERS.addElements(handler.getNamespace() + "." + handler.getType(), handler.getName())
+                        : HANDLERS.addElements(handler.getNamespace(),handler.getName()),
                 new ImmutableResourceMetadata.Builder()
                         .set("namespace", handler.getNamespace())
                         .set("name", handler.getName())
+                        .set("type", handler.getType())
                         .build());
         m_handler = new WeakReference<HandlerFactory>(handler);
         handler.addFactoryStateListener(this);

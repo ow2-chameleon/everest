@@ -40,7 +40,9 @@ public class TypeDeclarationResource extends DefaultReadOnlyResource {
     private final WeakReference<TypeDeclaration> m_type;
 
     public TypeDeclarationResource(TypeDeclaration declaration, ServiceReference<TypeDeclaration> ref) {
-        super(IpojoRootResource.TYPE_DECLARATIONS.addElements(declaration.getComponentName(), String.valueOf(declaration.getComponentVersion())),
+        super(
+                IpojoRootResource.TYPE_DECLARATIONS.addElements(declaration.getComponentName(),
+                        declaration.getComponentVersion() == null ? "0.0.0" : String.valueOf(declaration.getComponentVersion())),
                 new ImmutableResourceMetadata.Builder()
                         .set("name", declaration.getComponentName())
                         .set("version", declaration.getComponentVersion())
