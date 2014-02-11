@@ -51,7 +51,7 @@
         <!--
         Chameleon version
         -->
-        <chameleon.version>1.0.2</chameleon.version>
+        <chameleon.version>1.0.3</chameleon.version>
 
         <!--
         JavaServelet API version
@@ -63,6 +63,10 @@
         -->
         <compendium.version>4.3.1</compendium.version>
 
+        <!--
+        event admin version
+        -->
+        <eventadmin.version>1.3.2</eventadmin.version>
 
         <!--
         commonIO  version
@@ -107,10 +111,15 @@
             <artifactId>everest-core</artifactId>
             <version>${everestCoreVersion}</version>
         </dependency>
-        <dependency>
+<!--         <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.compendium</artifactId>
             <version>${compendium.version}</version>
+        </dependency> -->
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.eventadmin</artifactId>
+            <version>${eventadmin.version}</version>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -131,6 +140,16 @@
             <groupId>org.ow2.chameleon.everest</groupId>
             <artifactId>everest-servlet</artifactId>
             <version>${everestServletVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.ow2.chameleon.everest</groupId>
+            <artifactId>everest-osgi</artifactId>
+            <version>${everestCasaVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.ow2.chameleon.everest</groupId>
+            <artifactId>everest-ipojo</artifactId>
+            <version>${everestCasaVersion}</version>
         </dependency>
         <dependency>
             <groupId>org.ow2.chameleon.everest</groupId>
@@ -199,6 +218,8 @@
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
+                            <includeScope>runtime</includeScope>
+                            <excludeScope>provided</excludeScope>
                             <outputDirectory>${chameleon.destination}/runtime</outputDirectory>
                             <excludeTransitive>true</excludeTransitive>
                         </configuration>
