@@ -157,8 +157,8 @@ public class BundleResourceManager extends AbstractResourceCollection {
     }
 
     @Override
-    public List<Resource> getResources() {
-        ArrayList<Resource> resources = new ArrayList<Resource>();
+    public Collection<Resource<?>> getResources() {
+        ArrayList<Resource<?>> resources = new ArrayList<Resource<?>>();
         synchronized (m_bundleResourcesMap) {
             resources.addAll(m_bundleResourcesMap.values());
         }

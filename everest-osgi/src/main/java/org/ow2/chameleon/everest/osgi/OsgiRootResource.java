@@ -38,6 +38,7 @@ import org.osgi.util.tracker.ServiceTracker;
 import org.osgi.util.tracker.ServiceTrackerCustomizer;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -49,7 +50,8 @@ import java.util.List;
         specifications = Resource.class,
         properties = {@StaticServiceProperty(type = "String", name = "type", value = "osgi")})
 @Instantiate
-public class OsgiRootResource extends AbstractResourceManager implements BundleTrackerCustomizer, ServiceTrackerCustomizer, FrameworkListener {
+public class OsgiRootResource extends AbstractResourceManager<Object> implements BundleTrackerCustomizer,
+        ServiceTrackerCustomizer, FrameworkListener {
 
     /**
      * Name of the osgi root resource
@@ -287,8 +289,8 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
     }
 
     @Override
-    public List<Resource> getResources() {
-        ArrayList<Resource> resources = new ArrayList<Resource>();
+    public Collection<Resource<?>> getResources() {
+        ArrayList<Resource<?>> resources = new ArrayList<Resource<?>>();
         synchronized (resourceLock) {
             resources.add(m_bundleResourceManager);
             resources.add(m_packageResourceManager);

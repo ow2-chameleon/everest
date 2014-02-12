@@ -107,8 +107,8 @@ public class PackageResourceManager extends AbstractResourceCollection {
 //    }
 
     @Override
-    public List<Resource> getResources() {
-        ArrayList<Resource> resources = new ArrayList<Resource>();
+    public List<Resource<?>> getResources() {
+        ArrayList<Resource<?>> resources = new ArrayList<Resource<?>>();
         synchronized (m_packageResourceByPackageIdMap) {
             resources.addAll(m_packageResourceByPackageIdMap.values());
         }

@@ -25,8 +25,8 @@ public class TestConfigAdmin extends EverestOsgiTest {
 
     @Test
     public void testExistingConfigurations() throws ResourceNotFoundException, IllegalActionOnResourceException {
-        Resource configAdmin = get("/osgi/configurations");
-        for (Resource config : configAdmin.getResources()) {
+        Resource<?> configAdmin = get("/osgi/configurations");
+        for (Resource<?> config : configAdmin.getResources()) {
             ConfigurationResource configurationResource = config.adaptTo(ConfigurationResource.class);
             System.out.println(configurationResource.getPid());
         }
@@ -38,8 +38,8 @@ public class TestConfigAdmin extends EverestOsgiTest {
 
         // get the bundle location of test bundle
         String location = null;
-        Resource bundles = get("/osgi/bundles");
-        for (Resource bundle : bundles.getResources()) {
+        Resource<?> bundles = get("/osgi/bundles");
+        for (Resource<?> bundle : bundles.getResources()) {
             BundleResource bundleResource = bundle.adaptTo(BundleResource.class);
             if (bundleResource.getSymbolicName().equals(BaseTest.TEST_BUNDLE_SYMBOLIC_NAME)) {
                 location = bundleResource.getLocation();
@@ -47,14 +47,14 @@ public class TestConfigAdmin extends EverestOsgiTest {
         }
 
         // create configuration with this
-        Resource configAdmin = get("/osgi/configurations");
+        Resource<?> configAdmin = get("/osgi/configurations");
         HashMap<String, Object> params = new HashMap<String, Object>();
         params.put("pid", "ozan");
         params.put("location", location);
-        Resource configuration = create(Path.from("/osgi/configurations"), params);
+        Resource<?> configuration = create(Path.from("/osgi/configurations"), params);
         ConfigurationResource cfgRes = configuration.adaptTo(ConfigurationResource.class);
         System.out.println(cfgRes.getMetadata());
-        for (Resource config : configAdmin.getResources()) {
+        for (Resource<?> config : configAdmin.getResources()) {
             ConfigurationResource configurationResource = config.adaptTo(ConfigurationResource.class);
             System.out.println(configurationResource.getPid());
         }
@@ -64,7 +64,7 @@ public class TestConfigAdmin extends EverestOsgiTest {
         Dictionary properties = new Hashtable();
         properties.put("property", "value");
         params.put("properties", properties);
-        Resource config = update(Path.from("/osgi/configurations/ozan"), params);
+        Resource<?> config = update(Path.from("/osgi/configurations/ozan"), params);
 
         ConfigurationResource configurationResource = config.adaptTo(ConfigurationResource.class);
         Dictionary props = configurationResource.getProperties();

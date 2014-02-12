@@ -18,6 +18,7 @@ package org.ow2.chameleon.everest.impl;
 import org.ow2.chameleon.everest.filters.ResourceFilters;
 import org.ow2.chameleon.everest.services.*;
 
+import java.lang.ref.WeakReference;
 import java.util.*;
 
 import static org.ow2.chameleon.everest.core.Everest.DEBUG_REQUEST;
@@ -25,19 +26,20 @@ import static org.ow2.chameleon.everest.core.Everest.DEBUG_REQUEST;
 /**
  * Default resource implementation
  */
-public class DefaultResource implements Resource {
+public class DefaultResource<T> implements Resource<T> {
 
     private final Path path;
-    private final Resource[] resources;
+    private final Resource<?>[] resources;
     private final ResourceMetadata metadata;
+    private final WeakReference<T> ref;
     private Relation[] relations;
 
     public DefaultResource(Path path) {
-        this(path, null);
+        this(path, null, null, (Resource[]) null);
     }
 
     public DefaultResource(String path) {
-        this(Path.from(path), null);
+        this(Path.from(path));
     }
 
     public DefaultResource(Resource parent, String name) {
@@ -45,9 +47,22 @@ public class DefaultResource implements Resource {
     }
 
     public DefaultResource(Path path, ResourceMetadata metadata, Resource... resources) {
+        this(path, null, metadata, resources);
+    }
+
+    public DefaultResource(Path path, T object, ResourceMetadata metadata, Resource... resources) {
         this.path = path;
         this.resources = resources;
         this.metadata = metadata;
+        if (object != null) {
+            this.ref = new WeakReference<T>(object);
+        } else {
+            this.ref = null;
+        }
+    }
+
+    public DefaultResource(Path path, T object) {
+        this(path, object, null);
     }
 
     public DefaultResource setRelations(Relation... relations) {
@@ -63,11 +78,13 @@ public class DefaultResource implements Resource {
         return path;
     }
 
-    public List<Resource> getResources() {
+    public Collection<Resource<?>> getResources() {
         if (resources == null) {
             return Collections.emptyList();
         }
-        return new ArrayList<Resource>(Arrays.asList(resources));
+
+        // We need to build a copy of the array
+        return new ArrayList<>(Arrays.asList(resources));
     }
 
     public ResourceMetadata getMetadata() {
@@ -82,10 +99,8 @@ public class DefaultResource implements Resource {
     public List<Relation> getRelations() {
 
         Set<Relation> setRelation = new HashSet<Relation>();
-        if (relations != null){
-            for (Relation relation : relations) {
-                setRelation.add(relation);
-            }
+        if (relations != null) {
+            Collections.addAll(setRelation, relations);
         }
         try {
             setRelation.add(new DefaultRelation(this.getCanonicalPath(), Action.READ, "Self", "Return the current resource \"" + this.getPath().getLast() + "\""));
@@ -122,13 +137,13 @@ public class DefaultResource implements Resource {
         }
     }
 
-    public DefaultResource setRelations(List<Relation> relations) {
+    public DefaultResource setRelations(Collection<Relation> relations) {
         this.relations = relations.toArray(new Relation[relations.size()]);
         return this;
     }
 
-    public List<Resource> getResources(ResourceFilter filter) {
-        List<Resource> resources = new ArrayList<Resource>();
+    public List<Resource<?>> getResources(ResourceFilter filter) {
+        List<Resource<?>> resources = new ArrayList<Resource<?>>();
 
         for (Resource res : all()) {
             if (filter.accept(res)) {
@@ -139,7 +154,7 @@ public class DefaultResource implements Resource {
     }
 
     public Resource getResource(String path) {
-        List<Resource> list = getResources(ResourceFilters.hasPath(path));
+        List<Resource<?>> list = getResources(ResourceFilters.hasPath(path));
         if (!list.isEmpty()) {
             return list.get(0);
         } else {
@@ -147,8 +162,9 @@ public class DefaultResource implements Resource {
         }
     }
 
-    public void traverse(Resource resource, List<Resource> list) {
+    public void traverse(Resource<?> resource, List<Resource> list) {
         list.add(resource);
+
         for (Resource res : resource.getResources()) {
             traverse(res, list);
         }
@@ -160,7 +176,29 @@ public class DefaultResource implements Resource {
         return all;
     }
 
+    public T get() {
+        if (ref != null) {
+            return ref.get();
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Translates this resource to the represented object. Note that some resources may not represent any object.
+     * Unlike the {@link org.ow2.chameleon.everest.services.Resource#get()} method,
+     * this method receives the type of the retrieved object. It is useful when the represented object can be mapped
+     * to different classes.
+     *
+     * @param clazz class of the represented object.
+     * @return the represented object, {@literal null} if resource does not represents a particular object of the given type.
+     */
+    @Override
     public <A> A adaptTo(Class<A> clazz) {
+        T object = get();
+        if (object != null && clazz.isAssignableFrom(object.getClass())) {
+            return (A) object;
+        }
         return null;
     }
 
@@ -175,7 +213,6 @@ public class DefaultResource implements Resource {
      * @param request the request.
      * @return the updated resource
      * @throws IllegalActionOnResourceException
-     *
      * @throws ResourceNotFoundException
      */
     public Resource process(Request request) throws IllegalActionOnResourceException, ResourceNotFoundException {
@@ -259,19 +296,33 @@ public class DefaultResource implements Resource {
         return this;
     }
 
-    public static interface ResourceFactory<T extends DefaultResource> {
+    public static interface ResourceFactory<T extends DefaultResource<A>, A> {
 
-        T create(Path path, ResourceMetadata metadata, List<Resource> resources) throws IllegalResourceException;
+        T create(Path path, ResourceMetadata metadata, Collection<Resource<?>> resources) throws
+                IllegalResourceException;
+
+        T create(Path path, A o, ResourceMetadata metadata, Collection<Resource<?>> resources) throws
+                IllegalResourceException;
 
     }
 
-    public static class DefaultResourceFactory implements ResourceFactory<DefaultResource> {
+    public static class DefaultResourceFactory<A> implements ResourceFactory<DefaultResource<A>, A> {
 
-        public DefaultResource create(Path path, ResourceMetadata metadata, List<Resource> resources) {
+        public DefaultResource<A> create(Path path, ResourceMetadata metadata, Collection<Resource<?>> resources) {
             if (resources != null) {
-                return new DefaultResource(path, metadata, resources.toArray(new Resource[resources.size()]));
+                return new DefaultResource<A>(path, metadata, resources.toArray(new Resource[resources.size()]));
             } else {
-                return new DefaultResource(path, metadata);
+                return new DefaultResource<A>(path, null, metadata);
+            }
+        }
+
+        @Override
+        public DefaultResource<A> create(Path path, A o, ResourceMetadata metadata,
+                                         Collection<Resource<?>> resources) throws IllegalResourceException {
+            if (resources != null) {
+                return new DefaultResource<A>(path, o, metadata, resources.toArray(new Resource[resources.size()]));
+            } else {
+                return new DefaultResource<A>(path, o, metadata);
             }
         }
     }
@@ -293,19 +344,20 @@ public class DefaultResource implements Resource {
         return getCanonicalPath().hashCode();
     }
 
-    public static class Builder {
+    public static class Builder<A> {
 
-        private final ResourceFactory<? extends Resource> factory;
+        private final ResourceFactory<? extends Resource<A>, A> factory;
         private Path path;
         private ResourceMetadata metadata;
-        private List<Relation> relations;
-        private List<Resource> resources;
+        private Collection<Relation> relations;
+        private Collection<Resource<?>> resources;
+        private A object;
 
         public Builder() {
-            factory = new DefaultResourceFactory();
+            factory = new DefaultResourceFactory<>();
         }
 
-        public Builder(ResourceFactory<? extends Resource> factory) {
+        public Builder(ResourceFactory<? extends Resource<A>, A> factory) {
             this.factory = factory;
         }
 
@@ -314,17 +366,19 @@ public class DefaultResource implements Resource {
             fromPath(path);
         }
 
-        public Builder(Resource resource) {
+        public Builder(Resource<A> resource) {
             this();
             this.path = resource.getPath();
+            this.object = resource.get();
             this.metadata = resource.getMetadata();
             this.relations = resource.getRelations();
             this.resources = resource.getResources();
         }
 
-        public Builder(Resource resource, ResourceFactory factory) {
+        public Builder(Resource<A> resource, ResourceFactory<? extends Resource<A>, A> factory) {
             this(factory);
             this.path = resource.getPath();
+            this.object = resource.get();
             this.metadata = resource.getMetadata();
             this.relations = resource.getRelations();
             this.resources = resource.getResources();
@@ -347,7 +401,7 @@ public class DefaultResource implements Resource {
 
         public Builder with(Resource resource) {
             if (this.resources == null) {
-                this.resources = new ArrayList<Resource>();
+                this.resources = new ArrayList<>();
             }
             resources.add(resource);
             return this;
@@ -355,14 +409,20 @@ public class DefaultResource implements Resource {
 
         public Builder with(Relation relation) {
             if (this.relations == null) {
-                this.relations = new ArrayList<Relation>();
+                this.relations = new ArrayList<>();
             }
             relations.add(relation);
             return this;
         }
 
         public DefaultResource build() throws IllegalResourceException {
-            DefaultResource res = factory.create(path, metadata, resources);
+            DefaultResource<A> res;
+            if (object != null) {
+                res = factory.create(path, object, metadata, resources);
+            } else {
+                res = factory.create(path, metadata, resources);
+            }
+
             if (relations != null) {
                 res.setRelations(relations);
             }

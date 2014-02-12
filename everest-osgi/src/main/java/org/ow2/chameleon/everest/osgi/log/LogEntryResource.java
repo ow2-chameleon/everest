@@ -36,7 +36,7 @@ import static org.ow2.chameleon.everest.osgi.log.LogServiceResourceManager.LOG_P
 /**
  * Resource representing a {@code LogEntry}.
  */
-public class LogEntryResource extends DefaultResource {
+public class LogEntryResource extends DefaultResource<LogEntry> {
 
     /**
      * Represented log entry

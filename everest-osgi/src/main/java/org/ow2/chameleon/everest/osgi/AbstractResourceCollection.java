@@ -29,7 +29,7 @@ import java.util.List;
  * Abstract class for resources with child resources.
  * Creates {@code Action.GET} relations to these children
  */
-public abstract class AbstractResourceCollection extends DefaultReadOnlyResource {
+public abstract class AbstractResourceCollection extends DefaultReadOnlyResource<List<?>> {
 
     /**
      * Constructor, same as {@code DefaultReadOnlyResource}

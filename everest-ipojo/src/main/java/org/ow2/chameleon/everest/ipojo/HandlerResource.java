@@ -39,7 +39,7 @@ import static org.ow2.chameleon.everest.ipojo.IpojoRootResource.*;
 /**
  * '/ipojo/handler/$namespace/$name' resource.
  */
-public class HandlerResource extends DefaultReadOnlyResource implements FactoryStateListener {
+public class HandlerResource extends DefaultReadOnlyResource<HandlerFactory> implements FactoryStateListener {
 
     /**
      * The underlying HandlerFactory service.

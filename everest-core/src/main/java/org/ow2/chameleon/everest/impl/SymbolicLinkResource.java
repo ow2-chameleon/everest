@@ -17,12 +17,13 @@ package org.ow2.chameleon.everest.impl;
 
 import org.ow2.chameleon.everest.services.*;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
  * Resource the is a link to another resource.
  */
-public class SymbolicLinkResource implements Resource {
+public class SymbolicLinkResource<T> implements Resource<T> {
 
     /**
      * The path of this symbolic link.
@@ -32,7 +33,7 @@ public class SymbolicLinkResource implements Resource {
     /**
      * The targeted resource.
      */
-    private final Resource target;
+    private final Resource<T> target;
 
     /**
      * Create a new symbolic link resource
@@ -59,7 +60,7 @@ public class SymbolicLinkResource implements Resource {
         return path;
     }
 
-    public List<Resource> getResources() {
+    public Collection<Resource<?>> getResources() {
         return target.getResources();
     }
 
@@ -67,11 +68,11 @@ public class SymbolicLinkResource implements Resource {
         return target.getMetadata();
     }
 
-    public List<Relation> getRelations() {
+    public Collection<Relation> getRelations() {
         return target.getRelations();
     }
 
-    public List<Resource> getResources(ResourceFilter filter) {
+    public Collection<Resource<?>> getResources(ResourceFilter filter) {
         return target.getResources(filter);
     }
 
@@ -83,6 +84,20 @@ public class SymbolicLinkResource implements Resource {
         return target.process(request);
     }
 
+    public T get() {
+        return target.get();
+    }
+
+    /**
+     * Translates this resource to the represented object. Note that some resources may not represent any object.
+     * Unlike the {@link org.ow2.chameleon.everest.services.Resource#get()} method,
+     * this method receives the type of the retrieved object. It is useful when the represented object can be mapped
+     * to different classes.
+     *
+     * @param clazz class of the represented object.
+     * @return the represented object, {@literal null} if resource does not represents a particular object of the given type.
+     */
+    @Override
     public <A> A adaptTo(Class<A> clazz) {
         return target.adaptTo(clazz);
     }

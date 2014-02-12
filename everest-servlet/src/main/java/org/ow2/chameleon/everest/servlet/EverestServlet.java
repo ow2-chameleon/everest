@@ -128,7 +128,7 @@ public class EverestServlet extends HttpServlet {
                 EVEREST_SERVLET_PATH + "/" + path.toString();
     }
 
-    protected ObjectNode toJSON(HttpServletRequest request, Resource resource) throws IOException {
+    protected ObjectNode toJSON(HttpServletRequest request, Resource<?> resource) throws IOException {
         ObjectNode root =  JsonUtils.get(request).newObject();
 
         // Metadata

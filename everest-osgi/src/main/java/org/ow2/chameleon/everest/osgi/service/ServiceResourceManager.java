@@ -105,8 +105,8 @@ public class ServiceResourceManager extends AbstractResourceCollection {
 //    }
 
     @Override
-    public List<Resource> getResources() {
-        ArrayList<Resource> resources = new ArrayList<Resource>();
+    public List<Resource<?>> getResources() {
+        ArrayList<Resource<?>> resources = new ArrayList<Resource<?>>();
         synchronized (m_serviceResourceMap) {
             resources.addAll(m_serviceResourceMap.values());
         }

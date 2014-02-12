@@ -32,7 +32,7 @@ import static org.ow2.chameleon.everest.ipojo.IpojoRootResource.*;
 /**
  * '/ipojo/declaration/extension/$name' resource.
  */
-public class ExtensionDeclarationResource extends DefaultReadOnlyResource {
+public class ExtensionDeclarationResource extends DefaultReadOnlyResource<ExtensionDeclaration> {
 
     /**
      * The underlying ExtensionDeclaration service.

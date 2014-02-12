@@ -17,7 +17,7 @@ import java.util.List;
  * Time: 14:07
  * To change this template use File | Settings | File Templates.
  */
-public abstract class AbstractResourceCollection extends DefaultReadOnlyResource {
+public abstract class AbstractResourceCollection extends DefaultReadOnlyResource<Object> {
 
     /**
      * Constructor, same as {@code DefaultReadOnlyResource}

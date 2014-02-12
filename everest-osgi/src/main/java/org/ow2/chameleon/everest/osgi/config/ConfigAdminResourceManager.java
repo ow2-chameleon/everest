@@ -75,7 +75,8 @@ public class ConfigAdminResourceManager extends AbstractResourceCollection imple
     /**
      * Configurations map by pid
      */
-    private Map<String, ConfigurationResource> m_configurationResourceMap = new HashMap<String, ConfigurationResource>();
+    private Map<String, ConfigurationResource> m_configurationResourceMap = new HashMap<String,
+            ConfigurationResource>();
 
     /**
      * Constructor for configuration resource manager
@@ -129,8 +130,8 @@ public class ConfigAdminResourceManager extends AbstractResourceCollection imple
 //    }
 
     @Override
-    public List<Resource> getResources() {
-        ArrayList<Resource> resources = new ArrayList<Resource>();
+    public List<Resource<?>> getResources() {
+        ArrayList<Resource<?>> resources = new ArrayList<Resource<?>>();
         synchronized (m_configurationResourceMap) {
             resources.addAll(m_configurationResourceMap.values());
         }

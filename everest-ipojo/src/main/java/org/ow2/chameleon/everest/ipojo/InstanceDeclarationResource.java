@@ -33,7 +33,7 @@ import static org.ow2.chameleon.everest.ipojo.IpojoRootResource.PATH_TO_OSGI_SER
 /**
  * '/ipojo/declaration/instance' resource.
  */
-public class InstanceDeclarationResource extends DefaultReadOnlyResource {
+public class InstanceDeclarationResource extends DefaultReadOnlyResource<InstanceDeclaration> {
 
     /**
      * The underlying InstanceDeclarationResource service.

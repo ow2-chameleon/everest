@@ -116,8 +116,8 @@ public class ServiceResource extends AbstractResourceCollection {
     }
 
     @Override
-    public List<Resource> getResources() {
-        ArrayList<Resource> resources = new ArrayList<Resource>();
+    public List<Resource<?>> getResources() {
+        ArrayList<Resource<?>> resources = new ArrayList<Resource<?>>();
         // Uses Bundles
         Bundle[] uses = m_serviceReference.getUsingBundles();
         if (uses != null) {

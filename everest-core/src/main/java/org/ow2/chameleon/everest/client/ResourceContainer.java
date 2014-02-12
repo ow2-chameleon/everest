@@ -24,10 +24,7 @@ package org.ow2.chameleon.everest.client;/*
 import org.ow2.chameleon.everest.impl.DefaultRequest;
 import org.ow2.chameleon.everest.services.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ResourceContainer {
 
@@ -102,7 +99,7 @@ public class ResourceContainer {
             return new ListResourceContainer(returnResources);
         }
 
-        List<Resource> childrenResources = m_resource.getResources();
+        Collection<Resource> childrenResources = m_resource.getResources();
 
 
         for (Resource currentResource : childrenResources) {
@@ -133,7 +130,7 @@ public class ResourceContainer {
             return children();
         }
 
-        List<Resource> childrenResources = m_resource.getResources();
+        Collection<Resource> childrenResources = m_resource.getResources();
 
 
         for (Resource currentResource : childrenResources) {
@@ -162,7 +159,7 @@ public class ResourceContainer {
             return this;
         }
 
-        List<Resource> childrenResources = m_resource.getResources();
+        Collection<Resource> childrenResources = m_resource.getResources();
 
         for (Resource currentResource : childrenResources) {
             if (currentResource.getPath().getLast().equalsIgnoreCase(name)) {
@@ -189,7 +186,7 @@ public class ResourceContainer {
         }
         Path currentPath;
         List<Path> listPath = new ArrayList<Path>();
-        List<Relation> relations = m_resource.getRelations();
+        Collection<Relation> relations = m_resource.getRelations();
 
         for (Relation current : relations) {
             currentPath = current.getHref();
@@ -227,7 +224,7 @@ public class ResourceContainer {
         }
         Path currentPath;
         List<Path> listPath = new ArrayList<Path>();
-        List<Relation> relations = m_resource.getRelations();
+        Collection<Relation> relations = m_resource.getRelations();
 
         for (Relation current : relations) {
             currentPath = current.getHref();
@@ -263,7 +260,7 @@ public class ResourceContainer {
         if (m_resource == null) {
             return this;
         }
-        List<Relation> relations = m_resource.getRelations();
+        Collection<Relation> relations = m_resource.getRelations();
 
         for (Relation current : relations) {
             if (current.getName().equalsIgnoreCase(nameRelation)) {

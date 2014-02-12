@@ -58,8 +58,8 @@ public class LogServiceResourceManager extends AbstractResourceCollection {
     }
 
     @Override
-    public List<Resource> getResources() {
-        ArrayList<Resource> resources = new ArrayList<Resource>();
+    public List<Resource<?>> getResources() {
+        ArrayList<Resource<?>> resources = new ArrayList<Resource<?>>();
         Enumeration logs = m_logService.getLog();
         while (logs.hasMoreElements()) {
             LogEntry entry = (LogEntry) logs.nextElement();

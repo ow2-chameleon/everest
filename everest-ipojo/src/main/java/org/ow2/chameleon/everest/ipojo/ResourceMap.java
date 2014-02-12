@@ -37,7 +37,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * @ThreadSafe
  */
 // TODO refactor : this class gets more and more dirty
-public class ResourceMap extends DefaultReadOnlyResource {
+public class ResourceMap extends DefaultReadOnlyResource<Object> {
 
     /**
      * The lock regulating concurrent accesses to this resource map.
@@ -49,7 +49,7 @@ public class ResourceMap extends DefaultReadOnlyResource {
      *
      * @GuardedBy m_lock
      */
-    private final Map<Path, Resource> m_children = new LinkedHashMap<Path, Resource>();
+    private final Map<Path, Resource<?>> m_children = new LinkedHashMap<Path, Resource<?>>();
 
     /**
      * The relations to the children.
@@ -346,13 +346,13 @@ public class ResourceMap extends DefaultReadOnlyResource {
      * </p>
      */
     @Override
-    public List<Resource> getResources() {
+    public List<Resource<?>> getResources() {
         m_lock.readLock().lock();
         try {
             if (m_children.isEmpty()) {
                 return Collections.emptyList();
             } else {
-                return Collections.unmodifiableList(new ArrayList<Resource>(m_children.values()));
+                return Collections.unmodifiableList(new ArrayList<Resource<?>>(m_children.values()));
             }
         } finally {
             m_lock.readLock().unlock();

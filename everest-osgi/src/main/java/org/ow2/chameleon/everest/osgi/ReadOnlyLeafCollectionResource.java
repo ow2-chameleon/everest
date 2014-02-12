@@ -58,8 +58,8 @@ public class ReadOnlyLeafCollectionResource extends AbstractResourceCollection {
     }
 
     @Override
-    public List<Resource> getResources() {
-        ArrayList<Resource> resources = new ArrayList<Resource>();
+    public List<Resource<?>> getResources() {
+        ArrayList<Resource<?>> resources = new ArrayList<Resource<?>>();
         for (Entry<String, ResourceMetadata> leaf : m_leafMetadata.entrySet()) {
             Path leafPath = getPath().add(Path.from(Path.SEPARATOR + leaf.getKey()));
             Resource resource;

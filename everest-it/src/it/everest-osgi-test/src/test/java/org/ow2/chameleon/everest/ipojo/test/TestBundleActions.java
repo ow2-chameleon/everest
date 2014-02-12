@@ -140,8 +140,8 @@ public class TestBundleActions extends EverestOsgiTest {
 
     @Test
     public void testBundleIsNotHere() throws ResourceNotFoundException, IllegalActionOnResourceException {
-        Resource r = get("/osgi/bundles");
-        Resource testedBundle = null;
+        Resource<?> r = get("/osgi/bundles");
+        Resource<?> testedBundle = null;
         for (Resource res : r.getResources()) {
             String symbolicName = res.getMetadata().get(Constants.BUNDLE_SYMBOLICNAME_ATTRIBUTE, String.class);
             if (symbolicName.equals("test.bundle")) {
@@ -219,7 +219,7 @@ public class TestBundleActions extends EverestOsgiTest {
     @Test
     public void testBundleUninstall() throws ResourceNotFoundException, IllegalActionOnResourceException {
 
-        Resource bundleResource = installTestBundle();
+        Resource<?> bundleResource = installTestBundle();
         bundleResource = startBundle(bundleResource);
 
         bundleResource = delete(bundleResource.getPath());
@@ -252,7 +252,7 @@ public class TestBundleActions extends EverestOsgiTest {
     @Test
     public void testBundleUpdate() throws ResourceNotFoundException, IllegalActionOnResourceException {
         // install test bundle
-        Resource res = installTestBundle();
+        Resource<?> res = installTestBundle();
         updatedEvents.clear();
         String symbolicName = res.getMetadata().get(Constants.BUNDLE_SYMBOLICNAME_ATTRIBUTE, String.class);
         BundleResource bundleResource = res.adaptTo(BundleResource.class);
@@ -292,7 +292,7 @@ public class TestBundleActions extends EverestOsgiTest {
         params = new HashMap<String, Object>();
         params.put("location", file.toURI().toString());
         params.put("input", input);
-        Resource res = create(bundles.getPath(), params);
+        Resource<?> res = create(bundles.getPath(), params);
         String symbolicName = res.getMetadata().get(Constants.BUNDLE_SYMBOLICNAME_ATTRIBUTE, String.class);
         BundleResource bundleResource = res.adaptTo(BundleResource.class);
         assertThat(symbolicName).isEqualTo("test.bundle");
@@ -329,12 +329,12 @@ public class TestBundleActions extends EverestOsgiTest {
 
     @Test
     public void testBundleAdapt() throws ResourceNotFoundException, IllegalActionOnResourceException {
-        Resource r = get("/osgi/bundles");
-        for (Resource res : r.getResources()) {
+        Resource<?> r = get("/osgi/bundles");
+        for (Resource<?> res : r.getResources()) {
             Bundle bundle = res.adaptTo(Bundle.class);
             assertThat(bundle.getBundleId()).isEqualTo(res.getMetadata().get(OsgiResourceUtils.BundleNamespace.BUNDLE_ID, Long.class));
         }
-        for (Resource res : r.getResources()) {
+        for (Resource<?> res : r.getResources()) {
             BundleResource bundleResource = res.adaptTo(BundleResource.class);
             assertThat(bundleResource.getBundleId()).isEqualTo(res.getMetadata().get(OsgiResourceUtils.BundleNamespace.BUNDLE_ID, Long.class));
         }

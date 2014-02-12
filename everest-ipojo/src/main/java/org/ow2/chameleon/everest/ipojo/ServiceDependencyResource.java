@@ -36,7 +36,8 @@ import static org.apache.felix.ipojo.util.DependencyModel.*;
 /**
  * '/ipojo/instance/$name/dependency/$id' resource.
  */
-public class ServiceDependencyResource extends DefaultReadOnlyResource implements DependencyModelListener {
+public class ServiceDependencyResource extends DefaultReadOnlyResource<DependencyDescription> implements
+        DependencyModelListener {
 
     private WeakReference<DependencyDescription> m_description;
 

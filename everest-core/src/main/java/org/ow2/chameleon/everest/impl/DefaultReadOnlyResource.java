@@ -21,7 +21,7 @@ import org.ow2.chameleon.everest.services.*;
  * Read only resource.
  * This resource rejects CREATE, UPDATE and DELETE actions
  */
-public class DefaultReadOnlyResource extends DefaultResource {
+public class DefaultReadOnlyResource<T> extends DefaultResource<T> {
 
     public DefaultReadOnlyResource(Path path) {
         super(path);

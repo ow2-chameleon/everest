@@ -35,7 +35,7 @@ import static org.ow2.chameleon.everest.ipojo.IpojoRootResource.*;
 /**
  * '/ipojo/declaration/type' resource.
  */
-public class TypeDeclarationResource extends DefaultReadOnlyResource {
+public class TypeDeclarationResource extends DefaultReadOnlyResource<TypeDeclaration> {
 
     private final WeakReference<TypeDeclaration> m_type;
 

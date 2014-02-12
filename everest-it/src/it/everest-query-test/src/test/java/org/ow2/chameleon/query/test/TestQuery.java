@@ -13,6 +13,7 @@ import org.ow2.chameleon.everest.services.*;
 import org.ow2.chameleon.testing.helpers.TimeUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import static org.fest.assertions.Assertions.assertThat;
@@ -614,7 +615,7 @@ public class TestQuery extends CommonTest{
             if (resource == null) {
                 return;
             }
-            List<Relation> relationList = resource.getRelations();
+            Collection<Relation> relationList = resource.getRelations();
             ResourceMetadata resourceMetadata = resource.getMetadata();
             System.out.println("Resource : " + resource.getPath());
             System.out.println("{");

@@ -14,7 +14,7 @@ import static org.fest.assertions.Assertions.assertThat;
 /**
  * Fluent assertions for everest resources.
  */
-public class ResourceAssert extends GenericAssert<ResourceAssert, Resource> {
+public class ResourceAssert extends GenericAssert<ResourceAssert, Resource<?>> {
 
     protected ResourceAssert(Resource actual) {
         super(ResourceAssert.class, actual);

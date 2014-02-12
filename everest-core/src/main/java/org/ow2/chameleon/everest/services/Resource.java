@@ -15,13 +15,15 @@
 
 package org.ow2.chameleon.everest.services;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
  * Represents abstract resources.
  * Resources are in charge of request targeting them.
+ * @param <T> the class of the represented object. Maybe Void.
  */
-public interface Resource {
+public interface Resource<T> {
 
     /**
      * @return the path of the resource.
@@ -38,7 +40,7 @@ public interface Resource {
      *
      * @return the sub-resources, empty is the resource is a leaf.
      */
-    List<Resource> getResources();
+    Collection<Resource<?>> getResources();
 
     /**
      * @return resource metadata.
@@ -48,7 +50,7 @@ public interface Resource {
     /**
      * @return the list of relations related to the current resource.
      */
-    List<Relation> getRelations();
+    Collection<Relation> getRelations();
 
     /**
      * Finds all resources managed by this manager matching the given filter.
@@ -56,7 +58,7 @@ public interface Resource {
      * @param filter the filter.
      * @return the set of matching resources, empty if none match.
      */
-    List<Resource> getResources(ResourceFilter filter);
+    Collection<Resource<?>> getResources(ResourceFilter filter);
 
     /**
      * Gets a resource identified by its path.
@@ -64,7 +66,7 @@ public interface Resource {
      * @param path the path
      * @return the resource identified by the given path, {@literal null} if not found.
      */
-    Resource getResource(String path);
+    Resource<?> getResource(String path);
 
     /**
      * Process a request targeting the current resource managed by this manager.
@@ -79,7 +81,15 @@ public interface Resource {
 
     /**
      * Translates this resource to the represented object. Note that some resources may not represent any object.
-     *
+     * @return the represented object, {@literal null} if resource does not represents a particular object of the given type.
+     */
+    T get();
+
+    /**
+     * Translates this resource to the represented object. Note that some resources may not represent any object.
+     * Unlike the {@link org.ow2.chameleon.everest.services.Resource#get()} method,
+     * this method receives the type of the retrieved object. It is useful when the represented object can be mapped
+     * to different classes.
      * @param clazz class of the represented object.
      * @param <A>   type of the represented object.
      * @return the represented object, {@literal null} if resource does not represents a particular object of the given type.

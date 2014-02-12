@@ -38,7 +38,7 @@ import static org.ow2.chameleon.everest.ipojo.IpojoRootResource.*;
 /**
  * '/ipojo/factory/$name/$version' resource.
  */
-public class FactoryResource extends DefaultReadOnlyResource implements FactoryStateListener {
+public class FactoryResource extends DefaultReadOnlyResource<Factory> implements FactoryStateListener {
 
     /**
      * The enclosing iPOJO root resource.

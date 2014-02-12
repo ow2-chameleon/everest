@@ -66,8 +66,8 @@ public class TestOsgiActions extends EverestOsgiTest {
         FrameworkStartLevel fwStartlevel = osgiHelper.getBundle(0).adapt(FrameworkStartLevel.class);
         assertThat(bundleStartlevel).isEqualTo(fwStartlevel.getInitialBundleStartLevel());
 
-        Resource bundles = get("/osgi/bundles");
-        for (Resource bundle : bundles.getResources()) {
+        Resource<?> bundles = get("/osgi/bundles");
+        for (Resource<?> bundle : bundles.getResources()) {
             BundleResource bundleResource = bundle.adaptTo(BundleResource.class);
             //System.out.println(bundleResource.getBundleId() + " : " + bundleResource.getStartLevel());
         }
@@ -110,8 +110,8 @@ public class TestOsgiActions extends EverestOsgiTest {
         assertThat(startlevel).isEqualTo(3);
         testUpdatedEventFrom("/osgi");
 
-        Resource bundles = get("/osgi/bundles");
-        for (Resource bundle : bundles.getResources()) {
+        Resource<?> bundles = get("/osgi/bundles");
+        for (Resource<?> bundle : bundles.getResources()) {
             BundleResource bundleResource = bundle.adaptTo(BundleResource.class);
             if (bundleResource.getStartLevel() > startlevel) {
                 assertThat(bundleResource.getState()).isEqualTo(OsgiResourceUtils.bundleStateToString(Bundle.RESOLVED));

@@ -309,7 +309,7 @@ public class ResourceFilters {
     public static  ResourceFilter hasAtLeastChildren(final int numberMinOfChildren) {
         return new ResourceFilter() {
             public boolean accept(Resource resource) {
-                List<Resource> resourceList = resource.getResources();
+                Collection<Resource> resourceList = resource.getResources();
                 if (resourceList.size() >= numberMinOfChildren){
                     return true;
                 }else {
@@ -323,7 +323,7 @@ public class ResourceFilters {
     public static <T> ResourceFilter hasAtLeastRelations(final int numberMinOfRelations) {
         return new ResourceFilter() {
             public boolean accept(Resource resource) {
-                List<Relation> resourceList = resource.getRelations();
+                Collection<Relation> resourceList = resource.getRelations();
                 if (resourceList == null || resourceList.isEmpty()){
                     return false;
                 }else{
@@ -347,7 +347,7 @@ public class ResourceFilters {
     public static ResourceFilter isSubResourceOf(final Resource root) {
         return new ResourceFilter() {
             public boolean accept(Resource resource) {
-                List<Resource> resourceList = root.getResources();
+                Collection<Resource> resourceList = root.getResources();
                 if ( (resourceList == null) || (resourceList.isEmpty())){
                     return false;
                 }else {
@@ -360,11 +360,11 @@ public class ResourceFilters {
     public static ResourceFilter hasAtLeastRelationFilterMatch(final RelationFilter relationFilter) {
         return new ResourceFilter() {
             public boolean accept(Resource resource) {
-                List<Relation> resourceList = resource.getRelations();
+                Collection<Relation> resourceList = resource.getRelations();
                 if (resourceList == null || resourceList.isEmpty()){
                     return false;
                 }else{
-                    List<Relation> relations = resource.getRelations();
+                    Collection<Relation> relations = resource.getRelations();
                     for (Relation relation : relations){
                         if (relationFilter.accept(relation)){
                            return true;
@@ -380,12 +380,12 @@ public class ResourceFilters {
     public static ResourceFilter hasAtLeastRelationFilterMatch(final RelationFilter relationFilter,final int NumberMinOfRelationMatch) {
         return new ResourceFilter() {
             public boolean accept(Resource resource) {
-                List<Relation> resourceList = resource.getRelations();
+                Collection<Relation> resourceList = resource.getRelations();
                 if (resourceList == null || resourceList.isEmpty()){
                     return false;
                 }else{
                     int count = 0;
-                    List<Relation> relations = resource.getRelations();
+                    Collection<Relation> relations = resource.getRelations();
                     for (Relation relation : relations){
                         if (relationFilter.accept(relation)){
                             count ++;
@@ -405,7 +405,7 @@ public class ResourceFilters {
     public static ResourceFilter allRelationFilterMatch(final RelationFilter relationFilter) {
         return new ResourceFilter() {
             public boolean accept(Resource resource) {
-                List<Relation> resourceList = resource.getRelations();
+                Collection<Relation> resourceList = resource.getRelations();
                 if (resourceList == null || resourceList.isEmpty()){
                     return false;
                 }else{

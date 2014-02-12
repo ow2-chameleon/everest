@@ -65,8 +65,8 @@ public class BundleServicesResource extends AbstractResourceCollection {
     }
 
     @Override
-    public List<Resource> getResources() {
-        ArrayList<Resource> resources = new ArrayList<Resource>();
+    public List<Resource<?>> getResources() {
+        ArrayList<Resource<?>> resources = new ArrayList<Resource<?>>();
         DefaultResource.Builder builder;
         // bundle registered services
         ServiceReference[] registered = m_bundle.getRegisteredServices();

@@ -115,8 +115,8 @@ public class BundleHeadersResource extends AbstractResourceCollection {
     }
 
     @Override
-    public List<Resource> getResources() {
-        ArrayList<Resource> resources = new ArrayList<Resource>();
+    public Collection<Resource<?>> getResources() {
+        ArrayList<Resource<?>> resources = new ArrayList<Resource<?>>();
         BundleRevision rev = m_bundle.adapt(BundleRevision.class);
         // package export
         List<BundleCapability> capabilities = rev.getDeclaredCapabilities(BundleRevision.PACKAGE_NAMESPACE);

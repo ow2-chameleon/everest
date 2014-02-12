@@ -90,8 +90,8 @@ public class DeploymentAdminResourceManager extends AbstractResourceCollection {
     }
 
     @Override
-    public List<Resource> getResources() {
-        ArrayList<Resource> resources = new ArrayList<Resource>();
+    public List<Resource<?>> getResources() {
+        ArrayList<Resource<?>> resources = new ArrayList<Resource<?>>();
         DeploymentPackage[] deploymentPackages = m_deploymentAdmin.listDeploymentPackages();
         if (deploymentPackages != null) {
             for (DeploymentPackage deploymentPackage : deploymentPackages) {

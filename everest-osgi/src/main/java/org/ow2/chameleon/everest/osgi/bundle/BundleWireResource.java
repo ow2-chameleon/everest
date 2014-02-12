@@ -31,7 +31,7 @@ import static org.ow2.chameleon.everest.osgi.OsgiResourceUtils.*;
 /**
  * Resource representing a {@code BundleWire}.
  */
-public class BundleWireResource extends DefaultReadOnlyResource {
+public class BundleWireResource extends DefaultReadOnlyResource<Object> {
 
     /**
      * Relation name for the linked capability

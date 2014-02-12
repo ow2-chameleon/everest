@@ -25,7 +25,7 @@ import java.util.List;
  * tracked by the everest core.
  * By default, this resource is read-only.
  */
-public abstract class AbstractResourceManager extends DefaultReadOnlyResource {
+public abstract class AbstractResourceManager<T> extends DefaultReadOnlyResource<T> {
 
     private final String name;
     private final String description;
@@ -71,7 +71,7 @@ public abstract class AbstractResourceManager extends DefaultReadOnlyResource {
      */
     public List<Relation> getRelations() {
         List<Relation> relations = new ArrayList<Relation>();
-        for (Resource resource : getResources()) {
+        for (Resource<?> resource : getResources()) {
             int size = getCanonicalPath().getCount();
             String name = resource.getCanonicalPath().getElements()[size];
             relations.add(new DefaultRelation(resource.getCanonicalPath(), Action.READ, "everest:" + name,

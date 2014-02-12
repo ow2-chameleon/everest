@@ -34,7 +34,7 @@ import static org.osgi.service.cm.ConfigurationAdmin.SERVICE_FACTORYPID;
 /**
  * Resource representing a {@code Configuration}.
  */
-public class ConfigurationResource extends DefaultResource {
+public class ConfigurationResource extends DefaultResource<Object> {
 
     /**
      * Relation name for update

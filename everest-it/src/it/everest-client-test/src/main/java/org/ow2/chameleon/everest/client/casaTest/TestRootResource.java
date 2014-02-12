@@ -44,7 +44,7 @@ public class TestRootResource extends AbstractResourceCollection {
     /*
      * List of the subRessource
     */
-    private final List<Resource> m_casaResources = new ArrayList<Resource>();
+    private final List<Resource<?>> m_casaResources = new ArrayList<Resource<?>>();
 
     /*
      * Constructor
@@ -64,7 +64,7 @@ public class TestRootResource extends AbstractResourceCollection {
     }
 
     @Override
-    public List<Resource> getResources() {
+    public List<Resource<?>> getResources() {
         return m_casaResources;
     }
 }

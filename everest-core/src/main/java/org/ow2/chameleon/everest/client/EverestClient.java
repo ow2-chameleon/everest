@@ -362,11 +362,11 @@ public class EverestClient extends ResourceContainer implements ServiceTrackerCu
         return null;
     }
 
-    private List<Resource> getAllResourceRecursive(List<Resource> resources) {
+    private List<Resource> getAllResourceRecursive(Collection<Resource> resources) {
         List<Resource> resourceList = new ArrayList<Resource>(resources);
 
         for (Resource current : resources){
-            List<Resource> temp = current.getResources();
+            Collection<Resource> temp = current.getResources();
             if ((temp != null) && (!temp.isEmpty())){
                 resourceList.addAll(getAllResourceRecursive(temp));
             }

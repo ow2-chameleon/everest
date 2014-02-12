@@ -29,6 +29,7 @@ import org.ow2.chameleon.everest.client.ResourceContainer;
 import org.ow2.chameleon.everest.query.QueryFilter;
 import org.ow2.chameleon.everest.services.*;
 
+import java.util.Collection;
 import java.util.List;
 
 @Component(immediate = true)
@@ -375,7 +376,7 @@ public class EverestGoGoCommand {
         if (resource == null) {
             return;
         }
-        List<Relation> relationList = resource.getRelations();
+        Collection<Relation> relationList = resource.getRelations();
         ResourceMetadata resourceMetadata = resource.getMetadata();
         System.out.println("Resource : " + resource.getPath());
         System.out.println("{");

@@ -215,8 +215,8 @@ public class BundleResource extends AbstractResourceCollection {
     }
 
     @Override
-    public List<Resource> getResources() {
-        ArrayList<Resource> resources = new ArrayList<Resource>();
+    public Collection<Resource<?>> getResources() {
+        ArrayList<Resource<?>> resources = new ArrayList<Resource<?>>();
 
         // add headers
         resources.add(m_bundleHeadersResource);

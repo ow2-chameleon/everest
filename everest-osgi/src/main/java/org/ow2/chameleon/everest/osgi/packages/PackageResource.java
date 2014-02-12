@@ -129,8 +129,8 @@ public class PackageResource extends AbstractResourceCollection {
     }
 
     @Override
-    public List<Resource> getResources() {
-        ArrayList<Resource> resources = new ArrayList<Resource>();
+    public List<Resource<?>> getResources() {
+        ArrayList<Resource<?>> resources = new ArrayList<Resource<?>>();
         calculateImporters();
         // create links to importer bundles
         Builder builder = BundleResourceManager.relationsBuilder(getPath().addElements(IMPORTER_BUNDLE_NAME), importers);

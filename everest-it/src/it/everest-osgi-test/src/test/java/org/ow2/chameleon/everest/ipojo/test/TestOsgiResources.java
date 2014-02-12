@@ -21,6 +21,7 @@ import org.osgi.framework.wiring.BundleWire;
 import org.osgi.service.event.Event;
 import org.osgi.service.packageadmin.ExportedPackage;
 
+import java.util.Collection;
 import java.util.List;
 
 import static org.fest.assertions.Assertions.assertThat;
@@ -65,7 +66,7 @@ public class TestOsgiResources extends EverestOsgiTest {
     public void testOsgiRootResources() throws ResourceNotFoundException, IllegalActionOnResourceException {
         Resource osgi = get("/osgi");
         assertThat(osgi).isNotNull();
-        List<Resource> resources = osgi.getResources();
+        Collection<Resource> resources = osgi.getResources();
         assertThat(resources.size()).isGreaterThanOrEqualTo(4).describedAs("We must have at least 4 resources as we added config admin in tests ");
         for (Resource r : resources) {
             Assert.assertEquals(r.getPath(), r.getCanonicalPath());
@@ -74,8 +75,8 @@ public class TestOsgiResources extends EverestOsgiTest {
 
     @Test
     public void testBundles() throws ResourceNotFoundException, IllegalActionOnResourceException {
-        Resource bundles = get("/osgi/bundles");
-        for (Resource resource : bundles.getResources()) {
+        Resource<?> bundles = get("/osgi/bundles");
+        for (Resource<?> resource : bundles.getResources()) {
             Bundle bundle = resource.adaptTo(Bundle.class);
             BundleResource bundleResource = resource.adaptTo(BundleResource.class);
             assertThat(bundle).isNotNull();
@@ -86,9 +87,9 @@ public class TestOsgiResources extends EverestOsgiTest {
 
     @Test
     public void testUsedPackages() throws ResourceNotFoundException, IllegalActionOnResourceException {
-        Resource packages = get("/osgi/packages");
+        Resource<?> packages = get("/osgi/packages");
         assertThat(osgiHelper.getPackageAdmin()).isNotNull();
-        for (Resource pkg : packages.getResources()) {
+        for (Resource<?> pkg : packages.getResources()) {
             PackageResource packageResource = pkg.adaptTo(PackageResource.class);
             String packageName = packageResource.getPackageName();
             boolean used = pkg.getMetadata().get("in-use", Boolean.class);
@@ -114,17 +115,17 @@ public class TestOsgiResources extends EverestOsgiTest {
 
     @Test
     public void testBundleWiring() throws ResourceNotFoundException, IllegalActionOnResourceException {
-        Resource bundles = get("/osgi/bundles");
+        Resource<?> bundles = get("/osgi/bundles");
         for (int i = 0; i < bundles.getResources().size(); i++) {
-            Resource wires = get("/osgi/bundles/" + i + "/wires");
-            for (Resource wire : wires.getResources()) {
+            Resource<?> wires = get("/osgi/bundles/" + i + "/wires");
+            for (Resource<?> wire : wires.getResources()) {
                 assertThat(wire).isNotNull();
                 //System.out.println(wire.getPath().toString());
                 BundleWire bundleWire = wire.adaptTo(BundleWire.class);
                 BundleWireResource bundleWireResource = wire.adaptTo(BundleWireResource.class);
                 // check capability requirement relations
                 for (Relation capsReqs : wire.getRelations()) {
-                    Resource resource = get(capsReqs.getHref().toString());
+                    Resource<?> resource = get(capsReqs.getHref().toString());
                     assertThat(resource).isNotNull();
                     BundleCapabilityResource bundleCapabilityResource = resource.adaptTo(BundleCapabilityResource.class);
                     BundleRequirementResource bundleRequirementResource = resource.adaptTo(BundleRequirementResource.class);
@@ -140,7 +141,7 @@ public class TestOsgiResources extends EverestOsgiTest {
                             //bundleCapabilityResource
                             for (Relation relation : bundleCapabilityResource.getRelations()) {
                                 if (relation.getName().equals("package")) {
-                                    Resource pkg = get(relation.getHref().toString());
+                                    Resource<?> pkg = get(relation.getHref().toString());
                                     PackageResource packageResource = pkg.adaptTo(PackageResource.class);
                                     assertThat(packageResource).isNotNull();
                                     assertThat(packageResource.isUsed()).isTrue();

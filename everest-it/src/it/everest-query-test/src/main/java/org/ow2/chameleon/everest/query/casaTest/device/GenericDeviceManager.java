@@ -81,8 +81,8 @@ public class GenericDeviceManager extends AbstractResourceCollection {
     }
 
     @Override
-    public List<Resource> getResources() {
-        List<Resource> resources = new ArrayList<Resource>();
+    public List<Resource<?>> getResources() {
+        List<Resource<?>> resources = new ArrayList<Resource<?>>();
         for (String key : m_genericDeviceResourcesMap.keySet()) {
             resources.add(m_genericDeviceResourcesMap.get(key));
         }

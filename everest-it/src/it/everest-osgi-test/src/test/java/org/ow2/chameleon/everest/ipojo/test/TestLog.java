@@ -19,10 +19,10 @@ public class TestLog extends EverestOsgiTest {
 
     @Test
     public void testLogResource() throws ResourceNotFoundException, IllegalActionOnResourceException {
-        Resource logs = get("/osgi/logs");
+        Resource<?> logs = get("/osgi/logs");
         assertThat(logs).isNotNull();
         assertThat(logs.getResources()).isNotEmpty();
-        for (Resource log : logs.getResources()) {
+        for (Resource<?> log : logs.getResources()) {
             LogEntryResource logEntryResource = log.adaptTo(LogEntryResource.class);
             assertThat(logEntryResource).isNotNull();
         }

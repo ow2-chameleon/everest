@@ -79,8 +79,8 @@ public class ZoneManager extends AbstractResourceCollection {
 
 
     @Override
-    public List<Resource> getResources() {
-        List<Resource> resources = new ArrayList<Resource>();
+    public List<Resource<?>> getResources() {
+        List<Resource<?>> resources = new ArrayList<Resource<?>>();
         for (String key : m_zoneResourcesMap.keySet()) {
             resources.add(m_zoneResourcesMap.get(key));
         }

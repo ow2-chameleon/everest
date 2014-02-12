@@ -35,7 +35,7 @@ import static org.ow2.chameleon.everest.osgi.deploy.DeploymentAdminResourceManag
 /**
  * Resource representing a {@code DeploymentPackage}.
  */
-public class DeploymentPackageResource extends DefaultResource {
+public class DeploymentPackageResource extends DefaultResource<DeploymentPackage> {
 
     /**
      * Represented deployment package
@@ -77,8 +77,8 @@ public class DeploymentPackageResource extends DefaultResource {
     }
 
     @Override
-    public List<Resource> getResources() {
-        ArrayList<Resource> resources = new ArrayList<Resource>();
+    public List<Resource<?>> getResources() {
+        ArrayList<Resource<?>> resources = new ArrayList<Resource<?>>();
         if (m_bundleInfos != null) {
             ArrayList<Bundle> bundles = new ArrayList<Bundle>();
             for (BundleInfo bundleInfo : m_bundleInfos) {

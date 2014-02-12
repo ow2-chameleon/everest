@@ -41,7 +41,8 @@ import static org.apache.felix.ipojo.handlers.providedservice.ProvidedService.*;
 /**
  * '/ipojo/instance/$name/providing/$id' resource.
  */
-public class ServiceProvidingResource extends DefaultReadOnlyResource implements ProvidedServiceListener {
+public class ServiceProvidingResource extends DefaultReadOnlyResource<ProvidedServiceDescription> implements
+        ProvidedServiceListener {
 
     private WeakReference<ProvidedServiceDescription> m_description;
 
