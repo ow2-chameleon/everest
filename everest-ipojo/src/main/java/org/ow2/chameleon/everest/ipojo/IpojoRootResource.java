@@ -460,7 +460,12 @@ public class IpojoRootResource extends ResourceMap {
             nsHandlers.m_lock.writeLock().lock();
             try {
                 // Remove the handler resource : ipojo/handler/$name/$version
-                String name = String.valueOf(handler.getName());
+                String name;
+                if ("primitive".equals(handler.getType())) {
+                    name = handler.getNamespace() + ":" + handler.getName();
+                } else {
+                    name = handler.getNamespace() + "." + handler.getType() + ":" + handler.getName();
+                }
                 r = nsHandlers.removePath(path.addElements(name), HandlerResource.class);
                 if (nsHandlers.isEmpty()) {
                     // Last standing handler with this namespace

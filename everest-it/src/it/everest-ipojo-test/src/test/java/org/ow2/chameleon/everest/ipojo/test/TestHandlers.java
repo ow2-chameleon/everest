@@ -60,7 +60,7 @@ public class TestHandlers extends EverestIpojoTestCommon {
         for (String name : CORE_HANDLERS) {
             assertThatResource(r).hasRelation(RelationFilters.and(
                     RelationFilters.hasAction(READ),
-                    RelationFilters.hasName("handler[" + name + "]"),
+                    RelationFilters.hasName("handler[" + IPOJO + ":" + name + "]"),
                     RelationFilters.hasHref("/ipojo/handler/" + IPOJO + "/" + name)));
         }
     }
@@ -78,7 +78,7 @@ public class TestHandlers extends EverestIpojoTestCommon {
         // Resource should have relations to /ipojo/handler/foo.bar/qux
         assertThatResource(r).hasRelation(RelationFilters.and(
                 RelationFilters.hasAction(READ),
-                RelationFilters.hasName("handler[qux]"),
+                RelationFilters.hasName("handler[foo.bar:qux]"),
                 RelationFilters.hasHref("/ipojo/handler/foo.bar/qux")));
     }
 
