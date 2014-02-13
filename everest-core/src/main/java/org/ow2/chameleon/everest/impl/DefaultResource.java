@@ -81,44 +81,43 @@ public class DefaultResource implements Resource {
 
     public List<Relation> getRelations() {
 
-        Set<Relation> setRelation = new HashSet<Relation>();
-        if (relations != null){
-            for (Relation relation : relations) {
-                setRelation.add(relation);
-            }
+        Set<Relation> rels = new HashSet<Relation>();
+        if (this.relations != null){
+            Collections.addAll(rels, this.relations);
         }
+
         try {
-            setRelation.add(new DefaultRelation(this.getCanonicalPath(), Action.READ, "Self", "Return the current resource \"" + this.getPath().getLast() + "\""));
+            rels.add(new DefaultRelation(this.getCanonicalPath(), Action.READ, "Self", "Return the current resource \"" + this.getPath().getLast() + "\""));
         } catch (IndexOutOfBoundsException e) {
-            setRelation.add(new DefaultRelation(this.getCanonicalPath(), Action.READ, "Self", "Return the current resource \"/"));
+            rels.add(new DefaultRelation(this.getCanonicalPath(), Action.READ, "Self", "Return the current resource \"/"));
         }
 
         if (!(this.getPath().toString().equalsIgnoreCase("/")))
             try {
-                setRelation.add(new DefaultRelation(this.getPath().getParent(), Action.READ, "Parent", "Return the parent resource \"" + this.getPath().getParent().getLast() + "\""));
+                rels.add(new DefaultRelation(this.getPath().getParent(), Action.READ, "Parent", "Return the parent resource \"" + this.getPath().getParent().getLast() + "\""));
             } catch (IndexOutOfBoundsException e) {
-                setRelation.add(new DefaultRelation(this.getPath().getParent(), Action.READ, "Parent", "Return the parent resource \"/\""));
+                rels.add(new DefaultRelation(this.getPath().getParent(), Action.READ, "Parent", "Return the parent resource \"/\""));
 
             }
 
-        if (relations != null && ((getResources() != null) || !(getResources().isEmpty()))) {
+        if (this.relations != null && ((getResources() != null) || !(getResources().isEmpty()))) {
 
             for (Resource resource : getResources()) {
                 Relation currentRelation = new DefaultRelation(resource.getPath(), Action.READ, "Child:" + resource.getPath().getLast(), "Get the child  \"" + resource.getPath().getLast() + "\"");
-                setRelation.add(currentRelation);
+                rels.add(currentRelation);
             }
-            return new ArrayList<Relation>(setRelation);
-        } else if (relations == null && ((getResources() != null) || !(getResources().isEmpty()))) {
+            return new ArrayList<Relation>(rels);
+        } else if (this.relations == null && ((getResources() != null) || !(getResources().isEmpty()))) {
             for (Resource resource : getResources()) {
                 Relation currentRelation = new DefaultRelation(resource.getPath(), Action.READ, "Child:" + resource.getPath().getLast(), "Get the child  \"" + resource.getPath().getLast() + "\"");
-                setRelation.add(currentRelation);
+                rels.add(currentRelation);
             }
-            return new ArrayList<Relation>(setRelation);
-        } else if (relations != null && ((getResources() == null) || (getResources().isEmpty()))) {
+            return new ArrayList<Relation>(rels);
+        } else if (this.relations != null && ((getResources() == null) || (getResources().isEmpty()))) {
 
-            return new ArrayList<Relation>(setRelation);
+            return new ArrayList<Relation>(rels);
         } else {
-            return new ArrayList<Relation>(setRelation);
+            return new ArrayList<Relation>(rels);
         }
     }
 
