@@ -629,8 +629,14 @@ public class IpojoRootResource extends ResourceMap {
             namedTypes.m_lock.writeLock().lock();
             try {
                 // Remove the type declaration resource:  ipojo/declaration/type/$name/$version
+                String version;
+                if (type.getComponentVersion() == null) {
+                    version = "0.0.0";
+                } else {
+                    version = String.valueOf(type.getComponentVersion());
+                }
                 r = namedTypes.removePath(
-                        path.addElements(String.valueOf(type.getComponentVersion())),
+                        path.addElements(version),
                         TypeDeclarationResource.class);
                 if (namedTypes.isEmpty()) {
                     // Last standing declaration with that name

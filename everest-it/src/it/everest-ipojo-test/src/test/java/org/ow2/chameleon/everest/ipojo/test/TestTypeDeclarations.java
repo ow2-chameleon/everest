@@ -1,5 +1,6 @@
 package org.ow2.chameleon.everest.ipojo.test;
 
+import org.junit.Ignore;
 import org.ow2.chameleon.everest.filters.RelationFilters;
 import org.ow2.chameleon.everest.services.IllegalActionOnResourceException;
 import org.ow2.chameleon.everest.services.Resource;
@@ -111,7 +112,7 @@ public class TestTypeDeclarations extends EverestIpojoTestCommon {
         assertThatResource(r).hasRelation(RelationFilters.and(
                 RelationFilters.hasAction(READ),
                 RelationFilters.hasName("type[null]"),
-                RelationFilters.hasHref("/ipojo/declaration/type/" + BAR +"/null")));
+                RelationFilters.hasHref("/ipojo/declaration/type/" + BAR +"/0.0.0")));
         assertThatResource(r).hasRelation(RelationFilters.and(
                 RelationFilters.hasAction(READ),
                 RelationFilters.hasName("type[2.0.0]"),
@@ -123,7 +124,7 @@ public class TestTypeDeclarations extends EverestIpojoTestCommon {
      */
     @Test
     public void testBarNullType() throws ResourceNotFoundException, IllegalActionOnResourceException {
-        Resource r = read("/ipojo/declaration/type/" +BAR + "/null");
+        Resource r = read("/ipojo/declaration/type/" +BAR + "/0.0.0");
         // Resource should be observable
         assertThat(r.isObservable()).isTrue();
         ResourceMetadata m = r.getMetadata();
@@ -198,6 +199,7 @@ public class TestTypeDeclarations extends EverestIpojoTestCommon {
      * Read /ipojo/declaration/type/qux
      */
     @Test
+    @Ignore("Type declaration for handler disabled for now")
     public void testQuxTypes() throws ResourceNotFoundException, IllegalActionOnResourceException {
         Resource r = read("/ipojo/declaration/type/qux");
         // Resource should be observable
@@ -207,16 +209,17 @@ public class TestTypeDeclarations extends EverestIpojoTestCommon {
         // Resource should have relations to /ipojo/declaration/type/qux/null
         assertThatResource(r).hasRelation(RelationFilters.and(
                 RelationFilters.hasAction(READ),
-                RelationFilters.hasName("type[null]"),
-                RelationFilters.hasHref("/ipojo/declaration/type/qux/null")));
+                RelationFilters.hasName("type[0.0.0]"),
+                RelationFilters.hasHref("/ipojo/declaration/type/qux/0.0.0")));
     }
 
     /**
      * Read /ipojo/declaration/type/$BAR/null
      */
     @Test
+    @Ignore("Type declaration for handler disabled for now")
     public void testQuxNullType() throws ResourceNotFoundException, IllegalActionOnResourceException {
-        Resource r = read("/ipojo/declaration/type/qux/null");
+        Resource r = read("/ipojo/declaration/type/qux/0.0.0");
         // Resource should be observable
         assertThat(r.isObservable()).isTrue();
         ResourceMetadata m = r.getMetadata();

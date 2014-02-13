@@ -383,6 +383,9 @@ public class EverestIpojoTestCommon extends BaseTest {
     public ServiceReference<TypeDeclaration> getTypeDeclarationReference(String name, String version) {
         // Get ALL the ExtensionDeclaration services
         Collection<ServiceReference<TypeDeclaration>> refs;
+        if (version == null) {
+            version = "0.0.0";
+        }
         try {
             refs = context.getServiceReferences(TypeDeclaration.class, null);
         } catch (InvalidSyntaxException e) {
@@ -394,7 +397,7 @@ public class EverestIpojoTestCommon extends BaseTest {
             try {
                 if (name.equals(t.getComponentName())) {
                     String v = t.getComponentVersion();
-                    if (version == null && v == null || version != null && version.equals(v)) {
+                    if (v == null  && version.equals("0.0.0")  || version.equals(v)) {
                         return ref;
                     }
                 }

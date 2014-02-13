@@ -216,7 +216,9 @@ public class ResourceMap extends DefaultReadOnlyResource {
         try {
             // Checks the resource map contains the given path
             if (!m_children.containsKey(path)) {
-                throw new IllegalArgumentException("path not present");
+                throw new IllegalArgumentException("path not present : " + path);
+                // Ignore this case.
+//                return null;
             }
             Resource r = m_children.get(path);
             if (!type.isInstance(r)) {
