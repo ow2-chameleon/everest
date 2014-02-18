@@ -77,6 +77,17 @@ public class DeploymentAdminResourceManager extends AbstractResourceCollection {
                         .optional(false)));
     }
 
+    public static boolean canCharge(){
+        try{
+            DeploymentAdminResourceManager.class.getClassLoader().loadClass(DeploymentAdmin.class.getName());
+        } catch (ClassNotFoundException e) {
+            return false;
+        } catch (NoClassDefFoundError e) {
+            return false;
+        }
+        return true;
+    }
+
     @Override
     public ResourceMetadata getMetadata() {
         ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
