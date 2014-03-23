@@ -165,12 +165,6 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
      */
     private ConfigAdminResourceManager m_configResourceManager;
 
-
-    /**
-     * Service registration for configuration listener
-     */
-    private ServiceRegistration m_configurationListenerServiceRegistration;
-
     /**
      * First level resource manager for deployment package admin
      * Present only if deployment package admin service is found
@@ -230,7 +224,7 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
             throw new RuntimeException(e.getMessage());
         }
 
-        m_configAdminTracker = new ServiceTracker(m_context, ConfigAdminTracker.clazz,new ConfigAdminTracker(this));
+        m_configAdminTracker = new ServiceTracker(m_context, ConfigAdminTracker.clazz, new ConfigAdminTracker(this));
         m_deploymentAdminTracker = new ServiceTracker(m_context, DeploymentAdminTracker.clazz,new DeploymentAdminTracker(this));
         m_bundleTracker = new BundleTracker(m_context, stateMask, this);
         m_serviceTracker = new ServiceTracker(m_context, allServicesFilter, this);
@@ -371,22 +365,25 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
 
     //@Bind(id = "configadmin", specification = "org.osgi.service.cm.ConfigurationAdmin", optional = true, aggregate = false)
     public void bindConfigAdmin(ServiceReference configAdminRef) { // org.osgi.service.cm.ConfigurationAdmin
-        synchronized (resourceLock) {
-            Object configAdmin = m_context.getService(configAdminRef);
-            m_configResourceManager = new ConfigAdminResourceManager(configAdmin);
-            m_configurationListenerServiceRegistration = m_context.
-                    registerService(/*ConfigurationListener.class*/"org.osgi.service.cm.ConfigurationListener", m_configResourceManager, null);
+        if(ConfigAdminResourceManager.canCharge()){
+            synchronized (resourceLock) {
+                Object configAdmin = m_context.getService(configAdminRef);
+                m_configResourceManager = new ConfigAdminResourceManager(configAdmin);
+                m_configResourceManager.registerListenerService(m_context);
+            }
+            Everest.postResource(ResourceEvent.UPDATED, this);
         }
-        Everest.postResource(ResourceEvent.UPDATED, this);
     }
 
     //@Unbind(id = "configadmin")
     public void unbindConfigAdmin(ServiceReference configAdminRef) {
-        synchronized (resourceLock) {
-            m_configurationListenerServiceRegistration.unregister();
-            m_configResourceManager = null;
+        if (m_configResourceManager!=null) {
+            synchronized (resourceLock) {
+                m_configResourceManager.unregisterListenerService();
+                m_configResourceManager = null;
+            }
+            Everest.postResource(ResourceEvent.UPDATED, this);
         }
-        Everest.postResource(ResourceEvent.UPDATED, this);
     }
 
     // Deploy Admin Bind / Unbind
@@ -394,19 +391,23 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
 
     //@Bind(id = "deploymentadmin", specification = "org.osgi.service.deploymentadmin.DeploymentAdmin", optional = true, aggregate = false)
     public void bindDeploymentAdmin(ServiceReference deploymentAdminRef) { // org.osgi.service.deploymentadmin.DeploymentAdmin
-        synchronized (resourceLock) {
-            Object deploymentAdmin = m_context.getService(deploymentAdminRef);
-            m_deploymentResourceManager = new DeploymentAdminResourceManager(deploymentAdmin);
+        if(DeploymentAdminResourceManager.canCharge()){
+            synchronized (resourceLock) {
+                Object deploymentAdmin = m_context.getService(deploymentAdminRef);
+                m_deploymentResourceManager = new DeploymentAdminResourceManager(deploymentAdmin);
+            }
+            Everest.postResource(ResourceEvent.UPDATED, this);
         }
-        Everest.postResource(ResourceEvent.UPDATED, this);
     }
 
     //@Unbind(id = "deploymentadmin")
     public void unbindDeploymentAdmin(ServiceReference deploymentAdminRef) {
-        synchronized (resourceLock) {
-            m_deploymentResourceManager = null;
+        if(m_deploymentResourceManager!=null){
+            synchronized (resourceLock) {
+                m_deploymentResourceManager = null;
+            }
+            Everest.postResource(ResourceEvent.UPDATED, this);
         }
-        Everest.postResource(ResourceEvent.UPDATED, this);
     }
 
     // Log Service Bind / Unbind

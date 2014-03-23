@@ -15,13 +15,12 @@
 
 package org.ow2.chameleon.everest.osgi.config;
 
-import org.osgi.framework.ServiceReference;
-import org.osgi.util.tracker.ServiceTrackerCustomizer;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceRegistration;
 import org.ow2.chameleon.everest.core.Everest;
 import org.ow2.chameleon.everest.impl.DefaultParameter;
 import org.ow2.chameleon.everest.impl.DefaultRelation;
 import org.ow2.chameleon.everest.osgi.AbstractResourceCollection;
-import org.ow2.chameleon.everest.osgi.OsgiRootResource;
 import org.ow2.chameleon.everest.services.*;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.service.cm.Configuration;
@@ -40,7 +39,7 @@ import static org.ow2.chameleon.everest.osgi.OsgiRootResource.OSGI_ROOT_PATH;
 /**
  * Resource manager for Configuration Admin service.
  */
-public class ConfigAdminResourceManager extends AbstractResourceCollection implements ConfigurationListener {
+public class ConfigAdminResourceManager extends AbstractResourceCollection {
 
     /**
      * Name for configurations resource
@@ -73,9 +72,19 @@ public class ConfigAdminResourceManager extends AbstractResourceCollection imple
     private final ConfigurationAdmin m_configAdmin;
 
     /**
+     * ConfigurationListener Handler
+     */
+    private final ConfigurationListenerHandler m_configListener;
+
+    /**
      * Configurations map by pid
      */
     private Map<String, ConfigurationResource> m_configurationResourceMap = new HashMap<String, ConfigurationResource>();
+
+    /**
+     * Service registration for configuration listener
+     */
+    private ServiceRegistration<ConfigurationListener> m_configurationListenerServiceRegistration;
 
     /**
      * Constructor for configuration resource manager
@@ -85,7 +94,7 @@ public class ConfigAdminResourceManager extends AbstractResourceCollection imple
     public ConfigAdminResourceManager(Object configAdmin) {
         super(CONFIG_PATH);
         this.m_configAdmin = (ConfigurationAdmin) configAdmin;
-
+        this.m_configListener = new ConfigurationListenerHandler();
         setRelations(new DefaultRelation(getPath(), Action.CREATE, "create",
                 new DefaultParameter()
                         .name(BUNDLE_LOCATION)
@@ -117,6 +126,26 @@ public class ConfigAdminResourceManager extends AbstractResourceCollection imple
             // should never happen..
             throw new RuntimeException(e.getMessage());
         }
+    }
+
+    public static boolean canCharge(){
+        try{
+            ConfigAdminResourceManager.class.getClassLoader().loadClass(ConfigurationAdmin.class.getName());
+            ConfigAdminResourceManager.class.getClassLoader().loadClass(ConfigurationListener.class.getName());
+        } catch (ClassNotFoundException e) {
+            return false;
+        } catch (NoClassDefFoundError e) {
+            return false;
+        }
+        return true;
+    }
+
+    public void registerListenerService(BundleContext context){
+        m_configurationListenerServiceRegistration = context.registerService(ConfigurationListener.class/*"org.osgi.service.cm.ConfigurationListener"*/, m_configListener, null);
+    }
+
+    public void unregisterListenerService(){
+        m_configurationListenerServiceRegistration.unregister();
     }
 
 //    @Override
@@ -171,33 +200,37 @@ public class ConfigAdminResourceManager extends AbstractResourceCollection imple
         return configurationResource;
     }
 
-    public void configurationEvent(ConfigurationEvent event) {
-        String pid = event.getPid();
-        ResourceEvent resourceEvent;
-        ConfigurationResource configurationResource;
-        try {
-            Configuration configuration = m_configAdmin.getConfiguration(pid);
-            if (!m_configurationResourceMap.containsKey(pid)) {
-                configurationResource = new ConfigurationResource(configuration);
-                synchronized (m_configurationResourceMap) {
-                    m_configurationResourceMap.put(pid, configurationResource);
-                }
-                resourceEvent = ResourceEvent.CREATED;
-            } else {
-                synchronized (m_configurationResourceMap) {
-                    configurationResource = m_configurationResourceMap.get(pid);
-                }
-                if (event.getType() != ConfigurationEvent.CM_DELETED) {
-                    resourceEvent = ResourceEvent.UPDATED;
-                } else {
-                    resourceEvent = ResourceEvent.DELETED;
-                }
-            }
-            Everest.postResource(ResourceEvent.UPDATED, configurationResource);
-        } catch (IOException e) {
-            // something gone wrong
-            //TODO
-        }
 
+    private class ConfigurationListenerHandler implements ConfigurationListener{
+
+        public void configurationEvent(ConfigurationEvent event) {
+            String pid = event.getPid();
+            ResourceEvent resourceEvent;
+            ConfigurationResource configurationResource;
+            try {
+                Configuration configuration = m_configAdmin.getConfiguration(pid);
+                if (!m_configurationResourceMap.containsKey(pid)) {
+                    configurationResource = new ConfigurationResource(configuration);
+                    synchronized (m_configurationResourceMap) {
+                        m_configurationResourceMap.put(pid, configurationResource);
+                    }
+                    resourceEvent = ResourceEvent.CREATED;
+                } else {
+                    synchronized (m_configurationResourceMap) {
+                        configurationResource = m_configurationResourceMap.get(pid);
+                    }
+                    if (event.getType() != ConfigurationEvent.CM_DELETED) {
+                        resourceEvent = ResourceEvent.UPDATED;
+                    } else {
+                        resourceEvent = ResourceEvent.DELETED;
+                    }
+                }
+                Everest.postResource(ResourceEvent.UPDATED, configurationResource);
+            } catch (IOException e) {
+                // something gone wrong
+                //TODO
+            }
+
+        }
     }
 }
