@@ -223,6 +223,9 @@ public class ConfigAdminResourceManager extends AbstractResourceCollection {
                         resourceEvent = ResourceEvent.UPDATED;
                     } else {
                         resourceEvent = ResourceEvent.DELETED;
+                        synchronized (m_configurationResourceMap) {
+                           m_configurationResourceMap.remove(pid);
+                        }
                     }
                 }
                 Everest.postResource(ResourceEvent.UPDATED, configurationResource);
