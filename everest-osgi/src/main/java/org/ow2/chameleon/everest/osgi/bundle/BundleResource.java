@@ -408,6 +408,7 @@ public class BundleResource extends AbstractResourceCollection {
                         // this is not a good idea.. should do m_bundle.update(cached bundle);  instead
                         m_bundle.stop();
                         m_bundle.update();
+                        break;
                     case Bundle.UNINSTALLED:
                         m_bundle.uninstall();
                         break;
