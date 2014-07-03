@@ -208,6 +208,7 @@ public class OsgiRootResource extends AbstractResourceManager implements BundleT
         metadataBuilder.set(Constants.SUPPORTS_BOOTCLASSPATH_EXTENSION, fwContext.getProperty(Constants.SUPPORTS_BOOTCLASSPATH_EXTENSION));
         metadataBuilder.set(Constants.FRAMEWORK_BOOTDELEGATION, fwContext.getProperty(Constants.FRAMEWORK_BOOTDELEGATION));
         metadataBuilder.set(Constants.FRAMEWORK_SYSTEMPACKAGES, fwContext.getProperty(Constants.FRAMEWORK_SYSTEMPACKAGES));
+        metadataBuilder.set(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, fwContext.getProperty(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA));
         m_metadata = metadataBuilder.build();
 
         // Initialize bundle & service trackers
