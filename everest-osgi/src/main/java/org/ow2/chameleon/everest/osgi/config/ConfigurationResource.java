@@ -60,7 +60,12 @@ public class ConfigurationResource extends DefaultResource {
      * Represented configuration
      */
     private final Configuration m_configuration;
-
+   
+    /**
+     * Represented configuration
+     */ 
+    private ResourceMetadata m_metadata;
+    
     /**
      * Constructor for Configuration resource
      *
@@ -82,10 +87,10 @@ public class ConfigurationResource extends DefaultResource {
                         .type(String.class)
         ),
                 new DefaultRelation(getPath(), Action.DELETE, DELETE_RELATION));
+        cacheMetadata();
     }
-
-    @Override
-    public ResourceMetadata getMetadata() {
+    
+    private void cacheMetadata() {
         ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
         metadataBuilder.set(Constants.SERVICE_PID, m_configuration.getPid());
         metadataBuilder.set(CONFIG_LOCATION_PARAMETER, m_configuration.getBundleLocation());
@@ -100,7 +105,18 @@ public class ConfigurationResource extends DefaultResource {
                 metadataBuilder.set(key, properties.get(key));
             }
         }
-        return metadataBuilder.build();
+        m_metadata = metadataBuilder.build();
+    }
+
+    @Override
+    public ResourceMetadata getMetadata() {
+        ImmutableResourceMetadata.Builder metadataBuilder = new ImmutableResourceMetadata.Builder();
+        try{
+            cacheMetadata();
+        } catch (IllegalStateException e){
+            // configuration is deleted   
+        }
+        return m_metadata;
     }
 
     @Override
@@ -115,7 +131,11 @@ public class ConfigurationResource extends DefaultResource {
                 }
             }
             return this;
-        } catch (IllegalActionOnResourceException e) {
+        } catch (IOException e) {
+            throw new IllegalActionOnResourceException(request, e.getMessage());
+        } catch (IllegalStateException e) {
+            throw new IllegalActionOnResourceException(request, e.getMessage());
+        } catch (SecurityException e) {
             throw new IllegalActionOnResourceException(request, e.getMessage());
         }
     }
@@ -127,6 +147,10 @@ public class ConfigurationResource extends DefaultResource {
             // TODO should return some empty resource
             return this;
         } catch (IOException e) {
+            throw new IllegalActionOnResourceException(request, e.getMessage());
+        } catch (IllegalStateException e) {
+            throw new IllegalActionOnResourceException(request, e.getMessage());
+        } catch (SecurityException e) {
             throw new IllegalActionOnResourceException(request, e.getMessage());
         }
     }
@@ -162,15 +186,11 @@ public class ConfigurationResource extends DefaultResource {
         m_configuration.setBundleLocation(bundleLocation);
     }
 
-    public void update(Dictionary properties) throws IllegalActionOnResourceException {
-        try {
-            if (properties != null) {
-                m_configuration.update(properties);
-            } else {
-                m_configuration.update();
-            }
-        } catch (IOException e) {
-            throw new IllegalActionOnResourceException(null, e.getMessage());
+    public void update(Dictionary properties) throws IOException {
+        if (properties != null) {
+            m_configuration.update(properties);
+        } else {
+            m_configuration.update();
         }
     }
 
