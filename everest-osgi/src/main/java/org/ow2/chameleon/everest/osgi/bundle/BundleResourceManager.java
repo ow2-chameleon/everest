@@ -172,7 +172,7 @@ public class BundleResourceManager extends AbstractResourceCollection {
             Bundle fw = m_bundleResourcesMap.get(0L).getBundle();
             String location = request.get(INSTALL_LOCATION_PARAMETER, String.class);
             if (location != null) {
-                InputStream input = request.get(INSTALL_INPUT_PARAMETER, ByteArrayInputStream.class);
+                InputStream input = request.get(INSTALL_INPUT_PARAMETER, InputStream.class);
                 Bundle newBundle = fw.getBundleContext().installBundle(location, input);
                 synchronized (m_bundleResourcesMap) {
                     resource = new BundleResource(newBundle, this);
