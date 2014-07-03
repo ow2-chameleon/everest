@@ -428,8 +428,6 @@ public class IpojoRootResource extends ResourceMap {
 
         // Add the handler resource : ipojo/handler/$ns/$name
         HandlerResource r = new HandlerResource(handler, ref);
-        System.out.println("Creating handler resource for " + handler.getNamespace() + ":" + handler.getName() + " "
-                + handler.getType() + " - " + r.getPath() + " (parent: " + nsHandlers.getPath() + ")");
         String name = String.valueOf(handler.getNamespace() + ":" + handler.getName());
         nsHandlers.addResource(
                 r,
