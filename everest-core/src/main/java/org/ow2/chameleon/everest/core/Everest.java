@@ -176,6 +176,9 @@ public class Everest extends DefaultReadOnlyResource implements EverestService {
         pathString = pathString.replaceAll("\\.", "-");
         pathString = pathString.replaceAll("\\s", "_");
         pathString = pathString.replaceAll(":", "_");
+        pathString = pathString.replace("[", "_");
+        pathString = pathString.replace("]", "_");
+        // TODO replace more forbidden characters...
         return pathString;
     }
 }
