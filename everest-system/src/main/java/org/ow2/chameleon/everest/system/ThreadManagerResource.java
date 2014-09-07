@@ -74,7 +74,7 @@ public class ThreadManagerResource extends DefaultReadOnlyResource {
         List<Resource> resources = new ArrayList<Resource>();
 
         m_threadResource.clear();
-        ;
+
         threadIds = m_threadMXBean.getAllThreadIds();
 
         for (long ids : threadIds) {
