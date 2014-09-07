@@ -105,7 +105,8 @@ public class BundleResourceManager extends AbstractResourceCollection {
      */
     public static Builder relationsBuilder(Path path, List<Bundle> bundles) {
         DefaultResource.Builder builder = new Builder().fromPath(path);
-        for (Bundle bundle : bundles) {
+        ArrayList<Bundle> copyBundles = new ArrayList<Bundle>(bundles);
+        for (Bundle bundle : copyBundles) {
             if (bundle != null) {
                 String bundleId = Long.toString(bundle.getBundleId());
                 Path bundlePath = BundleResourceManager.getInstance().getPath().addElements(bundleId);

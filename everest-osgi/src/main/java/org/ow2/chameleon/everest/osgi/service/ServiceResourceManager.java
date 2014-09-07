@@ -76,7 +76,8 @@ public class ServiceResourceManager extends AbstractResourceCollection {
      */
     public static Builder relationsBuilder(Path path, List<ServiceReference> services) {
         DefaultResource.Builder builder = new Builder().fromPath(path);
-        for (ServiceReference service : services) {
+        ArrayList<ServiceReference> copyServices = new ArrayList<ServiceReference>(services);
+        for (ServiceReference service : copyServices) {
             if (service != null) {
                 String serviceId = service.getProperty(Constants.SERVICE_ID).toString();
                 Path servicePath = ServiceResourceManager.getInstance().getPath().addElements(serviceId);

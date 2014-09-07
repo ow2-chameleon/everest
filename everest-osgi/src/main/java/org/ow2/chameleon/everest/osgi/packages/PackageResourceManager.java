@@ -78,7 +78,8 @@ public class PackageResourceManager extends AbstractResourceCollection {
      */
     public static Builder relationsBuilder(Path path, List<BundleCapability> capabilities) {
         DefaultResource.Builder builder = new Builder().fromPath(path);
-        for (BundleCapability capability : capabilities) {
+        ArrayList<BundleCapability> copyCapabilities = new ArrayList<BundleCapability>(capabilities);
+        for (BundleCapability capability : copyCapabilities) {
             if (capability != null) {
                 String packageId = uniqueCapabilityId(capability);
                 Path packagePath = PackageResourceManager.getInstance().getPath().addElements(packageId);
