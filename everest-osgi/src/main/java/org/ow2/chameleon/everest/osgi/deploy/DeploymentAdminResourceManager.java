@@ -79,10 +79,8 @@ public class DeploymentAdminResourceManager extends AbstractResourceCollection {
 
     public static boolean canCharge(){
         try{
-            DeploymentAdminResourceManager.class.getClassLoader().loadClass(DeploymentAdmin.class.getName());
-        } catch (ClassNotFoundException e) {
-            return false;
-        } catch (NoClassDefFoundError e) {
+            DeploymentAdminResourceManager.class.getClassLoader().loadClass("org.osgi.service.DeploymentAdmin");
+        } catch (Throwable t) { //NOSONAR
             return false;
         }
         return true;
@@ -121,5 +119,10 @@ public class DeploymentAdminResourceManager extends AbstractResourceCollection {
         } catch (DeploymentException e) {
             throw new RuntimeException(e.getMessage());
         }
+    }
+
+    @Override
+    public boolean isObservable() {
+        return true;
     }
 }
