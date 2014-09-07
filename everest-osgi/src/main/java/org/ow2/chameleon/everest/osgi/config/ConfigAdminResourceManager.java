@@ -86,6 +86,8 @@ public class ConfigAdminResourceManager extends AbstractResourceCollection {
      */
     private ServiceRegistration<ConfigurationListener> m_configurationListenerServiceRegistration;
 
+    private final Object m_lock = new Object();
+
     /**
      * Constructor for configuration resource manager
      *
@@ -132,9 +134,7 @@ public class ConfigAdminResourceManager extends AbstractResourceCollection {
         try{
             ConfigAdminResourceManager.class.getClassLoader().loadClass(ConfigurationAdmin.class.getName());
             ConfigAdminResourceManager.class.getClassLoader().loadClass(ConfigurationListener.class.getName());
-        } catch (ClassNotFoundException e) {
-            return false;
-        } catch (NoClassDefFoundError e) {
+        } catch (Throwable t) { //NO_SONAR
             return false;
         }
         return true;
@@ -160,7 +160,7 @@ public class ConfigAdminResourceManager extends AbstractResourceCollection {
     @Override
     public List<Resource> getResources() {
         ArrayList<Resource> resources = new ArrayList<Resource>();
-        synchronized (m_configurationResourceMap) {
+        synchronized (m_lock ) {
             resources.addAll(m_configurationResourceMap.values());
         }
         return resources;
@@ -194,7 +194,7 @@ public class ConfigAdminResourceManager extends AbstractResourceCollection {
             throw new IllegalActionOnResourceException(request, "location parameter is mandatory");
         }
         ConfigurationResource configurationResource = new ConfigurationResource(configuration);
-        synchronized (m_configurationResourceMap) {
+        synchronized (m_lock ) {
             m_configurationResourceMap.put(pid, configurationResource);
         }
         return configurationResource;
@@ -211,29 +211,35 @@ public class ConfigAdminResourceManager extends AbstractResourceCollection {
                 Configuration configuration = m_configAdmin.getConfiguration(pid);
                 if (!m_configurationResourceMap.containsKey(pid)) {
                     configurationResource = new ConfigurationResource(configuration);
-                    synchronized (m_configurationResourceMap) {
+                    synchronized (m_lock ) {
                         m_configurationResourceMap.put(pid, configurationResource);
                     }
                     resourceEvent = ResourceEvent.CREATED;
                 } else {
-                    synchronized (m_configurationResourceMap) {
+                    synchronized (m_lock ) {
                         configurationResource = m_configurationResourceMap.get(pid);
                     }
                     if (event.getType() != ConfigurationEvent.CM_DELETED) {
                         resourceEvent = ResourceEvent.UPDATED;
                     } else {
                         resourceEvent = ResourceEvent.DELETED;
-                        synchronized (m_configurationResourceMap) {
+                        synchronized (m_lock ) {
                            m_configurationResourceMap.remove(pid);
                         }
                     }
                 }
-                Everest.postResource(ResourceEvent.UPDATED, configurationResource);
+                Everest.postResource(resourceEvent, configurationResource);
             } catch (IOException e) {
                 // something gone wrong
                 //TODO
+                e.printStackTrace();
             }
 
         }
+    }
+
+    @Override
+    public boolean isObservable() {
+        return true;
     }
 }
