@@ -194,4 +194,8 @@ public class ConfigurationResource extends DefaultResource {
         }
     }
 
+    @Override
+    public boolean isObservable() {
+        return true;
+    }
 }
