@@ -302,7 +302,7 @@ public class BundleResource extends AbstractResourceCollection {
         // update bundle
         Boolean update = request.get(UPDATE_PARAMETER, Boolean.class);
         if (update != null && update) {
-            InputStream ioStream = request.get(UPDATE_INPUT_PARAMETER, ByteArrayInputStream.class);
+            InputStream ioStream = request.get(UPDATE_INPUT_PARAMETER, InputStream.class);
             try {
                 this.update(ioStream);
             } catch (IllegalActionOnResourceException e) {
