@@ -118,6 +118,7 @@ public class BundleHeadersResource extends AbstractResourceCollection {
     public List<Resource> getResources() {
         ArrayList<Resource> resources = new ArrayList<Resource>();
         BundleRevision rev = m_bundle.adapt(BundleRevision.class);
+        if(rev!=null) {
         // package export
         List<BundleCapability> capabilities = rev.getDeclaredCapabilities(BundleRevision.PACKAGE_NAMESPACE);
         Map<String, ResourceMetadata> exports = new HashMap<String, ResourceMetadata>();
@@ -168,7 +169,7 @@ public class BundleHeadersResource extends AbstractResourceCollection {
             hosts.put(uniqueRequirementId(fragmentRequirement), metadataFrom(new ImmutableResourceMetadata.Builder(),fragmentRequirement).build());
         }
         resources.add(new ReadOnlyLeafCollectionResource(getPath().addElements(FRAGMENT_HOST), hosts));
-
+        }
         // TODO Native-Code
 
         return resources;

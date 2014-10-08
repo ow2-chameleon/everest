@@ -21,10 +21,14 @@ import org.ow2.chameleon.everest.impl.ImmutableResourceMetadata;
 import org.ow2.chameleon.everest.osgi.OsgiResourceUtils;
 import org.ow2.chameleon.everest.services.Action;
 import org.ow2.chameleon.everest.services.Path;
+import org.ow2.chameleon.everest.services.Relation;
 import org.ow2.chameleon.everest.services.ResourceMetadata;
 import org.osgi.framework.wiring.BundleCapability;
 import org.osgi.framework.wiring.BundleRequirement;
 import org.osgi.framework.wiring.BundleWire;
+import org.osgi.framework.Bundle;
+
+import java.util.ArrayList;
 
 import static org.ow2.chameleon.everest.osgi.OsgiResourceUtils.*;
 
@@ -58,27 +62,46 @@ public class BundleWireResource extends DefaultReadOnlyResource {
         super(path.addElements(uniqueWireId(wire)));
         m_wire = wire;
 
+        ArrayList<Relation> relations = new ArrayList<Relation>();
+
         //find capability
         BundleCapability capability = m_wire.getCapability();
         String capabilityId = OsgiResourceUtils.uniqueCapabilityId(capability);
-        Path capabilityPath = BundleResourceManager.getInstance().getPath().addElements(
-                Long.toString(m_wire.getProviderWiring().getBundle().getBundleId()),
-                BundleResource.CAPABILITIES_PATH,
-                capabilityId
-        );
+        Bundle providerBundle = null;
+        try{
+            providerBundle = m_wire.getProviderWiring().getBundle();
+        } catch(NullPointerException e) {
+            // can happen
+        }
+        if(providerBundle != null) {
+            Path capabilityPath = BundleResourceManager.getInstance().getPath().addElements(
+                    Long.toString(providerBundle.getBundleId()),
+                    BundleResource.CAPABILITIES_PATH,
+                    capabilityId
+            );
+            relations.add(new DefaultRelation(capabilityPath, Action.READ, WIRE_CAPABILITY));
+        }
+
 
         //find requirement
         BundleRequirement requirement = m_wire.getRequirement();
         String requirementId = OsgiResourceUtils.uniqueRequirementId(requirement);
-        Path requirementPath = BundleResourceManager.getInstance().getPath().addElements(
-                Long.toString(m_wire.getRequirerWiring().getBundle().getBundleId()),
-                BundleResource.REQUIREMENTS_PATH,
-                requirementId
-        );
-
-        setRelations(
-                new DefaultRelation(capabilityPath, Action.READ, WIRE_CAPABILITY),
-                new DefaultRelation(requirementPath, Action.READ, WIRE_REQUIREMENT));
+        Bundle requirerBundle = null;
+        try {
+            requirerBundle = m_wire.getRequirerWiring().getBundle();
+        } catch(NullPointerException e) {
+            // can happen
+        } 
+        if(requirerBundle != null) {
+            Path requirementPath = BundleResourceManager.getInstance().getPath().addElements(
+                    Long.toString(requirerBundle.getBundleId()),
+                    BundleResource.REQUIREMENTS_PATH,
+                    requirementId
+            );
+            relations.add(new DefaultRelation(requirementPath, Action.READ, WIRE_REQUIREMENT));
+        }
+        
+        setRelations(relations.toArray(new Relation[relations.size()]));
     }
 
     @Override

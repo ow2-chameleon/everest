@@ -69,7 +69,13 @@ public class BundleServicesResource extends AbstractResourceCollection {
         ArrayList<Resource> resources = new ArrayList<Resource>();
         DefaultResource.Builder builder;
         // bundle registered services
-        ServiceReference[] registered = m_bundle.getRegisteredServices();
+        ServiceReference[] registered = null;
+        
+        try{
+            registered = m_bundle.getRegisteredServices();
+        } catch (IllegalStateException e) {
+            // can happen if bundle is uninstalled    
+        }
         if (registered != null) {
             builder = ServiceResourceManager.relationsBuilder(getPath().addElements(BUNDLE_REGISTERED_SERVICES_NAME), Arrays.asList(registered));
             try {
@@ -80,7 +86,13 @@ public class BundleServicesResource extends AbstractResourceCollection {
         }
 
         // bundle used services
-        ServiceReference[] uses = m_bundle.getServicesInUse();
+        ServiceReference[] uses = null;
+        try {
+            uses = m_bundle.getServicesInUse();
+        } catch (IllegalStateException e) {
+            // can happen if bundle is uninstalled    
+        }    
+        
         if (uses != null) {
             builder = ServiceResourceManager.relationsBuilder(getPath().addElements(BUNDLE_USE_SERVICES_NAME), Arrays.asList(uses));
             try {
