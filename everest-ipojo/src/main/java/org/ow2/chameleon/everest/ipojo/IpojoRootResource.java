@@ -448,7 +448,11 @@ public class IpojoRootResource extends ResourceMap {
         // Find the intermediate level node: ipojo/handler/$ns
         // We need to hold the ipojo/handler and ipojo/handler/$ns WRITE lock at the same time because we may
         // delete the latter one if the leaving handler is the last one with that namespace.
-        Path path = HANDLERS.addElements(handler.getNamespace());
+        String ns = handler.getNamespace();
+        if (! "primitive".equals(handler.getType())){
+            ns += "." + handler.getType();
+        }
+        Path path = HANDLERS.addElements(ns);
         ResourceMap nsHandlers;
         boolean wasLast = false;
         HandlerResource r;
@@ -458,12 +462,7 @@ public class IpojoRootResource extends ResourceMap {
             nsHandlers.m_lock.writeLock().lock();
             try {
                 // Remove the handler resource : ipojo/handler/$name/$version
-                String name;
-                if ("primitive".equals(handler.getType())) {
-                    name = handler.getNamespace() + ":" + handler.getName();
-                } else {
-                    name = handler.getNamespace() + "." + handler.getType() + ":" + handler.getName();
-                }
+                String name = handler.getName();
                 r = nsHandlers.removePath(path.addElements(name), HandlerResource.class);
                 if (nsHandlers.isEmpty()) {
                     // Last standing handler with this namespace
@@ -617,7 +616,18 @@ public class IpojoRootResource extends ResourceMap {
         // Find the intermediate level node: ipojo/declaration/type/$name
         // We need to hold the ipojo/declaration/type and ipojo/declaration/type/$name WRITE lock at the same time
         // because we may delete the latter one if the leaving type declaration is the last one with that name.
-        Path path = TYPE_DECLARATIONS.addElements(type.getComponentName());
+        String name = type.getComponentName();
+        Path path = TYPE_DECLARATIONS.addElements(name);
+
+        if(name == null) {
+            return;
+        }
+
+        // Exclude handlers
+        if ("handler".equals(type.getComponentMetadata().getName())) {
+            return;
+        }
+
         boolean wasLast = false;
         TypeDeclarationResource r;
         ResourceMap namedTypes;
