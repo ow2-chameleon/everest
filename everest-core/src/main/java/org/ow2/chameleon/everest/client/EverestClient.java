@@ -27,7 +27,7 @@ import org.ow2.chameleon.everest.services.*;
 import org.ow2.chameleon.everest.core.Everest;
 
 import java.util.*;
-
+import java.util.concurrent.ConcurrentHashMap;
 
 /*
  * User: Colin
@@ -73,7 +73,7 @@ public class EverestClient extends ResourceContainer implements ServiceTrackerCu
      */
     private  ServiceRegistration m_serviceRegistration;
 
-    private Map<EverestListener, CustomEventAdmin> m_listeners = new HashMap<EverestListener, CustomEventAdmin>();
+    private Map<EverestListener, CustomEventAdmin> m_listeners = new ConcurrentHashMap<EverestListener, CustomEventAdmin>();
 
     private Object m_lock = new Object();
 
@@ -281,11 +281,14 @@ public class EverestClient extends ResourceContainer implements ServiceTrackerCu
     public void unSubscribe(EverestListener  everestListener) {
         //defensive method
         synchronized (m_lock) {
-            if (m_listeners.keySet().contains(everestListener))
+            if (m_listeners.keySet().contains(everestListener)) {
                 m_listeners.remove(everestListener);            
+            }                
             if(m_listeners.isEmpty()){
-                m_serviceRegistration.unregister();
-                m_serviceRegistration=null;
+                if(m_serviceRegistration != null) {
+                    m_serviceRegistration.unregister();
+                    m_serviceRegistration=null;
+                }
             }
         }
     }
@@ -332,15 +335,18 @@ public class EverestClient extends ResourceContainer implements ServiceTrackerCu
         if ((m_listeners != null) && (!m_listeners.isEmpty())){
             Object eventType = event.getProperty("eventType");
             for(EverestListener currentListener : m_listeners.keySet()){
+                CustomEventAdmin cea = m_listeners.get(currentListener);
+                if(cea != null){
                 if (ResourceEvent.CREATED.toString().equals(eventType)) {
-                    m_listeners.get(currentListener).CreateEvent();
+                    cea.CreateEvent();
 
                 } else if (ResourceEvent.DELETED.toString().equals(eventType)) {
-                    m_listeners.get(currentListener).DeleteEvent();
+                    cea.DeleteEvent();
 
                 } else if (ResourceEvent.UPDATED.toString().equals(eventType)) {
-                    m_listeners.get(currentListener).UpdateEvent();
+                    cea.UpdateEvent();
                 }
+            }
             }
         }
     }
@@ -361,35 +367,19 @@ public class EverestClient extends ResourceContainer implements ServiceTrackerCu
 
 
     public List<Resource> getAllResource() {
-        try {
-            List<Resource> resourceList = new ArrayList<Resource>();
-            resourceList.add(this.read(m_currentPath.toString()).retrieve());
-            List<Resource> returnList = getAllResourceRecursive(resourceList);
-            return returnList;
-        }catch (ResourceNotFoundException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        List<Resource> list = new ArrayList<Resource>();
+        try {            
+            Resource root = read(m_currentPath.toString()).retrieve();
+            list = root.getResources( new ResourceFilter() {
+                public boolean accept(Resource r) {
+                    return true;
+                }
+            });
+        }catch (ResourceNotFoundException e) {            
+            // this could happen
         }
-        return null;
+        return list;
     }
-
-    private List<Resource> getAllResourceRecursive(List<Resource> resources) {
-        List<Resource> resourceList = new ArrayList<Resource>(resources);
-
-        for (Resource current : resources){
-            List<Resource> temp = current.getResources();
-            if ((temp != null) && (!temp.isEmpty())){
-                resourceList.addAll(getAllResourceRecursive(temp));
-            }
-
-        }
-
-        return resourceList;
-
-    }
-
-
-
-
 
     public boolean isEverestService(){
         if( m_everest == null){
