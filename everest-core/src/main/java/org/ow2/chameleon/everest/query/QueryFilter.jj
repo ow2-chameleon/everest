@@ -51,7 +51,7 @@ TOKEN : { < PV_DELIMITER: ":" >}
 TOKEN : { < START_OR: "[" >}
 TOKEN : { < END_OR: "]" >}
 TOKEN : { < STRING_DELIMITER: (["\"","\'"]) >}
-TOKEN : { < VALUE: (["a"-"z","A"-"Z","0"-"9","."])+ > }
+TOKEN : { < VALUE: (["a"-"z","A"-"Z","0"-"9",".","-"])+ > }
 
 /*
 *Special  parameter
